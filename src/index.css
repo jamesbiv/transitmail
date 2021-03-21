@@ -1,0 +1,178 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+#container-main {
+  margin-top: 56px;
+  overflow: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+pre {
+  white-space: pre-wrap;
+}
+
+.folder-sticky-top {
+  position: sticky;
+  top: 56px;
+  z-index: 1020;
+}
+
+.folder-checkbox {
+  max-width: 20px !important;
+}
+
+/*nasty fix i propose nesting the subject to solve this later */
+.folder-subject {
+  width: 0;
+}
+
+.attachments {
+  width: 200px;
+  line-height: 10px;
+}
+.attachments .btn {
+  line-height: 10px;
+  z-index: 1000000;
+}
+
+.text-indent {
+  text-indent: 1em;
+}
+
+.no-transition > .progress-bar {
+  transition: none !important;
+}
+
+.email-body {
+  overflow: hidden;
+  height: 0px;
+  width: 100%;
+}
+
+.public-DraftEditor-content {
+  min-height: 300px;
+  overflow: auto;
+}
+.inner-shaddow {
+  box-shadow: inset 7px 7px 9px -7px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 576px) {
+  .tab-pane > .card {
+    border: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .sideMenu {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 100000 !important;
+    height: 100% !important;
+    width: 300px !important;
+    box-shadow: 5px 0px 5px #999;
+  }
+
+  .slide-in {
+    display: block;
+    animation: slide-in 0.5s forwards;
+    -webkit-animation: slide-in 0.5s forwards;
+  }
+
+  .slide-out {
+    display: block;
+    animation: slide-out 0.5s forwards;
+    -webkit-animation: slide-out 0.5s forwards;
+  }
+
+  @keyframes slide-in {
+    0% {
+      transform: translateX(-120%);
+    }
+    100% {
+      transform: translateX(0%);
+    }
+  }
+
+  @-webkit-keyframes slide-in {
+    0% {
+      -webkit-transform: translateX(-120%);
+    }
+    100% {
+      -webkit-transform: translateX(0%);
+    }
+  }
+
+  @keyframes slide-out {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-120%);
+    }
+  }
+
+  @-webkit-keyframes slide-out {
+    0% {
+      -webkit-transform: translateX(0%);
+    }
+    100% {
+      -webkit-transform: translateX(-120%);
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .subject-xs {
+    margin-top: -60px;
+  }
+
+  .btn-group-vertical-xs {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .btn-group-vertical-xs > .btn {
+    margin-left: -1px;
+    width: 100%;
+  }
+
+  .btn-group-vertical-xs > .btn:first-child {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-top-right-radius: 0.21em !important;
+  }
+
+  .btn-group-vertical-xs > .btn:last-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-left-radius: 0.21em;
+  }
+
+  .btn-group-vertical-xs > .btn {
+    display: block;
+  }
+}
