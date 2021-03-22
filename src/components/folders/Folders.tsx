@@ -190,7 +190,8 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
           </Accordion>
         </Card>
         <FoldersEntryActions
-          folderId={this.state.activeFolderId}
+          folderId={this.state.actionFolderId}
+          folders={this.state.folders}
           actionType={this.state.actionType}
           showActionModal={this.state.showActionModal}
           onHide={() => this.setState({ showActionModal: false })}

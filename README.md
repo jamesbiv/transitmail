@@ -1,46 +1,61 @@
 # TransitMail Client
 
-TransitMail is a lightweight Progrssive Web Ppplication (PWA) email client, designed to take the hard work out of establishing email services.
+<b>Current version:</b> 1.0.0 (beta)
+
+TransitMail is a lightweight Progrssive Web Application (PWA) based email client, designed to take the hard work out of establishing email services.
 
 The key features of TransitMail as follows:
 
 <ul>
-<li>Built in ReactJS</li>
+<li>Built with ReactJS</li>
 <li>Built with Bootstrap</li>
 <li>Works as a Progessive Web Application</li>
 <li>Relies only on traditional IMAP and SMTP protocals</li>
-<li>Uses WebSockets for it communications</li>
+<li>Uses WebSockets for its communications</li>
 <li>Easy to use, setup and deploy</li>
 </ul>
 
-The benefits to TransitMail is that with this combination of services, SSL certificate negoitation happens at the WebSocket layer. This meaning that SMTPS and IMAP-SSL are not required, therefore, keeping complex mail server configuration to a minimum, while at the same time maintaining secure communications.
+The benefits to TransitMail is that with this combination of services, SSL certificate negoitation happens at the WebSocket layer. Meaning that SMTPS and IMAP-SSL are not requireds, minimising complex mail server configurations, while at the same time maintaining secure communications.
 
-For more in depth understanding about TransitMail, <a href="">please visit my blog</a> for more information. 
+# TransitMail Development Server
 
-## Installation 
+You can download the TransitMail Development server Dockerfile install [jamestbiv/transitmail-dev-server](https://github.com/jamesbiv/transitmail-dev-server).
 
-Download the repository from Git 
+This configuration will give you all the tools needed to test and run a TransitMail server. For a production ready service, DKIMs will need to be added.
 
-Install the depenecancies
+## Installation
 
-Build TransitMail
+### Clone this respository
 
-Serve Locally (development mode)
+```
+git clone https://github.com/jamesbiv/transitmail
 
-## TransitMail Server
+```
 
-Please visit http:// to download the TransitMail server Dockerfile for a bare-bones configuration.
+### Run yarn install (install yarn globally if neededs)
 
-## Demo
+```
+yarn install
+```
 
-A Demo of TransitMail can be found at http:// 
+### Build TransitMail
 
-<b>Note:</b> This basic demo allows for localhost sending only, further, the email queue is peroidacally expunged and incomming delievery has been disabled for the sake of server security.  
+```
+yarn build
+```
+
+### Serve locally (development mode)
+
+```
+yarn start
+```
 
 ## Licence
 
 This project is licenced under GPL-2.0
 
-## Project Enquires
+## Further Information
 
-Please don`t hesistate to contact me via email on jamestbiv@gmail.com for any project related enquiries. Collaborators are more than welcome!
+For a more in depth understanding about TransitMail (including screenshots), please visit [jamesbiv.tech/transitmail](https://jamesbiv.tech/transitmail).
+
+Contribution is more than weclome, please read out contribution guidlines at [CONTRIBUTORS.md](CONTRIBUTORS.md). And the project roadmap at [projects/roadmap](projects/roadmap).

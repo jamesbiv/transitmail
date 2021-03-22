@@ -75,7 +75,8 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
           </Dropdown.Toggle>
           <Dropdown.Menu>
             <Dropdown.Item>Move</Dropdown.Item>
-            <Dropdown.Item>Tag</Dropdown.Item>
+            <Dropdown.Item>Copy</Dropdown.Item>
+            <Dropdown.Item>Flag</Dropdown.Item>
             <Dropdown.Item>View Source</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>

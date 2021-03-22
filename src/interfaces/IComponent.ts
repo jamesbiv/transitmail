@@ -1,5 +1,5 @@
 export interface IComponent {
   id: number;
-  name: any;
+  element: any;
   eventKey: string;
 }

@@ -18,6 +18,7 @@ export const MessageModal: React.FC<IMessageModalProps> = ({
   return (
     <Modal
       show={messageModalShow}
+      centered={true}
       aria-labelledby="contained-modal-title-vcenter"
     >
       <Modal.Header closeButton>

@@ -9,12 +9,15 @@ import {
   faFolder,
 } from "@fortawesome/free-solid-svg-icons";
 import { IFoldersEntry, IFoldersSubEntry } from "interfaces";
-import { FoldersEntryOptions } from ".";
+import { FoldersEntryOptions, EFolderEntryActionType } from ".";
 
 interface IFoldersEntryProps {
   activeFolderId?: string;
   folderEntry: IFoldersEntry;
-  toggleActionModal: any;
+  toggleActionModal: (
+    actionType: EFolderEntryActionType,
+    actionFolderId?: string
+  ) => void;
   updateActiveKeyFolderId: (activeKey: string, folderId: string) => void;
 }
 
@@ -40,7 +43,10 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           {folderEntry.name}
         </Col>
         <Col xs={6} className="text-right text-nowrap pr-1">
-          <FoldersEntryOptions toggleActionModal={toggleActionModal} />
+          <FoldersEntryOptions
+            folderId={folderEntry.ref}
+            toggleActionModal={toggleActionModal}
+          />
           <Button
             onClick={() => {
               updateActiveKeyFolderId("folder", folderEntry.ref);
@@ -76,7 +82,10 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             <FontAwesomeIcon icon={faFolderPlus} /> {folderEntry.name}
           </Col>
           <Col xs={6} className="text-right text-nowrap pr-1">
-            <FoldersEntryOptions toggleActionModal={toggleActionModal} />
+            <FoldersEntryOptions
+              folderId={folderEntry.ref}
+              toggleActionModal={toggleActionModal}
+            />
             <Button
               onClick={() => {
                 updateActiveKeyFolderId("folder", folderEntry.ref);
@@ -110,7 +119,10 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                   {folderSubEntry.name}
                 </Col>
                 <Col xs={6} className="text-right text-nowrap pr-1">
-                  <FoldersEntryOptions toggleActionModal={toggleActionModal} />
+                  <FoldersEntryOptions
+                    folderId={folderEntry.ref}
+                    toggleActionModal={toggleActionModal}
+                  />
                   <Button
                     onClick={() => {
                       updateActiveKeyFolderId("folder", folderSubEntry.ref);

@@ -161,7 +161,7 @@ class SmtpSocket {
       }
     );
 
-    return { data: (await responsePayload).response!, status: status };
+    return { data: (await responsePayload).response ?? [], status: status };
   }
 
   /**

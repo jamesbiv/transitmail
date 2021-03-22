@@ -12,5 +12,3 @@ export interface IImapSession {
   stream: number;
   lock: boolean;
 }
-
-export type TImapResponseQueue = string;

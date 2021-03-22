@@ -18,6 +18,7 @@ import {
   View,
   ErrorBoundary,
   MessageModal,
+  Logout,
 } from "components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
@@ -104,12 +105,13 @@ class Index extends React.Component<{}, IIndexState> {
 
     /* Component declarations */
     const components: IComponent[] = [
-      { id: 1, name: Inbox, eventKey: "inbox" },
-      { id: 2, name: Compose, eventKey: "compose" },
-      { id: 3, name: Folders, eventKey: "folders" },
-      { id: 4, name: Settings, eventKey: "settings" },
-      { id: 5, name: View, eventKey: "view" },
-      { id: 6, name: Folder, eventKey: "folder" },
+      { id: 1, element: Inbox, eventKey: "inbox" },
+      { id: 2, element: Compose, eventKey: "compose" },
+      { id: 3, element: Folders, eventKey: "folders" },
+      { id: 4, element: Settings, eventKey: "settings" },
+      { id: 5, element: View, eventKey: "view" },
+      { id: 6, element: Folder, eventKey: "folder" },
+      { id: 7, element: Logout, eventKey: "logout" },
     ];
 
     /* Body template */
@@ -159,7 +161,7 @@ class Index extends React.Component<{}, IIndexState> {
                           unmountOnExit={true}
                           eventKey={component.eventKey}
                         >
-                          {React.createElement(component.name, {
+                          {React.createElement(component.element, {
                             dependencies: this.dependencies,
                           })}
                         </Tab.Pane>
