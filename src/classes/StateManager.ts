@@ -47,7 +47,7 @@ class StateManager {
    */
   protected folderEmails: {
     [key: string]: IFolderEmails | undefined;
-  };
+  } = {};
 
   /**
    * @constructor
@@ -55,7 +55,6 @@ class StateManager {
    */
   constructor(indexClass: TIndexClass) {
     this.indexClass = indexClass;
-    this.folderEmails = {};
   }
 
   /**
@@ -121,10 +120,16 @@ class StateManager {
       return undefined;
     }
 
-    return {
-      emails: this.folderEmails[this.folderId]?.emails,
-      latestUid: this.folderEmails[this.folderId]?.latestUid,
-    };
+    const folderEmails: IFolderEmails | undefined = this.folderEmails?.[
+      this.folderId
+    ];
+
+    return folderEmails
+      ? {
+          emails: folderEmails.emails,
+          latestUid: folderEmails.latestUid,
+        }
+      : undefined;
   }
 
   /**

@@ -7,7 +7,7 @@ import {
   SmtpSocket,
   EmailParser,
   StateManager,
-} from "class";
+} from "classes";
 import {
   Folder,
   Folders,

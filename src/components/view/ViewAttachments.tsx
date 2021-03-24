@@ -24,7 +24,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   base64toBlob,
 }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
-    let content = attachment.content.trim();
+    const content = attachment.content.trim();
     //content = content.substring(0, content.length-1);
 
     const blob = base64toBlob(content, attachment.mimeType);
@@ -34,7 +34,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   };
 
   const downloadAttachment = (attachment: IEmailAttachment) => {
-    let content = attachment.content.trim();
+    const content = attachment.content.trim();
     //content = content.substring(0, content.length-1);
 
     const blob = base64toBlob(content, attachment.mimeType);

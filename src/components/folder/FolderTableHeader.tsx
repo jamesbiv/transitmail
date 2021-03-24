@@ -16,7 +16,10 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
   emails,
   setEmails,
 }) => {
-  const sortFolder = (field: string, direction: string = "asc") => {
+  const sortFolder: (field: string, direction?: string) => void = (
+    field,
+    direction = "asc"
+  ) => {
     if (direction === "asc") {
       emails.sort((a: IFolderEmail, b: IFolderEmail) =>
         a[field] > b[field] ? 1 : -1

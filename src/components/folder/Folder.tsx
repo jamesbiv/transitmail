@@ -5,7 +5,7 @@ import {
   LocalStorage,
   StateManager,
   InfiniteScroll,
-} from "class";
+} from "classes";
 import { EImapResponseStatus, IFolderEmail } from "interfaces";
 import {
   Card,
@@ -170,23 +170,23 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       return undefined;
     }
 
-    let emails: IFolderEmail[] = [];
+    const emails: IFolderEmail[] = [];
 
     if (lastUid) {
       (fetchResponse.data as string[]).splice(0, 2);
     }
 
-    for (let i = 1, id = 0; i < fetchResponse.data.length - 1; i = i + 2) {
+    for (let i = 1; i < fetchResponse.data.length - 1; i = i + 2) {
       const emailFlags: string[] | undefined =
         fetchResponse.data[i - 1][2].match(
           /FETCH \(UID (.*) FLAGS \((.*)\) BODY\[HEADER\.FIELDS \(DATE FROM SUBJECT\)\] \{(.*)\}/
         ) ?? undefined;
 
+      const emailDate: string | undefined =
+        fetchResponse.data[i][0].match(/.*Date: (.*).*/)?.[1] ?? undefined;
+
       let emailSubject: string | undefined =
         fetchResponse.data[i][0].match(/.*Subject: (.*).*/)?.[1] ?? undefined;
-
-      let emailDate: string | undefined =
-        fetchResponse.data[i][0].match(/.*Date: (.*).*/)?.[1] ?? undefined;
 
       let emailFrom: string | undefined =
         fetchResponse.data[i][0].match(/.*From: (.*).*/)?.[1] ?? undefined;
@@ -201,7 +201,7 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
       if (emailFlags && emailDate && emailFrom) {
         emails.push({
-          id: id++,
+          id: Number(emailFlags[1]),
           date: emailDate,
           epoch: new Date(emailDate).getTime(),
           from: emailFrom,

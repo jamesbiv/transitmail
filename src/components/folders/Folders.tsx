@@ -1,5 +1,5 @@
 import React from "react";
-import { ImapSocket, LocalStorage, StateManager } from "class";
+import { ImapSocket, LocalStorage, StateManager } from "classes";
 import { IFoldersEntry } from "interfaces";
 import { FoldersEntry, FoldersEntryActions, EFolderEntryActionType } from ".";
 import { Card, Col, Accordion, Spinner, Button, Row } from "react-bootstrap";
@@ -68,8 +68,8 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
     const response = await this.imapSocket.imapRequest(`LIST "" "*"`);
     const folderData: string[][] = response.data as string[][];
 
-    let rawFolders: string[] = [];
-    let folders: IFoldersEntry[] = [];
+    const rawFolders: string[] = [];
+    const folders: IFoldersEntry[] = [];
 
     folderData.forEach((folderDataRow: string[]) => {
       if (folderDataRow[0] === "*") {

@@ -1,5 +1,5 @@
 import React, { FormEvent } from "react";
-import { ImapSocket, LocalStorage } from "class";
+import { ImapSocket, LocalStorage } from "classes";
 import { SettingsForm } from ".";
 import { Row, Col, Alert, Card, Form, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -64,9 +64,9 @@ class Settings extends React.PureComponent<ISettingsProps, ISettingsState> {
   }
 
   saveSettings() {
-    let emailRegex = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const emailRegex = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    let errors: ISettingsErrors = {};
+    const errors: ISettingsErrors = {};
 
     /* Validation conditions */
     if (this.settings.name === "") {

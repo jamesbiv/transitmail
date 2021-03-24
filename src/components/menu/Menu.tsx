@@ -9,7 +9,7 @@ import {
   faSignOutAlt,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { StateManager } from "class";
+import { StateManager } from "classes";
 
 interface IMenuProps {
   dependencies: {

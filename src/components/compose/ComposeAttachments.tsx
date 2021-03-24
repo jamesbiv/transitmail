@@ -20,10 +20,12 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
   updateAttachments,
   attachments,
 }) => {
-  const loadAttachments = (event: ChangeEvent<HTMLInputElement>) => {
+  const loadAttachments: (event: ChangeEvent<HTMLInputElement>) => void = (
+    event
+  ) => {
     const fileList: FileList | null = event.target.files;
     const files: File[] = Array.from(fileList ?? []);
-    
+
     files.forEach((file: File) => {
       const reader = new FileReader();
       let count = 0;
@@ -47,7 +49,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
     });
   };
 
-  const removeAttachment = (id: number) => {
+  const removeAttachment: (id: number) => void = (id) => {
     attachments = attachments.filter((attachment: IComposeAttachment) => {
       return attachment.id !== id;
     });
@@ -55,7 +57,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
     updateAttachments(attachments);
   };
 
-  const AttachmentInput = () => (
+  const AttachmentInput: () => JSX.Element = () => (
     <input
       id="attachmentInput"
       type="file"

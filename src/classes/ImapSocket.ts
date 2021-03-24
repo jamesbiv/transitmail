@@ -21,15 +21,14 @@ class ImapSocket {
 
   /**
    * @constuctor
-   * @param {string} host
-   * @param {string} port
+   * @param {Partial<IImapSettings>}
    */
-  constructor(host?: string, port?: number) {
+  constructor({ host, port, username, password }: Partial<IImapSettings> = {}) {
     this.settings = {
       host: host ?? "", // IMAP WebSocket host
-      port: port ?? NaN, // IMAP WebSocket port
-      username: "", // IMAP account username
-      password: "", // IMAP account password
+      port: port ?? 8143, // IMAP WebSocket port
+      username: username ?? "", // IMAP account username
+      password: password ?? "", // IMAP account password
     };
 
     // Session variables

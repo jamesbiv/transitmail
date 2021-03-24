@@ -30,7 +30,7 @@ class EmailParser {
   public processEmail(emailRaw: string): IEmail {
     const posHeader = emailRaw.indexOf("\r\n\r\n");
 
-    let email: IEmail = {
+    const email: IEmail = {
       attachments: [],
       bodyHtml: "",
       bodyText: "",
@@ -206,16 +206,17 @@ class EmailParser {
     if (data.indexOf(field) === -1) {
       return undefined;
     }
-    const regex = new RegExp(field + "=['|\"]?(\\S+)");
 
-    let match: RegExpMatchArray | undefined = data.match(regex) ?? undefined;
-    let value = undefined;
+    const regex = new RegExp(field + "=['|\"]?(\\S+)");
+    const match: RegExpMatchArray | undefined = data.match(regex) ?? undefined;
+
+    let value: string | undefined;
 
     if (match && match.length > 1) {
       let matchedValue: string = match[1];
 
       ["'", '"'].forEach((char: string) => {
-        let trim = matchedValue.indexOf(char);
+        const trim = matchedValue.indexOf(char);
 
         if (trim > -1) {
           matchedValue = matchedValue.substring(0, trim);
@@ -243,31 +244,32 @@ class EmailParser {
       return [];
     }
 
-    let boundaries: IEmailBoundary[] = [];
+    return boundaryIds.reduce(
+      (boundaries: IEmailBoundary[], boundaryId: string): IEmailBoundary[] => {
+        const boundary = this.filterContentByBoundaries(boundaryId, contentRaw);
 
-    boundaryIds.forEach((boundaryId: string) => {
-      const boundary = this.filterContentByBoundaries(boundaryId, contentRaw);
+        if (this.sanitizeRawBoundry(boundary)) {
+          boundaries.push(boundary);
 
-      if (this.sanitizeRawBoundry(boundary)) {
-        boundaries.push(boundary);
+          // Check for boundaries within boundaries
+          boundary.contents.forEach((contentRow: IEmailBoundaryContent) => {
+            if (contentRow.subBoundaryId !== undefined) {
+              const subBoundary: IEmailBoundary = this.filterContentByBoundaries(
+                contentRow.subBoundaryId,
+                contentRow.contentRaw
+              );
 
-        // Check for boundaries within boundaries
-        boundary.contents.forEach((contentRow: IEmailBoundaryContent) => {
-          if (contentRow.subBoundaryId !== undefined) {
-            const subBoundary = this.filterContentByBoundaries(
-              contentRow.subBoundaryId,
-              contentRow.contentRaw
-            );
-
-            if (this.sanitizeRawBoundry(subBoundary)) {
-              boundaries.push(subBoundary);
+              if (this.sanitizeRawBoundry(subBoundary)) {
+                boundaries.push(subBoundary);
+              }
             }
-          }
-        });
-      }
-    });
+          });
+        }
 
-    return boundaries;
+        return boundaries;
+      },
+      []
+    );
   }
 
   /**
@@ -281,6 +283,7 @@ class EmailParser {
     contentRaw: string
   ): IEmailBoundary {
     const contentRows: string[] = contentRaw.split("\r\n");
+  
     let contentIndex: number = 0;
     let allBoundariesMet: boolean = false;
 
@@ -485,9 +488,10 @@ class EmailParser {
 
     div.innerHTML = content;
 
-    var i = scripts.length;
-    while (i--) {
-      scripts[i].parentNode?.removeChild(scripts[i]);
+    let scriptsLength: number = scripts.length;
+
+    while (scriptsLength--) {
+      scripts[scriptsLength].parentNode?.removeChild(scripts[scriptsLength]);
     }
 
     return div.innerHTML;
@@ -508,19 +512,27 @@ class EmailParser {
    * @returns string
    */
   public parseMimeWords(content: string): string {
-    const replaceAll = (
-      string: string,
-      regex: RegExp,
-      callback: (...args: string[]) => string
+    const joinRegex: RegExp = /(=\?[^?]+\?[Bb]\?)([^?]+)\?=\s*\1([^?]+)\?=/g;
+    const decodeRegex: RegExp = /=\?([\w_-]+)\?([QqBb])\?[^?]*\?=/g;
+
+    const joinCallback: (...args: string[]) => string = (
+      match: string,
+      header: string,
+      part1: string,
+      part2: string
     ) => {
-      let oldString = null;
+      const result: string = Buffer.concat([
+        Buffer.from(part1, "base64"),
+        Buffer.from(part2, "base64"),
+      ]).toString("base64");
 
-      while (oldString !== string) {
-        oldString = string;
-        string = string.replace(regex, callback);
-      }
+      return `${header}${result}?=`;
+    };
 
-      return string;
+    const decodeCallback: (...args: string[]) => string = (
+      mimeWord: string
+    ) => {
+      return this.decodeMimeWord(mimeWord.replace(/\s+/g, ""));
     };
 
     for (let loop; ; ) {
@@ -536,29 +548,9 @@ class EmailParser {
       content = loop;
     }
 
-    const joinBRegex: RegExp = /(=\?[^?]+\?[Bb]\?)([^?]+)\?=\s*\1([^?]+)\?=/g;
-
-    content = replaceAll(
-      content,
-      joinBRegex,
-      (match: string, header: string, part1: string, part2: string) => {
-        const result = Buffer.concat([
-          Buffer.from(part1, "base64"),
-          Buffer.from(part2, "base64"),
-        ]).toString("base64");
-
-        return header + result + "?=";
-      }
-    );
-
-    content = content.replace(
-      /=\?([\w_-]+)\?([QqBb])\?[^?]*\?=/g,
-      (mimeWord: string) => {
-        return this.decodeMimeWord(mimeWord.replace(/\s+/g, ""));
-      }
-    );
-
-    return content;
+    return content
+      .replace(joinRegex, joinCallback)
+      .replace(decodeRegex, decodeCallback);
   }
 
   /**
@@ -576,13 +568,16 @@ class EmailParser {
 
     const encoding: string = (match[2] || "Q").toUpperCase();
 
-    if (encoding === "B") {
-      return this.decodeBase64(content);
-    } else if (encoding === "Q") {
-      return this.mimeDecode(content);
-    }
+    switch (encoding) {
+      case "B":
+        return this.decodeBase64(content);
 
-    return content;
+      case "Q":
+        return this.mimeDecode(content);
+
+      default:
+        return content;
+    }
   }
 
   /**
@@ -594,8 +589,8 @@ class EmailParser {
     const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || [])
       .length;
     const bufferLength: number = content.length - encodedBytesCount * 2;
-
-    let buffer: Buffer = Buffer.alloc(bufferLength);
+    const buffer: Buffer = Buffer.alloc(bufferLength);
+    
     let bufferPos: number = 0;
 
     let char: string, hexValue: string;

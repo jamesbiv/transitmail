@@ -26,7 +26,7 @@ import {
   EmailComposer,
   LocalStorage,
   StateManager,
-} from "class";
+} from "classes";
 import {
   ComposeAttachments,
   ComposeRecipientDetails,

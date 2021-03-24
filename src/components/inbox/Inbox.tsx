@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ImapSocket, LocalStorage, EmailParser, StateManager } from "class";
+import { ImapSocket, LocalStorage, EmailParser, StateManager } from "classes";
 
 import { Folder } from "../folder";
 

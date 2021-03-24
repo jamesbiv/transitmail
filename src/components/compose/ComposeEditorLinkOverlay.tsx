@@ -19,7 +19,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
   toggleLinkOverlay,
   updateEditorState,
 }) => {
-  const updateLink = (url: string) => {
+  const updateLink: (url: string) => void = (url) => {
     const contentState = editorState.getCurrentContent();
     const contentStateWithEntity = contentState.createEntity(
       "LINK",
@@ -40,7 +40,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
     );
   };
 
-  const removeLink = () => {
+  const removeLink: () => void = () => {
     const selection = editorState.getSelection();
     if (!selection.isCollapsed()) {
       updateEditorState(RichUtils.toggleLink(editorState, selection, null));

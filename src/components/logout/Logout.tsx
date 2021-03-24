@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
-import { ImapSocket, SmtpSocket } from "class";
+import { ImapSocket, SmtpSocket } from "classes";
 
 interface ILogoutProps {
   dependencies: {

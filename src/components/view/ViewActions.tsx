@@ -11,17 +11,15 @@ import {
   faSuitcase,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { IFoldersEntry, IFoldersSubEntry } from "interfaces";
 
-interface IFoldersEntryActionsProps {
-  folderId?: string;
-  folders?: IFoldersEntry[];
-  actionType: EFolderEntryActionType;
+interface IViewActionsProps {
+  actionUid?: string;
+  actionType: EViewActionType;
   showActionModal: boolean;
   onHide: () => void;
 }
 
-export enum EFolderEntryActionType {
+export enum EViewActionType {
   ADD = 0,
   COPY = 1,
   MOVE = 2,
@@ -29,50 +27,49 @@ export enum EFolderEntryActionType {
   DELETE = 4,
 }
 
-interface IFolderEntryActionComponents {
-  [key: number]: IFolderEntryActionComponent;
+interface IViewActionComponents {
+  [key: number]: IViewActionComponent;
 }
 
-interface IFolderEntryActionComponent {
+interface IViewActionComponent {
   label: string;
   icon: IconDefinition;
-  element: React.FC<IFoldersEntryActionProps>;
+  element: React.FC<IViewActionProps>;
 }
 
-export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
-  folderId,
-  folders,
+export const ViewActions: React.FC<IViewActionsProps> = ({
+  actionUid,
   actionType,
   showActionModal,
   onHide,
 }) => {
   const [submit, changeSubmit] = useState(false);
 
-  const folderEntryAction: IFolderEntryActionComponents = {
-    [EFolderEntryActionType.ADD]: {
+  const ViewAction: IViewActionComponents = {
+    [EViewActionType.ADD]: {
       label: "Add folder",
       icon: faPlus,
-      element: FoldersEntryActionAdd,
+      element: ViewActionAdd,
     },
-    [EFolderEntryActionType.COPY]: {
+    [EViewActionType.COPY]: {
       label: "Copy folder",
       icon: faCopy,
-      element: FoldersEntryActionCopy,
+      element: ViewActionCopy,
     },
-    [EFolderEntryActionType.MOVE]: {
+    [EViewActionType.MOVE]: {
       label: "Move folder",
       icon: faSuitcase,
-      element: FoldersEntryActionMove,
+      element: ViewActionMove,
     },
-    [EFolderEntryActionType.RENAME]: {
+    [EViewActionType.RENAME]: {
       label: "Rename folder",
       icon: faEdit,
-      element: FoldersEntryActionRename,
+      element: ViewActionRename,
     },
-    [EFolderEntryActionType.DELETE]: {
+    [EViewActionType.DELETE]: {
       label: "Delete folder",
       icon: faTrash,
-      element: FoldersEntryActionDelete,
+      element: ViewActionDelete,
     },
   };
 
@@ -89,14 +86,13 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
         }}
       >
         <Modal.Title id="contained-modal-title-vcenter">
-          <FontAwesomeIcon icon={folderEntryAction[actionType].icon} />{" "}
-          {folderEntryAction[actionType].label}
+          <FontAwesomeIcon icon={ViewAction[actionType].icon} />{" "}
+          {ViewAction[actionType].label}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        {React.createElement(folderEntryAction[actionType].element, {
-          folderId,
-          folders,
+        {React.createElement(ViewAction[actionType].element, {
+          actionUid,
           submit,
           changeSubmit,
         })}
@@ -121,16 +117,14 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
   );
 };
 
-interface IFoldersEntryActionProps {
-  folderId?: string;
-  folders?: IFoldersEntry[];
+interface IViewActionProps {
+  actionUid?: string;
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
-  folderId,
-  folders,
+export const ViewActionAdd: React.FC<IViewActionProps> = ({
+  actionUid,
   submit,
   changeSubmit,
 }) => {
@@ -142,7 +136,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = () => {
-    alert(folderId);
+    alert(actionUid);
   };
 
   return (
@@ -169,23 +163,14 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
         </Form.Label>
         <Form.Control as="select">
           <option>(root)</option>
-          {folders?.map((folder: IFoldersEntry) => (
-            <React.Fragment key={folder.id}>
-              <option key={folder.id}>{folder.name}</option>
-              {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-                <option key={subFolder.id}>{subFolder.name}</option>
-              ))}
-            </React.Fragment>
-          ))}
         </Form.Control>
       </Form.Group>
     </React.Fragment>
   );
 };
 
-export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
-  folderId,
-  folders,
+export const ViewActionCopy: React.FC<IViewActionProps> = ({
+  actionUid,
   submit,
   changeSubmit,
 }) => {
@@ -197,7 +182,7 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = () => {
-    alert(folderId);
+    alert(actionUid);
   };
 
   return (
@@ -210,24 +195,12 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
           className="text-danger mb-1"
         />
       </Form.Label>
-      <Form.Control as="select">
-        <option>(root)</option>
-        {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
-            <option key={folder.id}>{folder.name}</option>
-            {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option key={subFolder.id}>{subFolder.name}</option>
-            ))}
-          </React.Fragment>
-        ))}
-      </Form.Control>
     </Form.Group>
   );
 };
 
-export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
-  folderId,
-  folders,
+export const ViewActionMove: React.FC<IViewActionProps> = ({
+  actionUid,
   submit,
   changeSubmit,
 }) => {
@@ -239,7 +212,7 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = () => {
-    alert(folderId);
+    alert(actionUid);
   };
 
   return (
@@ -252,24 +225,12 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
           className="text-danger mb-1"
         />
       </Form.Label>
-      <Form.Control as="select">
-        <option>(root)</option>
-        {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
-            <option key={folder.id}>{folder.name}</option>
-            {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option key={subFolder.id}>{subFolder.name}</option>
-            ))}
-          </React.Fragment>
-        ))}
-      </Form.Control>
     </Form.Group>
   );
 };
 
-export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
-  folderId,
-  folders,
+export const ViewActionRename: React.FC<IViewActionProps> = ({
+  actionUid,
   submit,
   changeSubmit,
 }) => {
@@ -281,7 +242,7 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = () => {
-    alert(folderId);
+    alert(actionUid);
   };
 
   return (
@@ -299,9 +260,8 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   );
 };
 
-export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
-  folderId,
-  folders,
+export const ViewActionDelete: React.FC<IViewActionProps> = ({
+  actionUid,
   submit,
   changeSubmit,
 }) => {
@@ -313,7 +273,7 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = () => {
-    alert(folderId);
+    alert(actionUid);
   };
 
   return (

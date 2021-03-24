@@ -7,7 +7,7 @@ import {
   faCheck,
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-import { ImapSocket, LocalStorage, EmailParser, StateManager } from "class";
+import { ImapSocket, LocalStorage, EmailParser, StateManager } from "classes";
 import { IEmail, EImapResponseStatus } from "interfaces";
 import { ViewAttachments, ViewHeader } from ".";
 
@@ -120,8 +120,8 @@ class View extends React.Component<IViewProps, IViewState> {
 
     const flagsResult: string = fetchFlagsResponse.data as string;
 
-    let detailsRaw = flagsResult[0][2];
-    let details = detailsRaw.match(
+    const detailsRaw = flagsResult[0][2];
+    const details = detailsRaw.match(
       /.*FETCH \(UID(.*)RFC822.SIZE (.*)\)/
     );
 
@@ -153,7 +153,7 @@ class View extends React.Component<IViewProps, IViewState> {
       const checkProgressBar = () => {
         this.progressBar.now = this.imapSocket.getStreamAmount();
 
-        let progressBarNow = Math.ceil(
+        const progressBarNow = Math.ceil(
           (this.progressBar.now / this.progressBar.max) * 100
         );
 

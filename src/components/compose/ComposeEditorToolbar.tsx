@@ -33,15 +33,15 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   const linkButtonTarget = React.useRef<HTMLButtonElement>(null);
   const [showLinkOverlay, toggleLinkOverlay] = useState(false);
 
-  const toggleInlineStyle = (inlineStyle: string) => {
+  const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {
     updateEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
   };
 
-  const toggleBlockType = (blockType: string) => {
+  const toggleBlockType: (blockType: string) => void = (blockType) => {
     updateEditorState(RichUtils.toggleBlockType(editorState, blockType));
   };
 
-  const checkBlockType = (blockType: string) => {
+  const checkBlockType: (blockType: string) => boolean = (blockType) => {
     if (
       editorState
         .getCurrentContent()
@@ -54,15 +54,15 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
     return false;
   };
 
-  const checkInlineStyle = (inlineStyle: string) => {
+  const checkInlineStyle: (inlineStyle: string) => boolean = (inlineStyle) => {
     return editorState.getCurrentInlineStyle().has(inlineStyle);
   };
 
-  const undoClick = () => {
+  const undoClick: () => void = () => {
     updateEditorState(EditorState.undo(editorState));
   };
 
-  const redoClick = () => {
+  const redoClick: () => void = () => {
     updateEditorState(EditorState.redo(editorState));
   };
 

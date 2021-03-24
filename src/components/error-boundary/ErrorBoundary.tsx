@@ -1,6 +1,6 @@
 import React, { ErrorInfo } from "react";
 
-import { StateManager } from "class";
+import { StateManager } from "classes";
 
 import Spinner from "react-bootstrap/Spinner";
 
