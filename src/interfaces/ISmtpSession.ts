@@ -6,7 +6,7 @@ export interface ISmtpSession {
   socket?: WebSocket;
   binaryType: BinaryType;
   request: ISmtpRequest[];
-  responseQueue: any;
+  responseQueue: string[][];
   responseContent: string;
   streamCumlative: number;
   stream: number;

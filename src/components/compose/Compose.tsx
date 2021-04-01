@@ -32,7 +32,11 @@ import {
   ComposeRecipientDetails,
   ComposeEditorToolbar,
 } from ".";
-import { IComposeRecipient, IComposeAttachment } from "interfaces";
+import {
+  IComposeRecipient,
+  IComposeAttachment,
+  IPreparedEmail,
+} from "interfaces";
 import { ESmtpResponseStatus } from "interfaces";
 
 interface IComposeProps {
@@ -164,7 +168,7 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
 
     const fromEmailAddress: string = this.localStorage.getSetting("email");
 
-    const emailData = this.emailComposer.prepareEmail({
+    const emailData: IPreparedEmail = this.emailComposer.prepareEmail({
       editorState: this.state.editorState,
       from: fromEmailAddress,
       subject: this.state.subject,
@@ -205,7 +209,17 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    await this.smtpSocket.smtpRequest(`QUIT`, 221);
+    const quitResponse = await this.smtpSocket.smtpRequest(`QUIT`, 221);
+
+    if (quitResponse.status !== ESmtpResponseStatus.Success) {
+      return;
+    }
+
+    this.stateManager.showMessageModal({
+      title: "Your email has been sent",
+      content: "Your email has been sent successfully!",
+      action: () => {},
+    });
   }
 
   handleKeyCommand(

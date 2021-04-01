@@ -283,7 +283,7 @@ class EmailParser {
     contentRaw: string
   ): IEmailBoundary {
     const contentRows: string[] = contentRaw.split("\r\n");
-  
+
     let contentIndex: number = 0;
     let allBoundariesMet: boolean = false;
 
@@ -425,32 +425,39 @@ class EmailParser {
     const headers: IEmailHeaders = {};
 
     let currentHeaderName: string;
-    let currentHeaderData: string;
+    let currentHeaderData: string | undefined;
 
     let headerEnd: boolean = false;
     let headerContent: string = "";
 
     headerRows.forEach((headerRow: string) => {
-      const contentColoumn: RegExpMatchArray | undefined =
-        headerRow.match(/(\S+?): (.*)/) ?? undefined;
+      const [
+        fullMatch,
+        contentHeaderName,
+        contentHeaderData,
+      ]: RegExpMatchArray = headerRow.match(/(^\S*):\s*(.*)/) ?? [];
 
       if (!headerEnd) {
-        if (contentColoumn?.length === 3) {
-          currentHeaderName = contentColoumn[1].toLowerCase();
-          currentHeaderData = headers[currentHeaderName]!;
+        if (contentHeaderName) {
+          currentHeaderName = contentHeaderName.toLowerCase();
+          currentHeaderData = headers[currentHeaderName];
 
           // We can transform this into string[] later if needed
           if (!currentHeaderData) {
-            headers[currentHeaderName] = contentColoumn[2];
+            headers[currentHeaderName] = contentHeaderData ?? "";
           } else {
             headers[currentHeaderName] =
-              currentHeaderData + " " + contentColoumn[2].trimLeft();
+              currentHeaderData + " " + (contentHeaderData ?? "").trimLeft();
           }
         } else if (
-          !contentColoumn &&
+          !contentHeaderName &&
           (headerRow[0] === "\t" || headerRow[0] === " ")
         ) {
-          const lastHeaderLength = currentHeaderData?.length - 1;
+          currentHeaderData = headers[currentHeaderName];
+
+          const lastHeaderLength = currentHeaderData
+            ? currentHeaderData.length - 1
+            : 0;
 
           if (lastHeaderLength >= headerMaxLength) {
             headers[currentHeaderName] =
@@ -470,7 +477,7 @@ class EmailParser {
     if (returnContent) {
       headers.content = headerContent;
     }
-
+    console.log(headers);
     return headers;
   }
 
@@ -590,7 +597,7 @@ class EmailParser {
       .length;
     const bufferLength: number = content.length - encodedBytesCount * 2;
     const buffer: Buffer = Buffer.alloc(bufferLength);
-    
+
     let bufferPos: number = 0;
 
     let char: string, hexValue: string;

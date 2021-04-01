@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Container, Navbar, Row, Col, Button, Tab } from "react-bootstrap";
 import {
+  ImapHelper,
   ImapSocket,
   LocalStorage,
   SmtpSocket,
@@ -40,6 +41,7 @@ class Index extends React.Component<{}, IIndexState> {
    * @var {object} dependencies
    */
   protected dependencies: {
+    imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     smtpSocket: SmtpSocket;
     localStorage: LocalStorage;
@@ -50,11 +52,14 @@ class Index extends React.Component<{}, IIndexState> {
   constructor(props: {}) {
     super(props);
 
+    const emailParser: EmailParser = new EmailParser();
+    
     this.dependencies = {
       localStorage: new LocalStorage(),
+      emailParser: emailParser,
+      imapHelper: new ImapHelper({ emailParser }),
       imapSocket: new ImapSocket(),
       smtpSocket: new SmtpSocket(),
-      emailParser: new EmailParser(),
       stateManager: new StateManager(this),
     };
 

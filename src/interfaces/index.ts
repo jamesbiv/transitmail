@@ -13,6 +13,7 @@ export * from "./IImapResponseData";
 export * from "./IImapSession";
 export * from "./IImapSettings";
 export * from "./IMessageModalData"
+export * from "./IPreparedEmail";
 export * from "./ISettings";
 export * from "./ISettingsErrors";
 export * from "./ISmtpRequest";

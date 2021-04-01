@@ -1,11 +1,18 @@
 import React from "react";
 
-import { ImapSocket, LocalStorage, EmailParser, StateManager } from "classes";
+import {
+  ImapHelper,
+  ImapSocket,
+  LocalStorage,
+  EmailParser,
+  StateManager,
+} from "classes";
 
 import { Folder } from "../folder";
 
 interface IInboxProps {
   dependencies: {
+    imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
     emailParser: EmailParser;

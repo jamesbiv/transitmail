@@ -118,18 +118,16 @@ class View extends React.Component<IViewProps, IViewState> {
       return;
     }
 
-    const flagsResult: string = fetchFlagsResponse.data as string;
+    const flagsResult: string[][] = fetchFlagsResponse.data;
 
     const detailsRaw = flagsResult[0][2];
-    const details = detailsRaw.match(
-      /.*FETCH \(UID(.*)RFC822.SIZE (.*)\)/
-    );
+    const details = detailsRaw.match(/.*FETCH \(UID (.*) RFC822.SIZE (.*)\)/);
 
     if (details?.length === 3) {
-      this.progressBar.max = parseInt(details[1]);
+      this.progressBar.max = parseInt(details[2]);
 
       this.setState({
-        size: parseInt(details[1]),
+        size: parseInt(details[2]),
         flags: details[2],
         deleted: /\\Deleted/.test(details[2]),
         seen: /\\Seen/.test(details[2]),

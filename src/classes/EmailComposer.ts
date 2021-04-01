@@ -1,6 +1,10 @@
 import { EditorState, convertToRaw } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
-import { IComposeRecipient, IComposeAttachment } from "interfaces";
+import {
+  IComposeRecipient,
+  IComposeAttachment,
+  IPreparedEmail,
+} from "interfaces";
 
 class EmailComposer {
   prepareEmail(emailData: {
@@ -9,23 +13,14 @@ class EmailComposer {
     subject: string;
     recipients?: IComposeRecipient[];
     attachments?: IComposeAttachment[];
-  }) {
-    const preparedEmail = {
+  }): IPreparedEmail {
+    const preparedEmail: IPreparedEmail = {
       boundaryid: Math.random().toString(36).substring(5),
-      to: "",
-      cc: "",
-      bcc: "",
-      from: emailData.from,
-      subject: emailData.subject,
-      contentText: "",
-      contentHTML: "",
-      attachmentsEncoded: "",
-      payload: "",
     };
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
       if (recipient.type === "To") {
-        if (preparedEmail.to.length > 0) {
+        if (preparedEmail.to) {
           // nothing
         } else {
           if (recipient.value) {
@@ -34,14 +29,14 @@ class EmailComposer {
         }
       }
       if (recipient.type === "Cc") {
-        preparedEmail.cc.length > 0
+        preparedEmail.cc
           ? (preparedEmail.cc += ", " + recipient.value)
-          : (preparedEmail.cc += recipient.value);
+          : (preparedEmail.cc += recipient.value ?? "");
       }
       if (recipient.type === "Bcc") {
-        preparedEmail.bcc.length > 0
+        preparedEmail.bcc
           ? (preparedEmail.bcc += ", " + recipient.value)
-          : (preparedEmail.bcc += recipient.value);
+          : (preparedEmail.bcc += recipient.value ?? "");
       }
     });
 
@@ -55,26 +50,20 @@ class EmailComposer {
       emailData.editorState.getCurrentContent()
     );
 
-    //    if (emailData.attachments.length > 0) {
-    emailData.attachments?.forEach((attachment: IComposeAttachment) => {
-      const attachmentEncoded = btoa(attachment.data as string);
+    if (emailData.attachments) {
+      preparedEmail.attachmentsEncoded = "";
 
-      //'Content-ID: <f_ka2zirqy0>\r\n'+
-      //'X-Attachment-Id: f_ka2zirqy0\r\n'+
-      // Content-Disposition: attachment;\r\n\
-      // \tfilename="${attachment.filename}"\r\n\
-
-      preparedEmail.attachmentsEncoded += `\
+      emailData.attachments.forEach((attachment: IComposeAttachment) => {
+        const attachmentEncoded = btoa(attachment.data as string);
+        
+        preparedEmail.attachmentsEncoded += `\
 --transit--client--${preparedEmail.boundaryid}\r\n\
 Content-Type: ${attachment.mimeType}; name="${attachment.filename}"\r\n\
 Content-Disposition: attachment; filename="${attachment.filename}"\r\n\
 Content-Transfer-Encoding: base64\r\n\r\n\
 ${attachmentEncoded}\r\n\r\n`;
-    });
-    //    }
-
-    //'Content-Transfer-Encoding: quoted-printable\r\n'+
-    //'Content-Disposition: inline\r\n'+
+      });
+    }
 
     preparedEmail.payload = `\
 Subject: ${preparedEmail.subject}\r\n\

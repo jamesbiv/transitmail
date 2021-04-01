@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  ImapHelper,
   ImapSocket,
   EmailParser,
   LocalStorage,
@@ -26,6 +27,7 @@ import { FolderEmailEntry, FolderTableHeader } from ".";
 
 interface IFolderProps {
   dependencies: {
+    imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
     emailParser: EmailParser;
@@ -46,6 +48,11 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
    * @var {EmailParser} emailParser
    */
   protected emailParser: EmailParser;
+
+  /**
+   * @var {ImapHelper} imapHelper
+   */
+  protected imapHelper: ImapHelper;
 
   /**
    * @var {ImapSocket} imapSocket
@@ -75,6 +82,7 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   constructor(props: IFolderProps) {
     super(props);
 
+    this.imapHelper = props.dependencies.imapHelper;
     this.imapSocket = props.dependencies.imapSocket;
     this.localStorage = props.dependencies.localStorage;
     this.emailParser = props.dependencies.emailParser;
@@ -82,11 +90,14 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     this.infiniteScroll = new InfiniteScroll(
       "container-main",
-      (minIndex: number, maxIndex: number) =>
-        this.setState({
-          emails: this.emails?.slice(minIndex, maxIndex),
-          displayTableHeader: minIndex === 0,
-        })
+      (minIndex: number, maxIndex: number) => {
+        if (this.emails && maxIndex <= this.emails.length) {
+          this.setState({
+            emails: this.emails?.slice(minIndex, maxIndex),
+            displayTableHeader: minIndex === 0,
+          });
+        }
+      }
     );
 
     this.state = {
@@ -159,59 +170,20 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       return undefined;
     }
 
-    //Can use ENVELOPE instead of FETCH here aswell
+    // Can use ENVELOPE instead of FETCH here aswell
     const fetchResponse = await this.imapSocket.imapRequest(
       `UID FETCH ${
         lastUid ?? 1
       }:* (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])`
     );
 
-    if (selectResponse.status !== EImapResponseStatus.OK) {
+    if (fetchResponse.status !== EImapResponseStatus.OK) {
       return undefined;
     }
 
-    const emails: IFolderEmail[] = [];
-
-    if (lastUid) {
-      (fetchResponse.data as string[]).splice(0, 2);
-    }
-
-    for (let i = 1; i < fetchResponse.data.length - 1; i = i + 2) {
-      const emailFlags: string[] | undefined =
-        fetchResponse.data[i - 1][2].match(
-          /FETCH \(UID (.*) FLAGS \((.*)\) BODY\[HEADER\.FIELDS \(DATE FROM SUBJECT\)\] \{(.*)\}/
-        ) ?? undefined;
-
-      const emailDate: string | undefined =
-        fetchResponse.data[i][0].match(/.*Date: (.*).*/)?.[1] ?? undefined;
-
-      let emailSubject: string | undefined =
-        fetchResponse.data[i][0].match(/.*Subject: (.*).*/)?.[1] ?? undefined;
-
-      let emailFrom: string | undefined =
-        fetchResponse.data[i][0].match(/.*From: (.*).*/)?.[1] ?? undefined;
-
-      if (emailSubject && emailSubject.indexOf("=?") > -1) {
-        emailSubject = this.emailParser.parseMimeWords(emailSubject);
-      }
-
-      if (emailFrom && emailFrom?.indexOf("=?") > -1) {
-        emailFrom = this.emailParser.parseMimeWords(emailFrom);
-      }
-
-      if (emailFlags && emailDate && emailFrom) {
-        emails.push({
-          id: Number(emailFlags[1]),
-          date: emailDate,
-          epoch: new Date(emailDate).getTime(),
-          from: emailFrom,
-          subject: emailSubject ?? "(no subject)",
-          uid: Number(emailFlags[1]),
-          ref: emailFlags[3],
-          flags: emailFlags[2],
-        });
-      }
-    }
+    const emails = this.imapHelper.formatFetchFolderEmailsResponse(
+      fetchResponse.data
+    );
 
     emails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
 
@@ -292,7 +264,7 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
               <Col xs={12} sm={6} md={7} lg={9}>
                 <h4 className="p-0 m-0 text-nowrap text-truncate">
                   <FontAwesomeIcon icon={faInbox} />{" "}
-                  {this.stateManager.getFolderId()}
+                  {(this.stateManager.getFolderId() ?? "").split("/").pop()}
                   <Button
                     className="ml-2 float-right float-sm-none"
                     onClick={this.checkEmail}

@@ -160,7 +160,7 @@ class SmtpSocket {
       }
     );
 
-    return { data: (await responsePayload).response, status };
+    return { data: (await responsePayload).response ?? [], status };
   }
 
   /**
@@ -240,6 +240,7 @@ class SmtpSocket {
     const request: ISmtpResponseData = this.session.request[index];
 
     if (request) {
+      console.log(request);
       // We may want to switch this to an array of passable codes instead
       Number(responseCode) === request.code
         ? request.success && request.success(request)

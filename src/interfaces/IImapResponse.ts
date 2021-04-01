@@ -1,6 +1,6 @@
 export interface IImapResponse {
   status?: EImapResponseStatus;
-  data: any;
+  data: string[][];
 }
 
 export enum EImapResponseStatus {

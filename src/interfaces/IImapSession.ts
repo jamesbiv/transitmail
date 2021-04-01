@@ -6,7 +6,7 @@ export interface IImapSession {
   socket?: WebSocket;
   binaryType: BinaryType;
   request: IImapRequest[];
-  responseQueue: any;
+  responseQueue: string[][];
   responseContent: string;
   streamCumlative: number;
   stream: number;

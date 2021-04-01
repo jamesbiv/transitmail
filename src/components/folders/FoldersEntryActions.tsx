@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { Alert, Form, Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,13 +11,20 @@ import {
   faSuitcase,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { IFoldersEntry, IFoldersSubEntry } from "interfaces";
+import {
+  IFoldersEntry,
+  IFoldersSubEntry,
+  EImapResponseStatus,
+} from "interfaces";
+import { ImapSocket } from "classes";
 
 interface IFoldersEntryActionsProps {
   folderId?: string;
   folders?: IFoldersEntry[];
   actionType: EFolderEntryActionType;
   showActionModal: boolean;
+  imapSocket: ImapSocket;
+  getFolders: () => Promise<void>;
   onHide: () => void;
 }
 
@@ -44,6 +51,8 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
   folders,
   actionType,
   showActionModal,
+  imapSocket,
+  getFolders,
   onHide,
 }) => {
   const [submit, changeSubmit] = useState(false);
@@ -76,6 +85,11 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
     },
   };
 
+  const successfulSubmit: () => void = (): void => {
+    getFolders();
+    onHide();
+  };
+
   return (
     <Modal
       show={showActionModal}
@@ -98,7 +112,9 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
           folderId,
           folders,
           submit,
+          imapSocket,
           changeSubmit,
+          successfulSubmit,
         })}
       </Modal.Body>
       <Modal.Footer>
@@ -126,6 +142,8 @@ interface IFoldersEntryActionProps {
   folders?: IFoldersEntry[];
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  imapSocket: ImapSocket;
+  successfulSubmit: () => void;
 }
 
 export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
@@ -133,7 +151,11 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   folders,
   submit,
   changeSubmit,
+  imapSocket,
+  successfulSubmit,
 }) => {
+  const [folderName, setFolderName] = useState("");
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -141,8 +163,16 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(folderId);
+  const submitAction = async () => {
+    const createResponse = await imapSocket.imapRequest(
+      `CREATE "${folderName}"`
+    );
+
+    if (createResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    successfulSubmit();
   };
 
   return (
@@ -156,7 +186,14 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
             className="text-danger mb-1"
           />
         </Form.Label>
-        <Form.Control type="text" placeholder="Enter new folder name" />
+        <Form.Control
+          type="text"
+          placeholder="Enter new folder name"
+          defaultValue={folderName}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setFolderName(event.target.value);
+          }}
+        />
       </Form.Group>
       <Form.Group controlId="formDisplayName">
         <Form.Label>
@@ -188,7 +225,11 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   folders,
   submit,
   changeSubmit,
+  imapSocket,
+  successfulSubmit,
 }) => {
+  const [folderName, setFolderName] = useState("");
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -198,6 +239,8 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
 
   const submitAction = () => {
     alert(folderId);
+
+    successfulSubmit();
   };
 
   return (
@@ -230,7 +273,11 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   folders,
   submit,
   changeSubmit,
+  imapSocket,
+  successfulSubmit,
 }) => {
+  const [destinationFolder, setDestinationFolder] = useState("");
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -238,8 +285,20 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(folderId);
+  const submitAction = async () => {
+    const destinationFolderPath: string | undefined = destinationFolder
+      ? `${folderId}/${destinationFolder}`
+      : folderId;
+
+    const moveResponse = await imapSocket.imapRequest(
+      `RENAME "${folderId}" "${destinationFolderPath}"`
+    );
+
+    if (moveResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    successfulSubmit();
   };
 
   return (
@@ -269,10 +328,13 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
 
 export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   folderId,
-  folders,
   submit,
   changeSubmit,
+  imapSocket,
+  successfulSubmit,
 }) => {
+  const [newFolderName, setNewFolderName] = useState("");
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -280,8 +342,16 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(folderId);
+  const submitAction = async () => {
+    const renameResponse = await imapSocket.imapRequest(
+      `RENAME "${folderId}" "${newFolderName}"`
+    );
+
+    if (renameResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    successfulSubmit();
   };
 
   return (
@@ -294,17 +364,27 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
           className="text-danger mb-1"
         />
       </Form.Label>
-      <Form.Control type="text" placeholder="Enter new folder name" />
+      <Form.Control
+        type="text"
+        placeholder="Enter new folder name"
+        defaultValue={newFolderName}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          setNewFolderName(event.target.value);
+        }}
+      />
     </Form.Group>
   );
 };
 
 export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   folderId,
-  folders,
   submit,
   changeSubmit,
+  imapSocket,
+  successfulSubmit,
 }) => {
+  const [folderName, setFolderName] = useState("");
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -312,8 +392,14 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(folderId);
+  const submitAction = async () => {
+    const deleteResponse = await imapSocket.imapRequest(`DELETE "${folderId}"`);
+
+    if (deleteResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    successfulSubmit();
   };
 
   return (

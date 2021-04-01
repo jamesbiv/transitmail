@@ -107,7 +107,10 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             <ListGroup.Item
               key={folderSubEntry.id}
               onClick={() => {
-                updateActiveKeyFolderId("folder", folderSubEntry.ref);
+                updateActiveKeyFolderId(
+                  "folder",
+                  `${folderEntry.ref}/${folderSubEntry.ref}`
+                );
               }}
               className="pl-sm-5 pointer"
             >
@@ -125,7 +128,10 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                   />
                   <Button
                     onClick={() => {
-                      updateActiveKeyFolderId("folder", folderSubEntry.ref);
+                      updateActiveKeyFolderId(
+                        "folder",
+                        `${folderEntry.ref}/${folderSubEntry.ref}`
+                      );
                     }}
                     size="sm"
                     variant="primary"

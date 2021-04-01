@@ -229,9 +229,9 @@ class ImapSocket {
       console.log("[IMAP] Response: " + response);
     }
 
-    let ignoreAsterisk: boolean = false;
-    let stripBracketAll: boolean = false;
-    let stripBracketLast: boolean = false;
+    const ignoreAsterisk: boolean = false;
+    const stripBracketAll: boolean = false;
+    const stripBracketLast: boolean = false;
 
     responseRows.forEach((responseRow: string, responseKey: number) => {
       const responseCols: string[] = responseRow.split(" ");
@@ -273,14 +273,14 @@ class ImapSocket {
 
       /* We need to keep appending the data if the response is something like an email
        * Further whitelisting can be done here in the future if need. */
-      if (responseKey === 0 && responseCols[0] === "FETCH") {
-        if (responseCols[3] === "RFC822") {
-          stripBracketAll = true;
-          ignoreAsterisk = true;
-        } else if (responseCols[3] === "FLAGS") {
-          stripBracketLast = true;
-        }
-      }
+      // if (responseKey === 0 && responseCols[0] === "FETCH") {
+      // if (responseCols[3] === "RFC822") {
+      //  stripBracketAll = true;
+      //  ignoreAsterisk = false;
+      // } else if (responseCols[3] === "FLAGS") {
+      //  stripBracketLast = true;
+      // }
+      // }
 
       /* Proess final command */
       if (

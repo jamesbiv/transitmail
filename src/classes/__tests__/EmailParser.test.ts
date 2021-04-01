@@ -1,1 +1,0 @@
-import { IComponent } from "interfaces";

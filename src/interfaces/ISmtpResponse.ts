@@ -1,6 +1,6 @@
 export interface ISmtpResponse {
   status?: ESmtpResponseStatus;
-  data: any;
+  data: string[][];
 }
 
 export enum ESmtpResponseStatus {

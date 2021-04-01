@@ -1,5 +1,5 @@
 import React from "react";
-import { ImapSocket, LocalStorage, StateManager } from "classes";
+import { ImapHelper, ImapSocket, LocalStorage, StateManager } from "classes";
 import { IFoldersEntry } from "interfaces";
 import { FoldersEntry, FoldersEntryActions, EFolderEntryActionType } from ".";
 import { Card, Col, Accordion, Spinner, Button, Row } from "react-bootstrap";
@@ -12,6 +12,7 @@ import {
 
 interface IFoldersProps {
   dependencies: {
+    imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
     stateManager: StateManager;
@@ -33,6 +34,11 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
   protected imapSocket: ImapSocket;
 
   /**
+   * @var {ImapHelper} imapHelper
+   */
+  protected imapHelper: ImapHelper;
+
+  /**
    * @var {LocalStorage} localStorage
    */
   protected localStorage: LocalStorage;
@@ -46,6 +52,7 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
     super(props);
 
     this.imapSocket = props.dependencies.imapSocket;
+    this.imapHelper = props.dependencies.imapHelper;
     this.localStorage = props.dependencies.localStorage;
     this.stateManager = props.dependencies.stateManager;
 
@@ -54,6 +61,8 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
       actionType: EFolderEntryActionType.ADD,
       showActionModal: false,
     };
+
+    this.getFolders = this.getFolders.bind(this);
   }
 
   componentDidMount() {
@@ -64,50 +73,17 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
     this.getFolders();
   }
 
-  async getFolders() {
+  async getFolders(): Promise<void> {
     const response = await this.imapSocket.imapRequest(`LIST "" "*"`);
-    const folderData: string[][] = response.data as string[][];
 
-    const rawFolders: string[] = [];
-    const folders: IFoldersEntry[] = [];
+    const folders: IFoldersEntry[] = this.imapHelper.formatListFoldersResponse(
+      response.data
+    );
 
-    folderData.forEach((folderDataRow: string[]) => {
-      if (folderDataRow[0] === "*") {
-        const rawFolder = folderDataRow[2].match(/\((.*)\) "(.*)" (.*)/);
-
-        if (rawFolder && rawFolder.length === 4) {
-          rawFolders.push(rawFolder[3]);
-        }
-      }
-    });
-
-    let id = 0;
-    [...rawFolders].sort().forEach((rawFolderRow) => {
-      const slash = rawFolderRow.indexOf("/");
-
-      if (slash > 0) {
-        const parent = rawFolderRow.slice(0, slash);
-        const name = rawFolderRow.slice(slash + 1, rawFolderRow.length);
-
-        for (let i = 0; i < folders.length; i++) {
-          if (folders[i].name === parent) {
-            folders[i].folders.push({ id: id++, name: name, ref: name });
-          }
-        }
-      } else {
-        folders.push({
-          id: id++,
-          name: rawFolderRow,
-          ref: rawFolderRow,
-          folders: [],
-        });
-      }
-    });
-
-    this.setState({ folders: folders });
+    this.setState({ folders });
   }
 
-  updateFolders() {
+  updateFolders(): void {
     this.setState({ folders: [] });
     this.getFolders();
   }
@@ -194,6 +170,8 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
           folders={this.state.folders}
           actionType={this.state.actionType}
           showActionModal={this.state.showActionModal}
+          imapSocket={this.imapSocket}
+          getFolders={this.getFolders}
           onHide={() => this.setState({ showActionModal: false })}
         />
       </React.Fragment>
