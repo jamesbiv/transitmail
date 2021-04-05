@@ -6,17 +6,26 @@ import {
   IPreparedEmail,
 } from "interfaces";
 
-class EmailComposer {
-  prepareEmail(emailData: {
-    editorState: EditorState;
-    from: string;
-    subject: string;
-    recipients?: IComposeRecipient[];
-    attachments?: IComposeAttachment[];
-  }): IPreparedEmail {
+interface IEmailData {
+  editorState: EditorState;
+  from: string;
+  subject?: string;
+  recipients?: IComposeRecipient[];
+  attachments?: IComposeAttachment[];
+}
+
+export class EmailComposer {
+  /**
+   * prepareEmail
+   * @param {IEmailData} emailData
+   * @returns IPreparedEmail
+   */
+  public prepareEmail(emailData: IEmailData): IPreparedEmail {
     const preparedEmail: IPreparedEmail = {
       boundaryid: Math.random().toString(36).substring(5),
     };
+
+    preparedEmail.from = emailData.from;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
       if (recipient.type === "To") {
@@ -31,14 +40,16 @@ class EmailComposer {
       if (recipient.type === "Cc") {
         preparedEmail.cc
           ? (preparedEmail.cc += ", " + recipient.value)
-          : (preparedEmail.cc += recipient.value ?? "");
+          : (preparedEmail.cc = recipient.value ?? "");
       }
       if (recipient.type === "Bcc") {
         preparedEmail.bcc
           ? (preparedEmail.bcc += ", " + recipient.value)
-          : (preparedEmail.bcc += recipient.value ?? "");
+          : (preparedEmail.bcc = recipient.value ?? "");
       }
     });
+
+    preparedEmail.contentText = "";
 
     [...convertToRaw(emailData.editorState.getCurrentContent()).blocks].forEach(
       (contentRow) => {
@@ -55,7 +66,7 @@ class EmailComposer {
 
       emailData.attachments.forEach((attachment: IComposeAttachment) => {
         const attachmentEncoded = btoa(attachment.data as string);
-        
+
         preparedEmail.attachmentsEncoded += `\
 --transit--client--${preparedEmail.boundaryid}\r\n\
 Content-Type: ${attachment.mimeType}; name="${attachment.filename}"\r\n\
@@ -66,14 +77,16 @@ ${attachmentEncoded}\r\n\r\n`;
     }
 
     preparedEmail.payload = `\
-Subject: ${preparedEmail.subject}\r\n\
+Subject: ${preparedEmail.subject ?? "(no subject)"}\r\n\
 To: ${preparedEmail.to}\r\n\
-Cc: ${preparedEmail.cc}\r\n\
-Bcc: ${preparedEmail.bcc}\r\n\
+Cc: ${preparedEmail.cc ?? ""}\r\n\
+Bcc: ${preparedEmail.bcc ?? ""}\r\n\
 From: ${preparedEmail.from}\r\n\
 MIME-Version: 1.0\r\n\
 X-Mailer: Transit alpha0.0.1\r\n\
-Content-Type: multipart/alternative; boundary="transit--client--${preparedEmail.boundaryid}"\r\n\r\n\
+Content-Type: multipart/alternative; boundary="transit--client--${
+      preparedEmail.boundaryid
+    }"\r\n\r\n\
 --transit--client--${preparedEmail.boundaryid}\r\n\
 Content-Type: text/plain; charset="utf-8"\r\n\r\n\
 ${preparedEmail.contentText}\r\n\r\n\
@@ -86,5 +99,3 @@ ${preparedEmail.attachmentsEncoded}\
     return preparedEmail;
   }
 }
-
-export default EmailComposer;

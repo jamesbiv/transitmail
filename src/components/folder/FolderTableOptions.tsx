@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Button } from "react-bootstrap";
+import { Row, Col, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCopy,
@@ -8,10 +8,11 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 
-export const FolderButtons: React.FC<{}> = () => {
+export const FolderTableOptions: React.FC<{}> = () => {
   return (
-    <div className="folder-sticky-top d-block d-sm-none">
-      <Container fluid className="pt-2 pb-2 bg-white border-bottom">
+    <Row className="border-bottom pt-2 pb-2 folder-sticky-top bg-white">
+      <Col className="pl-3 pr-0">
+        <span><em>Selection options</em></span>
         <Button
           onClick={undefined}
           size="sm"
@@ -37,7 +38,7 @@ export const FolderButtons: React.FC<{}> = () => {
           type="button"
           className="ml-2"
         >
-          <FontAwesomeIcon icon={faFlag} />
+          <FontAwesomeIcon icon={faFlag} /> Flag
         </Button>
         <Button
           onClick={undefined}
@@ -46,9 +47,9 @@ export const FolderButtons: React.FC<{}> = () => {
           type="button"
           className="ml-2"
         >
-          <FontAwesomeIcon icon={faTrash} />
+          <FontAwesomeIcon icon={faTrash} /> Delete
         </Button>
-      </Container>
-    </div>
+      </Col>
+    </Row>
   );
 };

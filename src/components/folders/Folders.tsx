@@ -27,7 +27,7 @@ interface IFoldersState {
   showActionModal: boolean;
 }
 
-class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
+export class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
   /**
    * @var {ImapSocket} imapSocket
    */
@@ -74,10 +74,10 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
   }
 
   async getFolders(): Promise<void> {
-    const response = await this.imapSocket.imapRequest(`LIST "" "*"`);
+    const listResponse = await this.imapSocket.imapRequest(`LIST "" "*"`);
 
     const folders: IFoldersEntry[] = this.imapHelper.formatListFoldersResponse(
-      response.data
+      listResponse.data
     );
 
     this.setState({ folders });
@@ -178,5 +178,3 @@ class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
     );
   }
 }
-
-export default Folders;

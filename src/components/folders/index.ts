@@ -1,4 +1,4 @@
-export { default as Folders } from "./Folders";
+export { Folders } from "./Folders";
 export { FoldersEntry } from "./FoldersEntry";
 export {
   FoldersEntryActions,

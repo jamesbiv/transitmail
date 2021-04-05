@@ -147,14 +147,14 @@ interface IFoldersEntryActionProps {
 }
 
 export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
-  folderId,
   folders,
   submit,
   changeSubmit,
   imapSocket,
   successfulSubmit,
 }) => {
-  const [folderName, setFolderName] = useState("");
+  const [folderName, setFolderName] = useState<string | undefined>();
+  const [subFolder, setSubFolder] = useState<string | undefined>();
 
   useEffect(() => {
     if (submit) {
@@ -164,8 +164,12 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = async () => {
+    const folderPath: string | undefined = subFolder
+      ? `${subFolder}/${folderName}`
+      : folderName;
+
     const createResponse = await imapSocket.imapRequest(
-      `CREATE "${folderName}"`
+      `CREATE "${folderPath}"`
     );
 
     if (createResponse.status !== EImapResponseStatus.OK) {
@@ -204,14 +208,16 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
             className="text-danger mb-1"
           />
         </Form.Label>
-        <Form.Control as="select">
+        <Form.Control
+          as="select"
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setSubFolder(event.target.value);
+          }}
+        >
           <option>(root)</option>
           {folders?.map((folder: IFoldersEntry) => (
             <React.Fragment key={folder.id}>
               <option key={folder.id}>{folder.name}</option>
-              {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-                <option key={subFolder.id}>{subFolder.name}</option>
-              ))}
             </React.Fragment>
           ))}
         </Form.Control>
@@ -228,7 +234,10 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   imapSocket,
   successfulSubmit,
 }) => {
-  const [folderName, setFolderName] = useState("");
+  const [newFolderName, setNewFolderName] = useState<string | undefined>();
+  const [destinationSubFolder, setDestinationSubFolder] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
     if (submit) {
@@ -237,34 +246,80 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(folderId);
+  const submitAction = async () => {
+    const newFolderPath: string | undefined = destinationSubFolder
+      ? `${destinationSubFolder}/${newFolderName}`
+      : newFolderName;
+
+    const createResponse = await imapSocket.imapRequest(
+      `CREATE "${newFolderPath}"`
+    );
+
+    if (createResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const selectResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
+
+    if (selectResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const copyResponse = await imapSocket.imapRequest(
+      `COPY 1:* "${newFolderName}"`
+    );
+
+    if (copyResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
 
     successfulSubmit();
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
-        Copy folder to{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
+    <React.Fragment>
+      <Form.Group controlId="formDisplayName">
+        <Form.Label>
+          Copy folder as{" "}
+          <FontAwesomeIcon
+            icon={faAsterisk}
+            size="xs"
+            className="text-danger mb-1"
+          />
+        </Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Enter new folder name"
+          defaultValue={newFolderName}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setNewFolderName(event.target.value);
+          }}
         />
-      </Form.Label>
-      <Form.Control as="select">
-        <option>(root)</option>
-        {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
-            <option key={folder.id}>{folder.name}</option>
-            {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option key={subFolder.id}>{subFolder.name}</option>
-            ))}
-          </React.Fragment>
-        ))}
-      </Form.Control>
-    </Form.Group>
+      </Form.Group>
+      <Form.Group controlId="formDisplayName">
+        <Form.Label>
+          Copy folder to{" "}
+          <FontAwesomeIcon
+            icon={faAsterisk}
+            size="xs"
+            className="text-danger mb-1"
+          />
+        </Form.Label>
+        <Form.Control
+          as="select"
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            setDestinationSubFolder(event.target.value);
+          }}
+        >
+          <option>(root)</option>
+          {folders?.map((folder: IFoldersEntry) => (
+            <React.Fragment key={folder.id}>
+              <option key={folder.id}>{folder.name}</option>
+            </React.Fragment>
+          ))}
+        </Form.Control>
+      </Form.Group>
+    </React.Fragment>
   );
 };
 
@@ -276,7 +331,9 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   imapSocket,
   successfulSubmit,
 }) => {
-  const [destinationFolder, setDestinationFolder] = useState("");
+  const [destinationFolder, setDestinationFolder] = useState<
+    string | undefined
+  >();
 
   useEffect(() => {
     if (submit) {
@@ -287,7 +344,7 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
 
   const submitAction = async () => {
     const destinationFolderPath: string | undefined = destinationFolder
-      ? `${folderId}/${destinationFolder}`
+      ? `${destinationFolder}/${folderId}`
       : folderId;
 
     const moveResponse = await imapSocket.imapRequest(
@@ -311,14 +368,16 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
           className="text-danger mb-1"
         />
       </Form.Label>
-      <Form.Control as="select">
+      <Form.Control
+        as="select"
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          setDestinationFolder(event.target.value);
+        }}
+      >
         <option>(root)</option>
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
-            {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option key={subFolder.id}>{subFolder.name}</option>
-            ))}
           </React.Fragment>
         ))}
       </Form.Control>
@@ -333,7 +392,7 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   imapSocket,
   successfulSubmit,
 }) => {
-  const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderName, setNewFolderName] = useState<string | undefined>();
 
   useEffect(() => {
     if (submit) {
@@ -383,8 +442,6 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   imapSocket,
   successfulSubmit,
 }) => {
-  const [folderName, setFolderName] = useState("");
-
   useEffect(() => {
     if (submit) {
       submitAction();

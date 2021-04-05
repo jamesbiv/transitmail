@@ -9,14 +9,14 @@ body {
 }
 
 #container-main {
-  margin-top: 56px;
+  margin-top: 55px;
   overflow: auto;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-}
+}:focus {outline:0;}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
@@ -33,7 +33,7 @@ pre {
 
 .folder-sticky-top {
   position: sticky;
-  top: 56px;
+  top: 0px;
   z-index: 1020;
 }
 
@@ -73,6 +73,7 @@ pre {
   min-height: 300px;
   overflow: auto;
 }
+
 .inner-shaddow {
   box-shadow: inset 7px 7px 9px -7px rgba(0, 0, 0, 0.4);
 }

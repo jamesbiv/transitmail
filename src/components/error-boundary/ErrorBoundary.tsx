@@ -1,7 +1,5 @@
 import React, { ErrorInfo } from "react";
-
 import { StateManager } from "classes";
-
 import Spinner from "react-bootstrap/Spinner";
 
 interface IErrorBoundaryProps {
@@ -14,7 +12,7 @@ interface IErrorBoundaryState {
   hasError: boolean;
 }
 
-class ErrorBoundary extends React.PureComponent<
+export class ErrorBoundary extends React.PureComponent<
   IErrorBoundaryProps,
   IErrorBoundaryState
 > {
@@ -73,5 +71,3 @@ class ErrorBoundary extends React.PureComponent<
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;

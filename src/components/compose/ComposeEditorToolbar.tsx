@@ -85,6 +85,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleInlineStyle("ITALIC");
           }}
           className={checkInlineStyle("ITALIC") ? "active" : ""}
@@ -96,6 +97,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleInlineStyle("UNDERLINE");
           }}
           className={checkInlineStyle("UNDERLINE") ? "active" : ""}
@@ -109,6 +111,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleBlockType("text-left");
           }}
           className={checkBlockType("text-left") ? "active" : ""}
@@ -120,6 +123,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleBlockType("text-center");
           }}
           className={checkBlockType("text-center") ? "active" : ""}
@@ -131,6 +135,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleBlockType("text-right");
           }}
           className={checkBlockType("text-right") ? "active" : ""}
@@ -142,6 +147,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleBlockType("text-indent");
           }}
           className={checkBlockType("text-indent") ? "active" : ""}
@@ -155,6 +161,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleBlockType("unordered-list-item");
           }}
           className={checkBlockType("unordered-list-item") ? "active" : ""}
@@ -166,6 +173,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleBlockType("ordered-list-item");
           }}
           className={checkBlockType("ordered-list-item") ? "active" : ""}
@@ -179,6 +187,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             (document.getElementById("attachmentInput") as HTMLElement).click();
           }}
         >
@@ -190,6 +199,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleLinkOverlay(showLinkOverlay ? false : true);
           }}
         >
@@ -209,6 +219,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             undoClick();
           }}
         >
@@ -219,6 +230,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             redoClick();
           }}
         >

@@ -32,6 +32,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
 
       reader.onload = () => {
         count++;
+        
         attachments.push({
           id: attachments.length + count,
           filename: file.name,
@@ -80,40 +81,38 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
           {attachments.map((attachment: IComposeAttachment) => (
             <div
               key={attachment.id}
-              className="attachments float-left border rounded d-inline font-small bg-light pl-2 pr-2 pt-1 pb-1 mr-2 mb-2 text-truncate"
+              className="attachments float-left border rounded d-inline small bg-light pl-2 pr-2 pt-1 pb-1 mr-2 mb-2 text-truncate"
             >
-              <small>
-                <Button
-                  className="float-right p-0 ml-2"
-                  variant="light"
-                  size="sm"
-                  onClick={() => removeAttachment(attachment.id)}
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </Button>
-                <FontAwesomeIcon
-                  className="mr-1"
-                  icon={(() => {
-                    switch (attachment.mimeType) {
-                      case "image/jpeg":
-                        return faFileImage;
+              <Button
+                className="float-right p-0 ml-2"
+                variant="light"
+                size="sm"
+                onClick={() => removeAttachment(attachment.id)}
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </Button>
+              <FontAwesomeIcon
+                className="mr-1"
+                icon={(() => {
+                  switch (attachment.mimeType) {
+                    case "image/jpeg":
+                      return faFileImage;
 
-                      case "application/pdf":
-                        return faFilePdf;
+                    case "application/pdf":
+                      return faFilePdf;
 
-                      case "application/msword":
-                        return faFileWord;
+                    case "application/msword":
+                      return faFileWord;
 
-                      case "application/vnd.ms-excel":
-                        return faFileExcel;
+                    case "application/vnd.ms-excel":
+                      return faFileExcel;
 
-                      default:
-                        return faFile;
-                    }
-                  })()}
-                />{" "}
-                {attachment.filename}
-              </small>
+                    default:
+                      return faFile;
+                  }
+                })()}
+              />{" "}
+              {attachment.filename}
             </div>
           ))}
         </div>

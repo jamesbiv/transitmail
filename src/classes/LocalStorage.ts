@@ -24,7 +24,7 @@ interface ISettings {
   [key: string]: any;
 }
 
-class LocalStorage {
+export class LocalStorage {
   /**
    * @var {Pick<ISettings, TSettingsKeys>} settings
    */
@@ -144,5 +144,3 @@ class LocalStorage {
     return this.settings;
   }
 }
-
-export default LocalStorage;

@@ -9,12 +9,14 @@ import { IFolderEmail } from "interfaces";
 
 interface IFolderTableHeaderProps {
   emails: IFolderEmail[];
-  setEmails: (emails: IFolderEmail[]) => void;
+  toggleSelection: (uid: number) => void;
+  updateEmails: (emails: IFolderEmail[]) => void;
 }
 
 export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
   emails,
-  setEmails,
+  toggleSelection,
+  updateEmails,
 }) => {
   const sortFolder: (field: string, direction?: string) => void = (
     field,
@@ -29,9 +31,8 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
         a[field] < b[field] ? 1 : -1
       );
     }
-    //state.emails.sort((a, b) => { parseFloat(a.date) - parseFloat(b.date)});
 
-    setEmails(emails);
+    updateEmails(emails);
   };
 
   return (
@@ -41,8 +42,10 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
           type="checkbox"
           id=""
           label=""
-          onClick={(event: React.SyntheticEvent) => {
+          onChange={(event: React.SyntheticEvent) => {
             event.stopPropagation();
+
+            toggleSelection(-1);
           }}
         />
       </Col>

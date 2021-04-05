@@ -8,7 +8,7 @@ import {
 
 type TSmtpCallback = (event: ISmtpResponseData | Event) => void;
 
-class SmtpSocket {
+export class SmtpSocket {
   /**
    * $var {ISmtpSession} session
    */
@@ -98,8 +98,10 @@ class SmtpSocket {
       this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
         if (message.data instanceof Blob) {
           const reader: FileReader = new FileReader();
+
           reader.onload = () => {
             const result: string = reader.result as string;
+
             this.smtpResponseHandler(result);
           };
 
@@ -240,7 +242,6 @@ class SmtpSocket {
     const request: ISmtpResponseData = this.session.request[index];
 
     if (request) {
-      console.log(request);
       // We may want to switch this to an array of passable codes instead
       Number(responseCode) === request.code
         ? request.success && request.success(request)
@@ -312,5 +313,3 @@ class SmtpSocket {
     return this.session.socket.bufferedAmount;
   }
 }
-
-export default SmtpSocket;

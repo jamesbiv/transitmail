@@ -1,7 +1,5 @@
 import React from "react";
-
-import Button from "react-bootstrap/Button";
-
+import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCopy,
@@ -15,9 +13,7 @@ export const FolderHeader: React.FC<{}> = () => {
 
   return (
     <div
-      className={`d-none ${
-        selectedStub.length > 0 ? "d-sm-inline-block" : ""
-      }`}
+      className={`d-none ${selectedStub.length > 0 ? "d-sm-inline-block" : ""}`}
     >
       <Button
         onClick={undefined}

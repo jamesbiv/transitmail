@@ -51,7 +51,7 @@ interface IComposeProps {
 interface IComposeState {
   editorState: EditorState;
   from: string;
-  subject: string;
+  subject?: string;
   recipients: IComposeRecipient[];
   attachments: IComposeAttachment[];
   content: string;
@@ -59,7 +59,7 @@ interface IComposeState {
   messageType?: string;
 }
 
-class Compose extends React.Component<IComposeProps, IComposeState> {
+export class Compose extends React.Component<IComposeProps, IComposeState> {
   /**
    * @var {EmailParser} emailParser
    */
@@ -106,13 +106,10 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
           },
         ])
       ),
-      from: "",
-      subject: "",
+      from: this.localStorage.getSetting("email"),
       recipients: [{ id: 1, type: "To", value: "" }],
       attachments: [],
       content: "",
-      message: "",
-      messageType: "",
     };
   }
 
@@ -154,11 +151,12 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
 
     if (composePresets) {
       this.setState({
-        recipients: [{ id: 1, type: "To", value: composePresets.from }],
-        subject: "RE: " + composePresets.subject ?? "(no subject)",
         editorState: EditorState.createWithContent(
           stateFromHTML(composePresets.email)
         ),
+        recipients: [{ id: 1, type: "To", value: composePresets.from }],
+        subject: "RE: " + composePresets.subject ?? "(no subject)",
+        attachments: composePresets.attachments ?? [],
       });
     }
   }
@@ -166,11 +164,9 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
   async sendEmail(): Promise<void> {
     this.smtpSocket.smtpConnect();
 
-    const fromEmailAddress: string = this.localStorage.getSetting("email");
-
     const emailData: IPreparedEmail = this.emailComposer.prepareEmail({
       editorState: this.state.editorState,
-      from: fromEmailAddress,
+      from: this.state.from,
       subject: this.state.subject,
       recipients: this.state.recipients,
       attachments: this.state.attachments,
@@ -332,7 +328,6 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
               />{" "}
               {this.state.message}
             </Alert>
-
             <ComposeRecipientDetails
               updateRecipients={this.updateRecipients}
               updateSubject={this.updateSubject}
@@ -340,13 +335,11 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
               subject={this.state.subject}
             />
           </Card.Body>
-
           <div className="border-top border-gray">
             <ComposeEditorToolbar
               updateEditorState={this.updateEditorState}
               editorState={this.state.editorState}
             />
-
             <div className="mt-2 ml-2 mr-2 mb-2 p-3 border rounded inner-shaddow">
               <Editor
                 customStyleMap={{
@@ -361,7 +354,6 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
                 onChange={this.updateEditorState}
               />
             </div>
-
             <ComposeAttachments
               updateAttachments={this.updateAttachments}
               attachments={this.state.attachments}
@@ -384,5 +376,3 @@ class Compose extends React.Component<IComposeProps, IComposeState> {
     );
   }
 }
-
-export default Compose;

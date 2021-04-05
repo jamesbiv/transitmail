@@ -123,7 +123,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                 </Col>
                 <Col xs={6} className="text-right text-nowrap pr-1">
                   <FoldersEntryOptions
-                    folderId={folderEntry.ref}
+                    folderId={`${folderEntry.ref}/${folderSubEntry.ref}`}
                     toggleActionModal={toggleActionModal}
                   />
                   <Button

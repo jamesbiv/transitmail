@@ -5,7 +5,7 @@ interface IImapHelper {
   emailParser: EmailParser;
 }
 
-class ImapHelper {
+export class ImapHelper {
   protected emailParser: EmailParser;
   /**
    * @constructor
@@ -25,17 +25,13 @@ class ImapHelper {
 
   /**
    * formatFetchAllResponse
-   * @param response
+   * @param {string[][]} folderData
    * @returns IFolderEmail[]
    */
   public formatFetchFolderEmailsResponse(
     folderData: string[][]
   ): IFolderEmail[] {
     const emails: IFolderEmail[] = [];
-
-    //    if (lastUid) {
-    //folderData.splice(0, 2);
-    //    }
 
     for (let i = 1; i < folderData.length - 1; i = i + 2) {
       const emailFlags: string[] | undefined =
@@ -70,6 +66,7 @@ class ImapHelper {
           uid: Number(emailFlags[1]),
           ref: emailFlags[3],
           flags: emailFlags[2],
+          selected: false,
         });
       }
     }
@@ -79,7 +76,7 @@ class ImapHelper {
 
   /**
    * formatListFoldersResponse
-   * @param response
+   * @param {string[][]} folderData
    * @returns IFoldersEntry[]
    */
   public formatListFoldersResponse(folderData: string[][]): IFoldersEntry[] {
@@ -122,5 +119,3 @@ class ImapHelper {
     return folders;
   }
 }
-
-export default ImapHelper;

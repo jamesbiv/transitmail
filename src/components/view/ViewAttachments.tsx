@@ -25,7 +25,6 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
 }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
     const content = attachment.content.trim();
-    //content = content.substring(0, content.length-1);
 
     const blob = base64toBlob(content, attachment.mimeType);
     const blobUrl = URL.createObjectURL(blob);
@@ -35,24 +34,26 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
 
   const downloadAttachment = (attachment: IEmailAttachment) => {
     const content = attachment.content.trim();
-    //content = content.substring(0, content.length-1);
 
     const blob = base64toBlob(content, attachment.mimeType);
     const blobUrl = URL.createObjectURL(blob);
 
     const a: HTMLAnchorElement = document.createElement("a");
+
     document.body.appendChild(a);
+
     a.style.display = "none";
     a.href = blobUrl;
     a.download = attachment.filename;
     a.click();
+
     document.body.removeChild(a);
   };
 
   const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(
     null
   );
-
+  
   return (
     <Accordion
       onSelect={(id) => {
@@ -73,15 +74,16 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
       <Accordion.Collapse eventKey="0" className="p-0 m-0 mt-2">
         <>
           {attachments ? (
-            attachments.map((attachment: IEmailAttachment) => (
-              <div
-                key={attachment.filename}
-                className="attachments float-left border rounded d-inline font-small bg-light pl-2 pr-2 pt-1 pb-1 mr-2 mb-2 text-truncate"
-              >
-                <small>
+            attachments.map(
+              (attachment: IEmailAttachment, attachmentKey: number) => (
+                <div
+                  key={attachmentKey}
+                  className="attachments float-left border rounded d-inline small bg-light pl-2 pr-2 pt-1 pb-1 mr-2 mb-2 text-truncate"
+                >
                   <Button
                     variant="light"
                     size="sm"
+                    style={{ zIndex: 20000 }}
                     className="float-right p-0 ml-2"
                     onClick={() => {
                       downloadAttachment(attachment);
@@ -92,6 +94,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
                   <Button
                     variant="light"
                     size="sm"
+                    style={{ zIndex: 20000 }}
                     className="float-right p-0 ml-2"
                     onClick={() => {
                       viewAttachment(attachment);
@@ -109,9 +112,9 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
                     })()}
                   />{" "}
                   {attachment.filename}
-                </small>
-              </div>
-            ))
+                </div>
+              )
+            )
           ) : (
             <p>
               <em>No attachments found</em>

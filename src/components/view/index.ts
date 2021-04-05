@@ -1,4 +1,4 @@
-export { default as View } from "./View";
+export { View } from "./View";
+export { ViewActions, EViewActionType } from "./ViewActions";
 export { ViewAttachments } from "./ViewAttachments";
 export { ViewHeader } from "./ViewHeader";
-

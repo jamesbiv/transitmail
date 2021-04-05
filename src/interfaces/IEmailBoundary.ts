@@ -10,7 +10,6 @@ export interface IEmailBoundaryContent {
   headers: IEmailHeaders;
   content: string;
   mimeType: string;
-
   isAttachment?: boolean;
   filename?: string;
   encoding?: string;

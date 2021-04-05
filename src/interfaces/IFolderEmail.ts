@@ -1,5 +1,5 @@
 export interface IFolderEmail {
-  [key: string]: number | string;
+  [key: string]: number | boolean | string;
 
   id: number;
   date: string;
@@ -9,4 +9,5 @@ export interface IFolderEmail {
   uid: number;
   ref: string;
   flags: string;
+  selected: boolean;
 }

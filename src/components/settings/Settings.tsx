@@ -26,7 +26,7 @@ interface ISettingsState {
   errors: ISettingsErrors;
 }
 
-class Settings extends React.PureComponent<ISettingsProps, ISettingsState> {
+export class Settings extends React.PureComponent<ISettingsProps, ISettingsState> {
   /**
    * @var {ImapSocket} imapSocket
    */
@@ -204,5 +204,3 @@ class Settings extends React.PureComponent<ISettingsProps, ISettingsState> {
     );
   }
 }
-
-export default Settings;

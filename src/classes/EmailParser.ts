@@ -6,7 +6,7 @@ import {
   IEmailHeaders,
 } from "interfaces";
 
-class EmailParser {
+export class EmailParser {
   /**
    * @var {IEmail} email
    */
@@ -28,26 +28,24 @@ class EmailParser {
    *              the controller.
    */
   public processEmail(emailRaw: string): IEmail {
-    const posHeader = emailRaw.indexOf("\r\n\r\n");
+    const headerPosition = emailRaw.indexOf("\r\n\r\n");
 
     const email: IEmail = {
+      emailRaw,
       attachments: [],
       bodyHtml: "",
       bodyText: "",
       boundaries: [],
       boundaryIds: [],
       headers: {},
-      headersRaw: emailRaw.substring(0, posHeader),
-      contentRaw: emailRaw.substring(posHeader + 4, emailRaw.length - 1),
+      headersRaw: emailRaw.substring(0, headerPosition),
+      contentRaw: emailRaw.substring(headerPosition + 4, emailRaw.length - 1),
     };
 
     email.headers = this.splitHeaders(email.headersRaw, false);
 
     /* Sort header data */
     Object.keys(email.headers).forEach((headerKey: string) => {
-      let values: RegExpMatchArray | undefined = undefined;
-      let newBoundaryId: string | undefined = undefined;
-
       const headerData: string = email.headers[headerKey]!;
 
       switch (headerKey.toLowerCase()) {
@@ -80,17 +78,24 @@ class EmailParser {
           break;
 
         case "content-type":
-          values = headerData.match(/['|"]?(\S+)['|"]?;(.*)/) ?? undefined;
+          {
+            const [match, mimeType]: RegExpMatchArray =
+              headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ?? [];
 
-          if (values && values.length > 1) {
-            email.mimeType = values[1].toLowerCase();
-          }
+            if (mimeType) {
+              email.mimeType = mimeType.toLowerCase();
+            }
 
-          email.charset = this.getHeaderAttribute("charset", headerData);
-          newBoundaryId = this.getHeaderAttribute("boundary", headerData);
+            email.charset = this.getHeaderAttribute("charset", headerData);
 
-          if (newBoundaryId) {
-            email.boundaryIds.push(newBoundaryId);
+            const newBoundaryId: string | undefined = this.getHeaderAttribute(
+              "boundary",
+              headerData
+            );
+
+            if (newBoundaryId) {
+              email.boundaryIds.push(newBoundaryId);
+            }
           }
           break;
 
@@ -302,6 +307,7 @@ class EmailParser {
               content: "",
               mimeType: "",
             });
+
             contentIndex = contents.length - 1;
           } else if (contentRow === "--" + boundaryId + "--") {
             allBoundariesMet = true;
@@ -366,34 +372,38 @@ class EmailParser {
               break;
 
             case "content-type":
-              //headerData.forEach((headerRow: string) => {
-              values = headerData.match(/['|"]?(\S+)['|"]?;(.*)/) ?? undefined;
+              {
+                const [match, mimeType, contentData]: RegExpMatchArray =
+                  headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ?? [];
 
-              if (values && values.length > 1) {
-                boundary.contents[
-                  contentIndex
-                ].mimeType = values[1].toLowerCase();
+                if (mimeType) {
+                  boundary.contents[
+                    contentIndex
+                  ].mimeType = mimeType.toLowerCase();
 
-                if (values.length > 2) {
-                  const charset = this.getHeaderAttribute("charset", values[2]);
+                  if (contentData) {
+                    const charSet = this.getHeaderAttribute(
+                      "charset",
+                      contentData
+                    );
 
-                  if (charset) {
-                    boundary.contents[contentIndex].charset = charset;
-                  }
+                    if (charSet) {
+                      boundary.contents[contentIndex].charset = charSet;
+                    }
 
-                  const subBoundaryId = this.getHeaderAttribute(
-                    "boundary",
-                    values[2]
-                  );
+                    const subBoundaryId = this.getHeaderAttribute(
+                      "boundary",
+                      contentData
+                    );
 
-                  if (subBoundaryId) {
-                    boundary.contents[
-                      contentIndex
-                    ].subBoundaryId = subBoundaryId;
+                    if (subBoundaryId) {
+                      boundary.contents[
+                        contentIndex
+                      ].subBoundaryId = subBoundaryId;
+                    }
                   }
                 }
               }
-              //});
               break;
 
             default:
@@ -477,7 +487,7 @@ class EmailParser {
     if (returnContent) {
       headers.content = headerContent;
     }
-    console.log(headers);
+
     return headers;
   }
 
@@ -666,5 +676,3 @@ class EmailParser {
     return new Blob(byteArrays, { type: contentType });
   }
 }
-
-export default EmailParser;

@@ -8,7 +8,7 @@ import {
 
 type TImapCallback = (event: IImapResponseData | Event) => void;
 
-class ImapSocket {
+export class ImapSocket {
   /**
    * @var {IImapSession} session
    */
@@ -98,6 +98,7 @@ class ImapSocket {
       this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
         if (message.data instanceof Blob) {
           const reader: FileReader = new FileReader();
+          
           reader.onload = () => {
             const result: string = reader.result as string;
 
@@ -370,5 +371,3 @@ class ImapSocket {
     return this.session.socket.bufferedAmount;
   }
 }
-
-export default ImapSocket;

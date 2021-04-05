@@ -32,6 +32,7 @@ import "index.css";
 interface IIndexState {
   activeKey: string;
   sliderAction: boolean;
+  sliderInitalDisplay: boolean;
   messageModalData: IMessageModalData;
   showMessageModal: boolean;
 }
@@ -53,7 +54,7 @@ class Index extends React.Component<{}, IIndexState> {
     super(props);
 
     const emailParser: EmailParser = new EmailParser();
-    
+
     this.dependencies = {
       localStorage: new LocalStorage(),
       emailParser: emailParser,
@@ -66,6 +67,7 @@ class Index extends React.Component<{}, IIndexState> {
     this.state = {
       activeKey: window.location.hash.substring(1) || "inbox",
       sliderAction: false,
+      sliderInitalDisplay: false,
       messageModalData: { title: "", content: "", action: () => {} },
       showMessageModal: false,
     };
@@ -131,7 +133,10 @@ class Index extends React.Component<{}, IIndexState> {
             variant="light"
             type="button"
             onClick={() =>
-              this.setState({ sliderAction: !this.state.sliderAction })
+              this.setState({
+                sliderAction: !this.state.sliderAction,
+                sliderInitalDisplay: true,
+              })
             }
           >
             <FontAwesomeIcon icon={faBars} />
@@ -144,6 +149,8 @@ class Index extends React.Component<{}, IIndexState> {
                 <Col
                   className={`bg-light pt-4 sideMenu ${
                     this.state.sliderAction ? "slide-in" : "slide-out"
+                  } ${
+                    !this.state.sliderInitalDisplay ? "d-none d-md-block" : "d-block"
                   }`}
                   sm={0}
                   md={4}

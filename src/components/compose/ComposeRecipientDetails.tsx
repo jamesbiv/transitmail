@@ -14,7 +14,7 @@ import { IComposeRecipient } from "interfaces";
 
 interface IComposeRecipientDetailsProps {
   recipients: IComposeRecipient[];
-  subject: string;
+  subject?: string;
   updateRecipients: (recipients: IComposeRecipient[]) => void;
   updateSubject: (subject: string) => void;
 }
@@ -41,6 +41,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                   key={item}
                   onClick={() => {
                     recipients[key].type = item;
+
                     updateRecipients(recipients);
                   }}
                 >
@@ -58,6 +59,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                 value={recipient.value}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {
                   recipients[key].value = event.target.value;
+
                   updateRecipients(recipients);
                 }}
               />
@@ -101,6 +103,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                         type: key >= 1 ? "Bcc" : "Cc",
                         //value: recipient.value,
                       });
+                      
                       updateRecipients(recipients);
                     }}
                   >

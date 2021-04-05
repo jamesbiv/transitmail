@@ -7,7 +7,7 @@ import {
   StateManager,
   InfiniteScroll,
 } from "classes";
-import { EImapResponseStatus, IFolderEmail } from "interfaces";
+import { EImapResponseStatus, IEmail, IFolderEmail } from "interfaces";
 import {
   Card,
   Button,
@@ -23,7 +23,7 @@ import {
   faInbox,
   faSync,
 } from "@fortawesome/free-solid-svg-icons";
-import { FolderEmailEntry, FolderTableHeader } from ".";
+import { FolderEmailEntry, FolderTableHeader, FolderTableOptions } from ".";
 
 interface IFolderProps {
   dependencies: {
@@ -38,12 +38,13 @@ interface IFolderProps {
 interface IFolderState {
   emails?: IFolderEmail[];
   displayTableHeader: boolean;
+  displayTableOptions: boolean;
   folderSpinner: boolean;
   message?: string;
   messageType?: string;
 }
 
-class Folder extends React.PureComponent<IFolderProps, IFolderState> {
+export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   /**
    * @var {EmailParser} emailParser
    */
@@ -91,17 +92,16 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.infiniteScroll = new InfiniteScroll(
       "container-main",
       (minIndex: number, maxIndex: number) => {
-        if (this.emails && maxIndex <= this.emails.length) {
-          this.setState({
-            emails: this.emails?.slice(minIndex, maxIndex),
-            displayTableHeader: minIndex === 0,
-          });
-        }
+        this.setState({
+          emails: this.emails?.slice(minIndex, maxIndex),
+          displayTableHeader: minIndex === 0,
+        });
       }
     );
 
     this.state = {
       displayTableHeader: true,
+      displayTableOptions: false,
       folderSpinner: false,
     };
   }
@@ -142,14 +142,20 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       this.emails && this.emails[0]?.uid
     );
 
+    if (latestEmails && latestEmails[0].uid === this.emails?.[0]?.uid) {
+      latestEmails.shift();
+    }
+
+    const currentEmails: IFolderEmail[] =
+      this.stateManager.getCurrentFolder()?.emails ?? [];
+
     this.emails = latestEmails
-      ? [
-          ...latestEmails,
-          ...(this.stateManager.getCurrentFolder()?.emails ?? []),
-        ]
-      : this.stateManager.getCurrentFolder()?.emails;
+      ? [...latestEmails, ...currentEmails]
+      : currentEmails;
 
     this.stateManager.updateCurrentFolder(this.emails);
+
+    this.infiniteScroll.setTotalEntries(this.emails.length);
 
     this.setState({
       folderSpinner: false,
@@ -170,11 +176,10 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       return undefined;
     }
 
-    // Can use ENVELOPE instead of FETCH here aswell
+    const fetchUid: number = (lastUid ?? 0) + 1;
+
     const fetchResponse = await this.imapSocket.imapRequest(
-      `UID FETCH ${
-        lastUid ?? 1
-      }:* (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])`
+      `UID FETCH ${fetchUid}:* (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])`
     );
 
     if (fetchResponse.status !== EImapResponseStatus.OK) {
@@ -190,12 +195,13 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     return emails;
   }
 
-  public updateActiveKeyUid = (activeKey: string, activeUid: number): void => {
-    this.stateManager.setActiveUid(activeUid);
-    this.stateManager.updateActiveKey(activeKey);
+  public viewEmail = (uid: number): void => {
+    this.stateManager.setActiveUid(uid);
+
+    this.stateManager.updateActiveKey("view");
   };
 
-  deleteEmail = (uid: number): void => {
+  public deleteEmail = (uid: number): void => {
     (async () => {
       await this.imapSocket.imapRequest(`UID STORE ${uid} +FLAGS (\\Deleted)`);
     })();
@@ -206,18 +212,7 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     });
   };
 
-  unDeleteEmail = (uid: number): void => {
-    (async () => {
-      await this.imapSocket.imapRequest(`UID STORE ${uid} -FLAGS (\\Deleted)`);
-    })();
-
-    this.setState({
-      message: "This email has been undeleted.",
-      messageType: "info",
-    });
-  };
-
-  replyToEmail = async (uid: number): Promise<void> => {
+  public replyToEmail = async (uid: number): Promise<void> => {
     const fetchEmailResponse = await this.imapSocket.imapRequest(
       `UID FETCH ${uid} RFC822`
     );
@@ -234,13 +229,13 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.stateManager.updateActiveKey("compose");
   };
 
-  forwardEmail = async (uid: number): Promise<void> => {
+  public forwardEmail = async (uid: number): Promise<void> => {
     const fetchEmailResponse = await this.imapSocket.imapRequest(
       `UID FETCH ${uid} RFC822`
     );
 
     const emailRaw: string = fetchEmailResponse.data[1][0];
-    const email = this.emailParser.processEmail(emailRaw);
+    const email: IEmail = this.emailParser.processEmail(emailRaw);
 
     this.stateManager.setComposePresets({
       subject: email.subject,
@@ -250,14 +245,60 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.stateManager.updateActiveKey("compose");
   };
 
-  setEmails = (emails: IFolderEmail[]): void => {
+  public updateEmails = (emails: IFolderEmail[]): void => {
     this.emails = emails;
+
     this.setState({ emails: this.emails?.slice(0, 15) });
+  };
+
+  public updateVisibleEmails = (): void => {
+    if (this.emails) {
+      const visibleEmailUid: number | undefined = this.state.emails?.[0].uid;
+
+      if (visibleEmailUid) {
+        const firstEmailKey: number | undefined = this.emails.reduce(
+          (
+            validKey: number | undefined,
+            email: IFolderEmail,
+            emailKey: number
+          ) => {
+            if (visibleEmailUid === email.uid) {
+              validKey = emailKey;
+            }
+
+            return validKey;
+          },
+          undefined
+        );
+
+        if (firstEmailKey !== undefined) {
+          this.setState({ emails: this.emails.slice(firstEmailKey, 15) });
+        }
+      }
+    }
+  };
+
+  public toggleSelection = (uid: number): void => {
+    if (this.emails) {
+      this.emails.forEach((email: IFolderEmail, emailKey: number) => {
+        if (email.uid === uid || uid === -1) {
+          this.emails![emailKey].selected = this.emails![emailKey].selected
+            ? false
+            : true;
+        }
+      });
+
+      this.updateVisibleEmails();
+    }
   };
 
   render() {
     return (
-      <Card className={this.state.displayTableHeader ? "mt-0 mt-sm-3" : ""}>
+      <Card
+        className={`${
+          this.state.displayTableHeader ? "mt-0 mt-sm-3" : ""
+        } mb-3`}
+      >
         {this.state.displayTableHeader && (
           <Card.Header>
             <Row className="pt-3 pt-sm-0">
@@ -299,17 +340,20 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
           </Card.Body>
         ) : (
           <Container fluid>
+            {this.state.displayTableOptions && <FolderTableOptions />}
             {this.state.displayTableHeader && (
               <FolderTableHeader
                 emails={this.emails ?? []}
-                setEmails={this.setEmails}
+                toggleSelection={this.toggleSelection}
+                updateEmails={this.updateEmails}
               />
             )}
             {this.state.emails.map((email: IFolderEmail) => (
               <FolderEmailEntry
                 key={email.id}
                 email={email}
-                updateActiveKeyUid={this.updateActiveKeyUid}
+                toggleSelection={this.toggleSelection}
+                viewEmail={this.viewEmail}
                 replyToEmail={this.replyToEmail}
                 forwardEmail={this.forwardEmail}
                 deleteEmail={this.deleteEmail}
@@ -321,5 +365,3 @@ class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     );
   }
 }
-
-export default Folder;

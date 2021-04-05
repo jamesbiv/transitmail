@@ -78,10 +78,12 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 type="button"
                 onMouseDown={(event: React.SyntheticEvent) => {
                   event.preventDefault();
+
                   updateLink(
                     (document.getElementById("linkUrl") as HTMLInputElement)
                       .value
                   );
+
                   toggleLinkOverlay(false);
                 }}
               >
@@ -93,6 +95,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 type="button"
                 onMouseDown={(event: React.SyntheticEvent) => {
                   event.preventDefault();
+
                   removeLink();
                   toggleLinkOverlay(false);
                 }}

@@ -1,29 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { Alert, Form, Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faExclamationTriangle,
   faAsterisk,
-  faPlus,
+  faFlag,
   faCopy,
-  faTrash,
   faEdit,
-  faSuitcase,
+  faCode,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
+import { ImapSocket, ImapHelper } from "classes";
+import { EImapResponseStatus, IEmail, IFoldersEntry } from "interfaces";
 
 interface IViewActionsProps {
-  actionUid?: string;
+  actionUid?: number;
   actionType: EViewActionType;
+  email: IEmail;
   showActionModal: boolean;
+  imapHelper: ImapHelper;
+  imapSocket: ImapSocket;
   onHide: () => void;
 }
 
 export enum EViewActionType {
-  ADD = 0,
+  MOVE = 0,
   COPY = 1,
-  MOVE = 2,
-  RENAME = 3,
+  FLAG = 2,
+  VIEW = 3,
   DELETE = 4,
 }
 
@@ -40,35 +44,51 @@ interface IViewActionComponent {
 export const ViewActions: React.FC<IViewActionsProps> = ({
   actionUid,
   actionType,
+  email,
   showActionModal,
+  imapHelper,
+  imapSocket,
   onHide,
 }) => {
   const [submit, changeSubmit] = useState(false);
+  const [folders, updateFolders] = useState<IFoldersEntry[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
+
+      const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
+        listResponse.data
+      );
+
+      updateFolders(folders);
+    })();
+  }, []);
 
   const ViewAction: IViewActionComponents = {
-    [EViewActionType.ADD]: {
-      label: "Add folder",
-      icon: faPlus,
-      element: ViewActionAdd,
+    [EViewActionType.MOVE]: {
+      label: "Move email",
+      icon: faEdit,
+      element: ViewActionMove,
     },
     [EViewActionType.COPY]: {
-      label: "Copy folder",
+      label: "Copy email",
       icon: faCopy,
       element: ViewActionCopy,
     },
-    [EViewActionType.MOVE]: {
-      label: "Move folder",
-      icon: faSuitcase,
-      element: ViewActionMove,
+    [EViewActionType.FLAG]: {
+      label: "Flag email",
+      icon: faFlag,
+      element: ViewActionFlag,
     },
-    [EViewActionType.RENAME]: {
-      label: "Rename folder",
-      icon: faEdit,
-      element: ViewActionRename,
+    [EViewActionType.VIEW]: {
+      label: "View source",
+      icon: faCode,
+      element: ViewActionView,
     },
     [EViewActionType.DELETE]: {
-      label: "Delete folder",
-      icon: faTrash,
+      label: "Delete email",
+      icon: faEdit,
       element: ViewActionDelete,
     },
   };
@@ -93,6 +113,9 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
       <Modal.Body>
         {React.createElement(ViewAction[actionType].element, {
           actionUid,
+          folders,
+          email,
+          imapSocket,
           submit,
           changeSubmit,
         })}
@@ -118,16 +141,25 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
 };
 
 interface IViewActionProps {
-  actionUid?: string;
+  actionUid?: number;
+  folders: IFoldersEntry[];
+  email: IEmail;
+  imapSocket: ImapSocket;
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const ViewActionAdd: React.FC<IViewActionProps> = ({
+export const ViewActionMove: React.FC<IViewActionProps> = ({
   actionUid,
+  folders,
+  imapSocket,
   submit,
   changeSubmit,
 }) => {
+  const [destinationFolder, setDestinationFolder] = useState<
+    string | undefined
+  >();
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -135,54 +167,14 @@ export const ViewActionAdd: React.FC<IViewActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(actionUid);
-  };
+  const submitAction = async () => {
+    const moveResponse = await imapSocket.imapRequest(
+      `MOVE ${actionUid} "${destinationFolder}"`
+    );
 
-  return (
-    <React.Fragment>
-      <Form.Group controlId="formDisplayName">
-        <Form.Label>
-          Add new folder{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
-        </Form.Label>
-        <Form.Control type="text" placeholder="Enter new folder name" />
-      </Form.Group>
-      <Form.Group controlId="formDisplayName">
-        <Form.Label>
-          Add to a sub folder{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
-        </Form.Label>
-        <Form.Control as="select">
-          <option>(root)</option>
-        </Form.Control>
-      </Form.Group>
-    </React.Fragment>
-  );
-};
-
-export const ViewActionCopy: React.FC<IViewActionProps> = ({
-  actionUid,
-  submit,
-  changeSubmit,
-}) => {
-  useEffect(() => {
-    if (submit) {
-      submitAction();
-      changeSubmit(false);
+    if (moveResponse.status !== EImapResponseStatus.OK) {
+      return;
     }
-  });
-
-  const submitAction = () => {
-    alert(actionUid);
   };
 
   return (
@@ -195,15 +187,34 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
           className="text-danger mb-1"
         />
       </Form.Label>
+      <Form.Control
+        as="select"
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          setDestinationFolder(event.target.value);
+        }}
+      >
+        <option>(root)</option>
+        {folders?.map((folder: IFoldersEntry) => (
+          <React.Fragment key={folder.id}>
+            <option key={folder.id}>{folder.name}</option>
+          </React.Fragment>
+        ))}
+      </Form.Control>
     </Form.Group>
   );
 };
 
-export const ViewActionMove: React.FC<IViewActionProps> = ({
+export const ViewActionCopy: React.FC<IViewActionProps> = ({
   actionUid,
+  folders,
+  imapSocket,
   submit,
   changeSubmit,
 }) => {
+  const [destinationFolder, setDestinationFolder] = useState<
+    string | undefined
+  >();
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -211,8 +222,14 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(actionUid);
+  const submitAction = async () => {
+    const moveResponse = await imapSocket.imapRequest(
+      `COPY ${actionUid} "${destinationFolder}"`
+    );
+
+    if (moveResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
   };
 
   return (
@@ -225,11 +242,24 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
           className="text-danger mb-1"
         />
       </Form.Label>
+      <Form.Control
+        as="select"
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          setDestinationFolder(event.target.value);
+        }}
+      >
+        <option>(root)</option>
+        {folders?.map((folder: IFoldersEntry) => (
+          <React.Fragment key={folder.id}>
+            <option key={folder.id}>{folder.name}</option>
+          </React.Fragment>
+        ))}
+      </Form.Control>
     </Form.Group>
   );
 };
 
-export const ViewActionRename: React.FC<IViewActionProps> = ({
+export const ViewActionFlag: React.FC<IViewActionProps> = ({
   actionUid,
   submit,
   changeSubmit,
@@ -260,8 +290,27 @@ export const ViewActionRename: React.FC<IViewActionProps> = ({
   );
 };
 
+export const ViewActionView: React.FC<IViewActionProps> = ({
+  email,
+  submit,
+  changeSubmit,
+}) => {
+  useEffect(() => {
+    if (submit) {
+      changeSubmit(false);
+    }
+  });
+
+  return (
+    <div className="overflow-auto" style={{ height: 300 }}>
+      <pre>{email.emailRaw}</pre>
+    </div>
+  );
+};
+
 export const ViewActionDelete: React.FC<IViewActionProps> = ({
   actionUid,
+  imapSocket,
   submit,
   changeSubmit,
 }) => {
@@ -272,8 +321,14 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(actionUid);
+  const submitAction = async () => {
+    await imapSocket.imapRequest(`UID STORE ${actionUid} +FLAGS (\\Deleted)`);
+
+    // this.setState({
+    //  deleted: true,
+    //  message: "This email has been marked for deletion.",
+    //  messageType: "danger",
+    // });
   };
 
   return (

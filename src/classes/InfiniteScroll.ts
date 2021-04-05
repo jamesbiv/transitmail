@@ -29,6 +29,11 @@ export class InfiniteScroll {
   protected stateHandler: (arg0: number, arg1: number) => void;
 
   /**
+   * @var {number} stateHander
+   */
+  protected totalEntries: number = 0;
+
+  /**
    * @constructor
    * @param {string} elementId
    * @param (arg0: number, arg1: number) => void} stateHandler
@@ -56,6 +61,7 @@ export class InfiniteScroll {
    */
   public startHandler(): void {
     this.element = document.getElementById(this.elementId)!;
+
     this.element.addEventListener("scroll", this.handleScroll);
   }
 
@@ -68,6 +74,14 @@ export class InfiniteScroll {
   }
 
   /**
+   * @name setTotalEntries
+   * @returns void
+   */
+  public setTotalEntries(totalEntries: number): void {
+    this.totalEntries = totalEntries;
+  }
+
+  /**
    * @name handleScroll
    * @param {Event} event
    * @returns void
@@ -77,7 +91,10 @@ export class InfiniteScroll {
     const offsetHeight = this.element.offsetHeight;
     const scrollHeight = this.element.scrollHeight;
 
-    if (scrollTop >= scrollHeight - offsetHeight) {
+    if (
+      scrollTop >= scrollHeight - offsetHeight &&
+      this.totalEntries >= this.slice.maxIndex
+    ) {
       this.element.scrollTo(0, scrollTop - 1);
 
       this.slice.minIndex += 1;
@@ -97,5 +114,3 @@ export class InfiniteScroll {
     this.stateHandler(this.slice.minIndex, this.slice.maxIndex);
   };
 }
-
-export default InfiniteScroll;

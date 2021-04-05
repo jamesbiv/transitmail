@@ -1,9 +1,14 @@
-import { IFolderEmail, IMessageModalData } from "interfaces";
+import {
+  IComposeAttachment,
+  IFolderEmail,
+  IMessageModalData,
+} from "interfaces";
 
 interface IComposePresets {
   email: string;
   subject?: string;
   from?: string;
+  attachments?: IComposeAttachment[];
 }
 
 interface IFolderEmails {
@@ -21,7 +26,7 @@ type TIndexClass = React.Component<
   }
 >;
 
-class StateManager {
+export class StateManager {
   /**
    * @var {TIndexClass} indexClass;
    */
@@ -172,5 +177,3 @@ class StateManager {
     return this.composePresets;
   }
 }
-
-export default StateManager;

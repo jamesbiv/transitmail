@@ -1,5 +1,12 @@
 import React from "react";
-import { Button, ButtonGroup, Row, Col, Form, Container } from "react-bootstrap";
+import {
+  Button,
+  ButtonGroup,
+  Row,
+  Col,
+  Form,
+  Container,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEnvelopeOpen,
@@ -11,15 +18,17 @@ import { IFolderEmail } from "interfaces";
 
 interface IFolderEmailEntryProps {
   email: IFolderEmail;
-  updateActiveKeyUid: (activeKey: string, activeUid: number) => void;
+  toggleSelection: (uid: number) => void;
+  viewEmail: (uid: number) => void;
   replyToEmail: (uid: number) => void;
   forwardEmail: (uid: number) => void;
   deleteEmail: (uid: number) => void;
 }
 
 export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
-  updateActiveKeyUid,
   email,
+  toggleSelection,
+  viewEmail,
   replyToEmail,
   forwardEmail,
   deleteEmail,
@@ -27,10 +36,12 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
   return (
     <Row
       className={`border-bottom pt-1 pb-1 mt-0 mt-sm-2 pointer ${
-        !email.flags.includes("Seen") && "font-weight-bold"
+        !email.flags.includes("Seen") || email.flags.includes("Recent")
+          ? "font-weight-bold"
+          : ""
       }`}
       onClick={() => {
-        updateActiveKeyUid("view", email.uid);
+        viewEmail(email.uid);
       }}
     >
       <Col className="d-none d-sm-block folder-checkbox">
@@ -38,8 +49,11 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           type="checkbox"
           id=""
           label=""
-          onClick={(event: React.SyntheticEvent) => {
+          checked={email.selected}
+          onChange={(event: React.SyntheticEvent) => {
             event.stopPropagation();
+
+            toggleSelection(email.uid);
           }}
         />
       </Col>
@@ -52,7 +66,6 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               {new Date(email.date).toTimeString().split(" ")[0]}
             </Col>
             <Col xs={5} sm={2} md={2} lg={2} className="text-truncate">
-              {/*email.from.match(/"(.*)"/)[1]*/}
               {email.from}
             </Col>
             <Col
@@ -74,7 +87,8 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                   variant="primary"
                   onClick={(event: React.SyntheticEvent) => {
                     event.stopPropagation();
-                    updateActiveKeyUid("view", email.uid);
+
+                    viewEmail(email.uid);
                   }}
                 >
                   <FontAwesomeIcon icon={faEnvelopeOpen} />
@@ -83,6 +97,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                   variant="success"
                   onClick={(event: React.SyntheticEvent) => {
                     event.stopPropagation();
+
                     replyToEmail(email.uid);
                   }}
                 >
@@ -92,6 +107,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                   variant="success"
                   onClick={(event: React.SyntheticEvent) => {
                     event.stopPropagation();
+
                     forwardEmail(email.uid);
                   }}
                 >
@@ -101,6 +117,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                   variant="danger"
                   onClick={(event: React.SyntheticEvent) => {
                     event.stopPropagation();
+
                     deleteEmail(email.uid);
                   }}
                 >

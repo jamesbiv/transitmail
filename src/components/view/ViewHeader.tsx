@@ -7,26 +7,26 @@ import {
   faReplyAll,
   faShare,
   faTrash,
-  faTrashRestore,
+  faCopy,
+  faCode,
+  faFlag,
+  faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmail } from "interfaces";
+import { EViewActionType } from "./";
 
 interface IViewHeaderProps {
+  toggleActionModal: (actionType: EViewActionType) => void;
   replyToEmail: (all?: boolean) => void;
   forwardEmail: () => void;
-  deleteEmail: () => void;
-  restoreEmail: () => void;
   email: IEmail;
-  deleted: boolean;
 }
 
 export const ViewHeader: React.FC<IViewHeaderProps> = ({
+  toggleActionModal,
   replyToEmail,
   forwardEmail,
-  deleteEmail,
-  restoreEmail,
   email,
-  deleted,
 }) => {
   return (
     <>
@@ -62,7 +62,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
             variant="danger"
             size="sm"
             type="button"
-            onClick={() => deleteEmail()}
+            onClick={() => toggleActionModal(EViewActionType.DELETE)}
             className="ml-1"
           >
             <FontAwesomeIcon icon={faTrash} />
@@ -74,14 +74,34 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
             <span className="d-none">More Options</span>
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <Dropdown.Item>Move</Dropdown.Item>
-            <Dropdown.Item>Copy</Dropdown.Item>
-            <Dropdown.Item>Flag</Dropdown.Item>
-            <Dropdown.Item>View Source</Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => toggleActionModal(EViewActionType.MOVE)}
+            >
+              <FontAwesomeIcon icon={faEdit} /> Move
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => toggleActionModal(EViewActionType.COPY)}
+            >
+              <FontAwesomeIcon icon={faCopy} /> Copy
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => toggleActionModal(EViewActionType.FLAG)}
+            >
+              <FontAwesomeIcon icon={faFlag} /> Flag
+            </Dropdown.Item>
+            <Dropdown.Item
+              onClick={() => toggleActionModal(EViewActionType.VIEW)}
+            >
+              <FontAwesomeIcon icon={faCode} /> View Source
+            </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </div>
-      <p className="m-0">Date: {email.date}</p>
+      <p className="m-0">
+        Date:
+        {new Date(email.date!).toDateString()}{" "}
+        {new Date(email.date!).toTimeString().split(" ")[0]}
+      </p>
       <p className="m-0">From: {email.from}</p>
       <p className={`m-0 ${!email.replyTo?.length ? "d-none" : ""}`}>
         <small>Reply to: {email.replyTo}</small>
@@ -117,19 +137,10 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
           variant="danger"
           size="sm"
           type="button"
-          onClick={() => deleteEmail()}
-          className={`ml-1 ${deleted ? "d-inline-block" : "d-none"}`}
+          onClick={() => toggleActionModal(EViewActionType.DELETE)}
+          className="ml-1"
         >
           <FontAwesomeIcon icon={faTrash} />
-        </Button>
-        <Button
-          variant="dark"
-          size="sm"
-          type="button"
-          onClick={() => restoreEmail()}
-          className={`ml-1 ${deleted ? "d-none" : "d-inline-block"}`}
-        >
-          <FontAwesomeIcon icon={faTrashRestore} />
         </Button>
       </div>
     </>
