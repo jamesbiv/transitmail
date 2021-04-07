@@ -98,7 +98,7 @@ export class ImapSocket {
       this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
         if (message.data instanceof Blob) {
           const reader: FileReader = new FileReader();
-          
+
           reader.onload = () => {
             const result: string = reader.result as string;
 
@@ -230,17 +230,13 @@ export class ImapSocket {
       console.log("[IMAP] Response: " + response);
     }
 
-    const ignoreAsterisk: boolean = false;
-    const stripBracketAll: boolean = false;
-    const stripBracketLast: boolean = false;
-
     responseRows.forEach((responseRow: string, responseKey: number) => {
       const responseCols: string[] = responseRow.split(" ");
 
       let result: string[] = [];
 
       if (
-        (!ignoreAsterisk && responseCols[0] === "*") ||
+        responseCols[0] === "*" ||
         responseCols[0] === this.session.request[index].id
       ) {
         if (this.session.responseContent.length) {
@@ -257,10 +253,7 @@ export class ImapSocket {
         this.session.responseQueue.push(result);
       } else {
         if (responseRow.length) {
-          if (
-            stripBracketAll ||
-            (stripBracketLast && responseKey === responseRows.length - 3)
-          ) {
+          if (responseKey === responseRows.length - 3) {
             if (responseRow !== ")") {
               this.session.responseContent += responseRow + "\r\n";
             }
@@ -271,17 +264,6 @@ export class ImapSocket {
           this.session.responseContent += "\r\n";
         }
       }
-
-      /* We need to keep appending the data if the response is something like an email
-       * Further whitelisting can be done here in the future if need. */
-      // if (responseKey === 0 && responseCols[0] === "FETCH") {
-      // if (responseCols[3] === "RFC822") {
-      //  stripBracketAll = true;
-      //  ignoreAsterisk = false;
-      // } else if (responseCols[3] === "FLAGS") {
-      //  stripBracketLast = true;
-      // }
-      // }
 
       /* Proess final command */
       if (
@@ -326,7 +308,7 @@ export class ImapSocket {
    * @returns Promise<boolean>
    */
   public async imapAuthorise(): Promise<boolean> {
-    const response = await this.imapRequest(
+    const response: IImapResponse = await this.imapRequest(
       "LOGIN " + this.settings.username + " " + this.settings.password
     );
 
@@ -368,6 +350,7 @@ export class ImapSocket {
     if (!this.session.socket) {
       return false;
     }
+
     return this.session.socket.bufferedAmount;
   }
 }

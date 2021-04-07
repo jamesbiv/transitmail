@@ -30,8 +30,11 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   updateEditorState,
   editorState,
 }) => {
-  const linkButtonTarget = React.useRef<HTMLButtonElement>(null);
-  const [showLinkOverlay, toggleLinkOverlay] = useState(false);
+  const linkButtonTarget: React.RefObject<HTMLButtonElement> = React.useRef<HTMLButtonElement>(
+    null
+  );
+  
+  const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
   const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {
     updateEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));

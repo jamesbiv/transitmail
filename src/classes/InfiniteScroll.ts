@@ -31,7 +31,7 @@ export class InfiniteScroll {
   /**
    * @var {number} stateHander
    */
-  protected totalEntries: number = 0;
+  protected totalEntries: number;
 
   /**
    * @constructor
@@ -44,6 +44,7 @@ export class InfiniteScroll {
   ) {
     this.elementId = elementId;
     this.stateHandler = stateHandler;
+    this.totalEntries = 0;
 
     this.slice = {
       start: 15,
@@ -75,6 +76,7 @@ export class InfiniteScroll {
 
   /**
    * @name setTotalEntries
+   * @params {number} totalEntries
    * @returns void
    */
   public setTotalEntries(totalEntries: number): void {
@@ -87,9 +89,9 @@ export class InfiniteScroll {
    * @returns void
    */
   private handleScroll = (event: Event): void => {
-    const scrollTop = this.element.scrollTop;
-    const offsetHeight = this.element.offsetHeight;
-    const scrollHeight = this.element.scrollHeight;
+    const scrollTop: number = this.element.scrollTop;
+    const offsetHeight: number = this.element.offsetHeight;
+    const scrollHeight: number = this.element.scrollHeight;
 
     if (
       scrollTop >= scrollHeight - offsetHeight &&

@@ -15,6 +15,7 @@ import {
   IFoldersEntry,
   IFoldersSubEntry,
   EImapResponseStatus,
+  IImapResponse,
 } from "interfaces";
 import { ImapSocket } from "classes";
 
@@ -55,7 +56,7 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
   getFolders,
   onHide,
 }) => {
-  const [submit, changeSubmit] = useState(false);
+  const [submit, changeSubmit] = useState<boolean>(false);
 
   const folderEntryAction: IFolderEntryActionComponents = {
     [EFolderEntryActionType.ADD]: {
@@ -168,7 +169,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
       ? `${subFolder}/${folderName}`
       : folderName;
 
-    const createResponse = await imapSocket.imapRequest(
+    const createResponse: IImapResponse = await imapSocket.imapRequest(
       `CREATE "${folderPath}"`
     );
 
@@ -251,7 +252,7 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
       ? `${destinationSubFolder}/${newFolderName}`
       : newFolderName;
 
-    const createResponse = await imapSocket.imapRequest(
+    const createResponse: IImapResponse = await imapSocket.imapRequest(
       `CREATE "${newFolderPath}"`
     );
 
@@ -259,14 +260,16 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
       return;
     }
 
-    const selectResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
+    const selectResponse: IImapResponse = await imapSocket.imapRequest(
+      `SELECT "${folderId}"`
+    );
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
       return;
     }
 
-    const copyResponse = await imapSocket.imapRequest(
-      `COPY 1:* "${newFolderName}"`
+    const copyResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID COPY 1:* "${newFolderName}"`
     );
 
     if (copyResponse.status !== EImapResponseStatus.OK) {
@@ -347,7 +350,7 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
       ? `${destinationFolder}/${folderId}`
       : folderId;
 
-    const moveResponse = await imapSocket.imapRequest(
+    const moveResponse: IImapResponse = await imapSocket.imapRequest(
       `RENAME "${folderId}" "${destinationFolderPath}"`
     );
 
@@ -402,7 +405,7 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = async () => {
-    const renameResponse = await imapSocket.imapRequest(
+    const renameResponse: IImapResponse = await imapSocket.imapRequest(
       `RENAME "${folderId}" "${newFolderName}"`
     );
 
@@ -450,7 +453,9 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = async () => {
-    const deleteResponse = await imapSocket.imapRequest(`DELETE "${folderId}"`);
+    const deleteResponse: IImapResponse = await imapSocket.imapRequest(
+      `DELETE "${folderId}"`
+    );
 
     if (deleteResponse.status !== EImapResponseStatus.OK) {
       return;

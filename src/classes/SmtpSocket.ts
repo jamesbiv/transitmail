@@ -212,8 +212,8 @@ export class SmtpSocket {
    * @returns void
    */
   public smtpResponseHandler(response: string): void {
-    const index = this.session.request.length - 1;
-    const responseRows = response.split("\r\n");
+    const index: number = this.session.request.length - 1;
+    const responseRows: string[] = response.split("\r\n");
 
     if (this.session.debug) {
       console.log("[SMTP] Response: " + response);
@@ -254,7 +254,7 @@ export class SmtpSocket {
    * @returns Promise<boolean>
    */
   public async smtpAuthorise(): Promise<boolean> {
-    const ehloResponse = await this.smtpRequest(
+    const ehloResponse: ISmtpResponse = await this.smtpRequest(
       `EHLO ${this.settings.host}`,
       220
     );
@@ -263,13 +263,16 @@ export class SmtpSocket {
       return false;
     }
 
-    const authResponse = await this.smtpRequest("AUTH LOGIN", 250);
+    const authResponse: ISmtpResponse = await this.smtpRequest(
+      "AUTH LOGIN",
+      250
+    );
 
     if (authResponse.status !== ESmtpResponseStatus.Success) {
       return false;
     }
 
-    const userResponse = await this.smtpRequest(
+    const userResponse: ISmtpResponse = await this.smtpRequest(
       btoa(this.settings.username),
       334
     );
@@ -278,7 +281,7 @@ export class SmtpSocket {
       return false;
     }
 
-    const passResponse = await this.smtpRequest(
+    const passResponse: ISmtpResponse = await this.smtpRequest(
       btoa(this.settings.password),
       235
     );
@@ -310,6 +313,7 @@ export class SmtpSocket {
     if (!this.session.socket) {
       return false;
     }
+
     return this.session.socket.bufferedAmount;
   }
 }

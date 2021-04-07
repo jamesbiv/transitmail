@@ -70,7 +70,7 @@ export class LocalStorage {
    * @returns T
    */
   private getLocalStorage<T>(name: string): T {
-    const data = localStorage.getItem(name) ?? "";
+    const data: string = localStorage.getItem(name) ?? "";
 
     const decryptedData: string = CryptoES.AES.decrypt(
       data,

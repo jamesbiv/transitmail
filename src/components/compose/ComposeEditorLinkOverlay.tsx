@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from "react";
-import { EditorState, RichUtils } from "draft-js";
+import { ContentState, EditorState, RichUtils, SelectionState } from "draft-js";
 import { Button, Overlay, Popover, Form, Row, Col } from "react-bootstrap/";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
@@ -20,14 +20,14 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
   updateEditorState,
 }) => {
   const updateLink: (url: string) => void = (url) => {
-    const contentState = editorState.getCurrentContent();
-    const contentStateWithEntity = contentState.createEntity(
+    const contentState: ContentState = editorState.getCurrentContent();
+    const contentStateWithEntity: ContentState = contentState.createEntity(
       "LINK",
       "MUTABLE",
       { url }
     );
-    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-    const newEditorState = EditorState.set(editorState, {
+    const entityKey: string = contentStateWithEntity.getLastCreatedEntityKey();
+    const newEditorState: EditorState = EditorState.set(editorState, {
       currentContent: contentStateWithEntity,
     });
 
@@ -41,7 +41,8 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
   };
 
   const removeLink: () => void = () => {
-    const selection = editorState.getSelection();
+    const selection: SelectionState = editorState.getSelection();
+
     if (!selection.isCollapsed()) {
       updateEditorState(RichUtils.toggleLink(editorState, selection, null));
     }

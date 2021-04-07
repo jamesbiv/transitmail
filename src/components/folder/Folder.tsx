@@ -7,7 +7,12 @@ import {
   StateManager,
   InfiniteScroll,
 } from "classes";
-import { EImapResponseStatus, IEmail, IFolderEmail } from "interfaces";
+import {
+  EImapResponseStatus,
+  IEmail,
+  IFolderEmail,
+  IImapResponse,
+} from "interfaces";
 import {
   Card,
   Button,
@@ -23,7 +28,13 @@ import {
   faInbox,
   faSync,
 } from "@fortawesome/free-solid-svg-icons";
-import { FolderEmailEntry, FolderTableHeader, FolderTableOptions } from ".";
+import {
+  FolderEmailEntry,
+  FolderEmailActions,
+  EFolderEmailActionType,
+  FolderTableHeader,
+  FolderTableOptions,
+} from ".";
 
 interface IFolderProps {
   dependencies: {
@@ -42,6 +53,9 @@ interface IFolderState {
   folderSpinner: boolean;
   message?: string;
   messageType?: string;
+  actionUids?: number[];
+  actionType: EFolderEmailActionType;
+  showActionModal: boolean;
 }
 
 export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
@@ -76,6 +90,11 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   protected infiniteScroll: InfiniteScroll;
 
   /**
+   * @var {boolean} toggleSelectionAll
+   */
+  protected toggleSelectionAll: boolean;
+
+  /**
    * @var {IFolderEmail} emails
    */
   protected emails?: IFolderEmail[];
@@ -88,6 +107,8 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.localStorage = props.dependencies.localStorage;
     this.emailParser = props.dependencies.emailParser;
     this.stateManager = props.dependencies.stateManager;
+
+    this.toggleSelectionAll = false;
 
     this.infiniteScroll = new InfiniteScroll(
       "container-main",
@@ -102,6 +123,8 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.state = {
       displayTableHeader: true,
       displayTableOptions: false,
+      showActionModal: false,
+      actionType: EFolderEmailActionType.COPY,
       folderSpinner: false,
     };
   }
@@ -123,9 +146,13 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     this.stateManager.updateCurrentFolder(this.emails);
 
+    this.clearSelection();
+
+    this.infiniteScroll.setTotalEntries(this.emails?.length ?? 0);
+
     this.setState({
-      folderSpinner: false,
       emails: this.emails?.slice(0, 15),
+      folderSpinner: false,
     });
   }
 
@@ -142,7 +169,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       this.emails && this.emails[0]?.uid
     );
 
-    if (latestEmails && latestEmails[0].uid === this.emails?.[0]?.uid) {
+    if (latestEmails && latestEmails[0]?.uid === this.emails?.[0]?.uid) {
       latestEmails.shift();
     }
 
@@ -168,7 +195,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   ): Promise<IFolderEmail[] | undefined> {
     const folderId: string | undefined = this.stateManager.getFolderId();
 
-    const selectResponse = await this.imapSocket.imapRequest(
+    const selectResponse: IImapResponse = await this.imapSocket.imapRequest(
       `SELECT "${folderId}"`
     );
 
@@ -178,7 +205,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     const fetchUid: number = (lastUid ?? 0) + 1;
 
-    const fetchResponse = await this.imapSocket.imapRequest(
+    const fetchResponse: IImapResponse = await this.imapSocket.imapRequest(
       `UID FETCH ${fetchUid}:* (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])`
     );
 
@@ -186,7 +213,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       return undefined;
     }
 
-    const emails = this.imapHelper.formatFetchFolderEmailsResponse(
+    const emails: IFolderEmail[] = this.imapHelper.formatFetchFolderEmailsResponse(
       fetchResponse.data
     );
 
@@ -213,12 +240,17 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   };
 
   public replyToEmail = async (uid: number): Promise<void> => {
-    const fetchEmailResponse = await this.imapSocket.imapRequest(
+    const fetchEmailResponse: IImapResponse = await this.imapSocket.imapRequest(
       `UID FETCH ${uid} RFC822`
     );
 
-    const emailRaw: string = fetchEmailResponse.data[1][0];
-    const email = this.emailParser.processEmail(emailRaw);
+    if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const email: IEmail = this.imapHelper.formatFetchEmailResponse(
+      fetchEmailResponse.data
+    );
 
     this.stateManager.setComposePresets({
       subject: email.subject,
@@ -230,12 +262,17 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   };
 
   public forwardEmail = async (uid: number): Promise<void> => {
-    const fetchEmailResponse = await this.imapSocket.imapRequest(
+    const fetchEmailResponse: IImapResponse = await this.imapSocket.imapRequest(
       `UID FETCH ${uid} RFC822`
     );
 
-    const emailRaw: string = fetchEmailResponse.data[1][0];
-    const email: IEmail = this.emailParser.processEmail(emailRaw);
+    if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const email: IEmail = this.imapHelper.formatFetchEmailResponse(
+      fetchEmailResponse.data
+    );
 
     this.stateManager.setComposePresets({
       subject: email.subject,
@@ -278,10 +315,30 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     }
   };
 
+  public toggleTableOptionsDisplay = () => {
+    if (this.emails) {
+      let displayTableOptions: boolean = false;
+
+      this.emails.find((email: IFolderEmail) => {
+        if (email.selected === true) {
+          displayTableOptions = true;
+        }
+      });
+
+      this.setState({ displayTableOptions });
+    }
+  };
+
   public toggleSelection = (uid: number): void => {
     if (this.emails) {
+      if (uid === -1) {
+        this.toggleSelectionAll = this.toggleSelectionAll ? false : true;
+      }
+
       this.emails.forEach((email: IFolderEmail, emailKey: number) => {
-        if (email.uid === uid || uid === -1) {
+        if (uid === -1) {
+          this.emails![emailKey].selected = this.toggleSelectionAll;
+        } else if (email.uid === uid) {
           this.emails![emailKey].selected = this.emails![emailKey].selected
             ? false
             : true;
@@ -289,79 +346,118 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       });
 
       this.updateVisibleEmails();
+
+      this.toggleTableOptionsDisplay();
     }
+  };
+
+  public clearSelection = (): void => {
+    if (this.emails) {
+      this.emails.forEach((email: IFolderEmail, emailKey: number) => {
+        this.emails![emailKey].selected = false;
+      });
+    }
+  };
+
+  public toggleActionModal = (actionType: EFolderEmailActionType): void => {
+    const actionUids: number[] | undefined = this.emails?.reduce(
+      (selectedUids: number[], email: IFolderEmail) => {
+        if (email.selected) {
+          selectedUids.push(email.uid);
+        }
+
+        return selectedUids;
+      },
+      []
+    );
+
+    this.setState({ actionUids, actionType, showActionModal: true });
   };
 
   render() {
     return (
-      <Card
-        className={`${
-          this.state.displayTableHeader ? "mt-0 mt-sm-3" : ""
-        } mb-3`}
-      >
-        {this.state.displayTableHeader && (
-          <Card.Header>
-            <Row className="pt-3 pt-sm-0">
-              <Col xs={12} sm={6} md={7} lg={9}>
-                <h4 className="p-0 m-0 text-nowrap text-truncate">
-                  <FontAwesomeIcon icon={faInbox} />{" "}
-                  {(this.stateManager.getFolderId() ?? "").split("/").pop()}
-                  <Button
-                    className="ml-2 float-right float-sm-none"
-                    onClick={this.checkEmail}
-                    size="sm"
-                    variant="primary"
-                    type="button"
-                  >
-                    <FontAwesomeIcon
-                      icon={faSync}
-                      spin={this.state.folderSpinner}
-                    />
-                  </Button>
-                </h4>
-              </Col>
-              <Col xs={12} sm={6} md={5} lg={3} className="mt-3 mt-sm-0">
-                <Form.Control type="text" placeholder="Search &hellip;" />
-              </Col>
-            </Row>
-          </Card.Header>
-        )}
-        {!this.state.emails ? (
-          <Spinner
-            className="mt-3 mb-3 ml-auto mr-auto"
-            animation="grow"
-            variant="dark"
-          />
-        ) : !this.state.emails.length ? (
-          <Card.Body className="text-center text-secondary">
-            <FontAwesomeIcon icon={faFolderOpen} size="lg" />
-            <br />
-            <em>Folder empty</em>
-          </Card.Body>
-        ) : (
-          <Container fluid>
-            {this.state.displayTableOptions && <FolderTableOptions />}
-            {this.state.displayTableHeader && (
-              <FolderTableHeader
-                emails={this.emails ?? []}
-                toggleSelection={this.toggleSelection}
-                updateEmails={this.updateEmails}
-              />
-            )}
-            {this.state.emails.map((email: IFolderEmail) => (
-              <FolderEmailEntry
-                key={email.id}
-                email={email}
-                toggleSelection={this.toggleSelection}
-                viewEmail={this.viewEmail}
-                replyToEmail={this.replyToEmail}
-                forwardEmail={this.forwardEmail}
-                deleteEmail={this.deleteEmail}
-              />
-            ))}
-          </Container>
-        )}
-      </Card>
+      <React.Fragment>
+        <Card
+          className={`${
+            this.state.displayTableHeader ? "mt-0 mt-sm-3" : ""
+          } mb-3`}
+        >
+          {this.state.displayTableHeader && (
+            <Card.Header>
+              <Row className="pt-3 pt-sm-0">
+                <Col xs={12} sm={6} md={7} lg={9}>
+                  <h4 className="p-0 m-0 text-nowrap text-truncate">
+                    <FontAwesomeIcon icon={faInbox} />{" "}
+                    {(this.stateManager.getFolderId() ?? "").split("/").pop()}
+                    <Button
+                      className="ml-2 float-right float-sm-none"
+                      onClick={this.checkEmail}
+                      size="sm"
+                      variant="primary"
+                      type="button"
+                    >
+                      <FontAwesomeIcon
+                        icon={faSync}
+                        spin={this.state.folderSpinner}
+                      />
+                    </Button>
+                  </h4>
+                </Col>
+                <Col xs={12} sm={6} md={5} lg={3} className="mt-3 mt-sm-0">
+                  <Form.Control type="text" placeholder="Search &hellip;" />
+                </Col>
+              </Row>
+            </Card.Header>
+          )}
+          {!this.state.emails ? (
+            <Spinner
+              className="mt-3 mb-3 ml-auto mr-auto"
+              animation="grow"
+              variant="dark"
+            />
+          ) : !this.state.emails.length ? (
+            <Card.Body className="text-center text-secondary">
+              <FontAwesomeIcon icon={faFolderOpen} size="lg" />
+              <br />
+              <em>Folder empty</em>
+            </Card.Body>
+          ) : (
+            <Container fluid>
+              {this.state.displayTableOptions && (
+                <FolderTableOptions
+                  toggleActionModal={this.toggleActionModal}
+                />
+              )}
+              {this.state.displayTableHeader && (
+                <FolderTableHeader
+                  emails={this.emails ?? []}
+                  toggleSelection={this.toggleSelection}
+                  updateEmails={this.updateVisibleEmails}
+                />
+              )}
+              {this.state.emails.map((email: IFolderEmail) => (
+                <FolderEmailEntry
+                  key={email.id}
+                  email={email}
+                  toggleSelection={this.toggleSelection}
+                  viewEmail={this.viewEmail}
+                  replyToEmail={this.replyToEmail}
+                  forwardEmail={this.forwardEmail}
+                  deleteEmail={this.deleteEmail}
+                />
+              ))}
+            </Container>
+          )}
+        </Card>
+        <FolderEmailActions
+          actionUids={this.state.actionUids}
+          actionType={this.state.actionType}
+          showActionModal={this.state.showActionModal}
+          imapHelper={this.imapHelper}
+          imapSocket={this.imapSocket}
+          onHide={() => this.setState({ showActionModal: false })}
+        />
+      </React.Fragment>
     );
   }
 }

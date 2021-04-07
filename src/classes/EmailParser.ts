@@ -28,7 +28,7 @@ export class EmailParser {
    *              the controller.
    */
   public processEmail(emailRaw: string): IEmail {
-    const headerPosition = emailRaw.indexOf("\r\n\r\n");
+    const headerPosition: number = emailRaw.indexOf("\r\n\r\n");
 
     const email: IEmail = {
       emailRaw,
@@ -239,7 +239,6 @@ export class EmailParser {
    * @param {string} boundaryIds
    * @param {string} contentRaw
    * @returns IEmailBoundary[]
-   * @description Creates an array of IEmailBoundary which form parts of the email body
    */
   private parseBoundaries(
     contentRaw: string,
@@ -256,9 +255,8 @@ export class EmailParser {
         if (this.sanitizeRawBoundry(boundary)) {
           boundaries.push(boundary);
 
-          // Check for boundaries within boundaries
           boundary.contents.forEach((contentRow: IEmailBoundaryContent) => {
-            if (contentRow.subBoundaryId !== undefined) {
+            if (contentRow.subBoundaryId) {
               const subBoundary: IEmailBoundary = this.filterContentByBoundaries(
                 contentRow.subBoundaryId,
                 contentRow.contentRaw
@@ -333,42 +331,45 @@ export class EmailParser {
   private sanitizeRawBoundry(boundary: IEmailBoundary): true {
     boundary.contents.forEach(
       (contentRow: IEmailBoundaryContent, contentIndex: number) => {
-        const contentRaw = boundary.contents[contentIndex].contentRaw;
-        const headers = this.splitHeaders(contentRaw, true);
-        const content = headers.content;
+        const contentRaw: string = boundary.contents[contentIndex].contentRaw;
+
+        const headers: IEmailHeaders = this.splitHeaders(contentRaw, true);
+        const content: string | undefined = headers.content;
 
         Object.keys(headers).forEach((headerKey: string) => {
-          let values: RegExpMatchArray | undefined = undefined;
-
           const headerData: string = headers[headerKey]!;
 
           switch (headerKey.toLowerCase()) {
             case "content-disposition":
-              //headerData.forEach((headerRow: string) => {
-              values = headerData.match(/['|"]?(\S+)['|"]?;(.*)/) ?? undefined;
+              {
+                const [match, mimeType, contentData]: RegExpMatchArray =
+                  headerData.match(/['|"]?(\S+)['|"]?;(.*)/) ?? [];
 
-              if (values && values.length > 1) {
-                boundary.contents[contentIndex].isAttachment = true;
+                if (mimeType) {
+                  boundary.contents[contentIndex].isAttachment = true;
 
-                if (values.length > 2) {
-                  const filename = this.getHeaderAttribute("name", values[2]);
+                  if (contentData) {
+                    const filename:
+                      | string
+                      | undefined = this.getHeaderAttribute(
+                      "name",
+                      contentData
+                    );
 
-                  if (filename) {
-                    boundary.contents[contentIndex].filename = filename;
+                    if (filename) {
+                      boundary.contents[contentIndex].filename = filename;
+                    }
+                  }
+
+                  if (!boundary.contents[contentIndex].filename) {
+                    boundary.contents[contentIndex].filename = "Untitled";
                   }
                 }
-
-                if (!boundary.contents[contentIndex].filename) {
-                  boundary.contents[contentIndex].filename = "Untitled";
-                }
               }
-              //});
               break;
 
             case "content-transfer-encoding":
-              //headerData.forEach((headerRow: string) => {
               boundary.contents[contentIndex].encoding = headerData;
-              //});
               break;
 
             case "content-type":
@@ -382,7 +383,7 @@ export class EmailParser {
                   ].mimeType = mimeType.toLowerCase();
 
                   if (contentData) {
-                    const charSet = this.getHeaderAttribute(
+                    const charSet: string | undefined = this.getHeaderAttribute(
                       "charset",
                       contentData
                     );
@@ -391,7 +392,9 @@ export class EmailParser {
                       boundary.contents[contentIndex].charset = charSet;
                     }
 
-                    const subBoundaryId = this.getHeaderAttribute(
+                    const subBoundaryId:
+                      | string
+                      | undefined = this.getHeaderAttribute(
                       "boundary",
                       contentData
                     );
@@ -421,15 +424,15 @@ export class EmailParser {
 
   /**
    * @name splitHeaders
-   * @param contentRaw
-   * @param returnContent
+   * @param {string} contentRaw
+   * @param {boolean} returnContent
    * @returns IEmailHeaders
    */
   private splitHeaders(
     headerRaw: string,
     returnContent: boolean = true
   ): IEmailHeaders {
-    const headerRows = headerRaw.split(/\r?\n|\r/);
+    const headerRows: string[] = headerRaw.split(/\r?\n|\r/);
     const headerMaxLength: number = 76;
 
     const headers: IEmailHeaders = {};
@@ -441,18 +444,14 @@ export class EmailParser {
     let headerContent: string = "";
 
     headerRows.forEach((headerRow: string) => {
-      const [
-        fullMatch,
-        contentHeaderName,
-        contentHeaderData,
-      ]: RegExpMatchArray = headerRow.match(/(^\S*):\s*(.*)/) ?? [];
+      const [match, contentHeaderName, contentHeaderData]: RegExpMatchArray =
+        headerRow.match(/(^\S*):\s*(.*)/) ?? [];
 
       if (!headerEnd) {
         if (contentHeaderName) {
           currentHeaderName = contentHeaderName.toLowerCase();
           currentHeaderData = headers[currentHeaderName];
 
-          // We can transform this into string[] later if needed
           if (!currentHeaderData) {
             headers[currentHeaderName] = contentHeaderData ?? "";
           } else {
@@ -465,7 +464,7 @@ export class EmailParser {
         ) {
           currentHeaderData = headers[currentHeaderName];
 
-          const lastHeaderLength = currentHeaderData
+          const lastHeaderLength: number = currentHeaderData
             ? currentHeaderData.length - 1
             : 0;
 
@@ -495,7 +494,6 @@ export class EmailParser {
    * @name stripScripts
    * @param {string} content
    * @returns string
-   * @description Securifys agaisnt bad script injections
    */
   private stripScripts(content: string): string {
     const div: HTMLDivElement = document.createElement("div");
@@ -576,7 +574,10 @@ export class EmailParser {
    * @resturns string
    */
   private decodeMimeWord(content: string): string {
-    const match = content.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i);
+    const match: RegExpMatchArray | undefined =
+      content.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ??
+      undefined;
+
     if (!match) {
       return content;
     }
@@ -609,7 +610,6 @@ export class EmailParser {
     const buffer: Buffer = Buffer.alloc(bufferLength);
 
     let bufferPos: number = 0;
-
     let char: string, hexValue: string;
 
     for (let i = 0, contentLength = content.length; i < contentLength; i++) {
@@ -621,7 +621,9 @@ export class EmailParser {
         /[\da-fA-F]{2}/.test(hexValue)
       ) {
         buffer[bufferPos++] = parseInt(hexValue, 16);
+
         i += 2;
+
         continue;
       }
 
@@ -660,10 +662,11 @@ export class EmailParser {
       byteOffset < byteCharacters.length;
       byteOffset += sliceSize
     ) {
-      const byteSlice = byteCharacters.slice(
+      const byteSlice: string = byteCharacters.slice(
         byteOffset,
         byteOffset + sliceSize
       );
+
       const byteNumbers = new Array(byteSlice.length);
 
       for (let i: number = 0; i < byteSlice.length; i++) {

@@ -86,7 +86,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           type="switch"
           id="autoLogin"
           label="Ask for password before sign-in"
-          checked={settings.autoLogin}
+          defaultChecked={settings.autoLogin}
           onChange={() => {
             settings.autoLogin = settings.autoLogin ? false : true;
           }}

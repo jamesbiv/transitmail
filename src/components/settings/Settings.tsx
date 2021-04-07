@@ -26,7 +26,10 @@ interface ISettingsState {
   errors: ISettingsErrors;
 }
 
-export class Settings extends React.PureComponent<ISettingsProps, ISettingsState> {
+export class Settings extends React.PureComponent<
+  ISettingsProps,
+  ISettingsState
+> {
   /**
    * @var {ImapSocket} imapSocket
    */
@@ -64,7 +67,7 @@ export class Settings extends React.PureComponent<ISettingsProps, ISettingsState
   }
 
   saveSettings() {
-    const emailRegex = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const emailRegex: RegExp = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     const errors: ISettingsErrors = {};
 

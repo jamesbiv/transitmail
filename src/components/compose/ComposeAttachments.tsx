@@ -23,16 +23,17 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
   const loadAttachments: (event: ChangeEvent<HTMLInputElement>) => void = (
     event
   ) => {
-    const fileList: FileList | null = event.target.files;
+    const fileList: FileList | undefined = event.target.files ?? undefined;
     const files: File[] = Array.from(fileList ?? []);
 
     files.forEach((file: File) => {
-      const reader = new FileReader();
-      let count = 0;
+      const reader: FileReader = new FileReader();
+
+      let count: number = 0;
 
       reader.onload = () => {
         count++;
-        
+
         attachments.push({
           id: attachments.length + count,
           filename: file.name,

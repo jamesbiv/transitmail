@@ -1,15 +1,4 @@
-import {
-  IComposeAttachment,
-  IFolderEmail,
-  IMessageModalData,
-} from "interfaces";
-
-interface IComposePresets {
-  email: string;
-  subject?: string;
-  from?: string;
-  attachments?: IComposeAttachment[];
-}
+import { IComposePresets, IFolderEmail, IMessageModalData } from "interfaces";
 
 interface IFolderEmails {
   emails?: IFolderEmail[];
@@ -165,7 +154,7 @@ export class StateManager {
    * @param {IComposePresets} setComposePresets
    * @returns void
    */
-  public setComposePresets(composePresets: IComposePresets): void {
+  public setComposePresets(composePresets?: IComposePresets): void {
     this.composePresets = composePresets;
   }
 

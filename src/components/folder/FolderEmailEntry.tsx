@@ -40,9 +40,6 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           ? "font-weight-bold"
           : ""
       }`}
-      onClick={() => {
-        viewEmail(email.uid);
-      }}
     >
       <Col className="d-none d-sm-block folder-checkbox">
         <Form.Check
@@ -50,9 +47,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           id=""
           label=""
           checked={email.selected}
-          onChange={(event: React.SyntheticEvent) => {
-            event.stopPropagation();
-
+          onChange={() => {
             toggleSelection(email.uid);
           }}
         />
@@ -60,12 +55,30 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
       <Col>
         <Container fluid className="pl-0 pr-0">
           <Row>
-            <Col xs={4} sm={2} md={2} lg={2} className="text-truncate">
+            <Col
+              xs={4}
+              sm={2}
+              md={2}
+              lg={2}
+              className="text-truncate"
+              onClick={() => {
+                viewEmail(email.uid);
+              }}
+            >
               {new Date(email.date).toDateString()}
               <br />
               {new Date(email.date).toTimeString().split(" ")[0]}
             </Col>
-            <Col xs={5} sm={2} md={2} lg={2} className="text-truncate">
+            <Col
+              xs={5}
+              sm={2}
+              md={2}
+              lg={2}
+              className="text-truncate"
+              onClick={() => {
+                viewEmail(email.uid);
+              }}
+            >
               {email.from}
             </Col>
             <Col
@@ -74,6 +87,9 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               sm={5}
               md={4}
               lg={5}
+              onClick={() => {
+                viewEmail(email.uid);
+              }}
             >
               {email.subject || "(no subject)"}
             </Col>
@@ -85,9 +101,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               >
                 <Button
                   variant="primary"
-                  onClick={(event: React.SyntheticEvent) => {
-                    event.stopPropagation();
-
+                  onClick={() => {
                     viewEmail(email.uid);
                   }}
                 >
@@ -95,9 +109,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                 </Button>
                 <Button
                   variant="success"
-                  onClick={(event: React.SyntheticEvent) => {
-                    event.stopPropagation();
-
+                  onClick={() => {
                     replyToEmail(email.uid);
                   }}
                 >
@@ -105,9 +117,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                 </Button>
                 <Button
                   variant="success"
-                  onClick={(event: React.SyntheticEvent) => {
-                    event.stopPropagation();
-
+                  onClick={() => {
                     forwardEmail(email.uid);
                   }}
                 >
@@ -115,9 +125,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={(event: React.SyntheticEvent) => {
-                    event.stopPropagation();
-
+                  onClick={() => {
                     deleteEmail(email.uid);
                   }}
                 >
@@ -131,6 +139,9 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               sm={0}
               md={0}
               lg={0}
+              onClick={() => {
+                viewEmail(email.uid);
+              }}
             >
               <b>Subject</b>
               <br />

@@ -36,6 +36,9 @@ import {
   IComposeRecipient,
   IComposeAttachment,
   IPreparedEmail,
+  IImapResponse,
+  ISmtpResponse,
+  IComposePresets,
 } from "interfaces";
 import { ESmtpResponseStatus } from "interfaces";
 
@@ -147,7 +150,9 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
   }
 
   componentDidMount() {
-    const composePresets = this.stateManager.getComposePresets();
+    const composePresets:
+      | IComposePresets
+      | undefined = this.stateManager.getComposePresets();
 
     if (composePresets) {
       this.setState({
@@ -158,6 +163,8 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
         subject: "RE: " + composePresets.subject ?? "(no subject)",
         attachments: composePresets.attachments ?? [],
       });
+
+      this.stateManager.setComposePresets();
     }
   }
 
@@ -172,7 +179,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       attachments: this.state.attachments,
     });
 
-    const mailResponse = await this.smtpSocket.smtpRequest(
+    const mailResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
       `MAIL from: ${emailData.from}`,
       250
     );
@@ -181,7 +188,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const rcptResponse = await this.smtpSocket.smtpRequest(
+    const rcptResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
       `RCPT to: ${emailData.to}`,
       250
     );
@@ -190,13 +197,16 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const dataResponse = await this.smtpSocket.smtpRequest("DATA", 354);
+    const dataResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+      "DATA",
+      354
+    );
 
     if (dataResponse.status !== ESmtpResponseStatus.Success) {
       return;
     }
 
-    const payloadResponse = await this.smtpSocket.smtpRequest(
+    const payloadResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
       `${emailData.payload}\r\n\r\n.`,
       250
     );
@@ -205,7 +215,10 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const quitResponse = await this.smtpSocket.smtpRequest(`QUIT`, 221);
+    const quitResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+      `QUIT`,
+      221
+    );
 
     if (quitResponse.status !== ESmtpResponseStatus.Success) {
       return;
@@ -223,6 +236,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
     editorState: EditorState
   ): DraftHandleValue {
     const newState = RichUtils.handleKeyCommand(editorState, command);
+
     if (newState) {
       this.updateEditorState(newState);
       return "handled";

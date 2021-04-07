@@ -24,19 +24,19 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   base64toBlob,
 }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
-    const content = attachment.content.trim();
+    const content: string = attachment.content.trim();
 
-    const blob = base64toBlob(content, attachment.mimeType);
-    const blobUrl = URL.createObjectURL(blob);
+    const blob: Blob = base64toBlob(content, attachment.mimeType);
+    const blobUrl: string = URL.createObjectURL(blob);
 
     window.open(blobUrl, "_blank");
   };
 
   const downloadAttachment = (attachment: IEmailAttachment) => {
-    const content = attachment.content.trim();
+    const content: string = attachment.content.trim();
 
-    const blob = base64toBlob(content, attachment.mimeType);
-    const blobUrl = URL.createObjectURL(blob);
+    const blob: Blob = base64toBlob(content, attachment.mimeType);
+    const blobUrl: string = URL.createObjectURL(blob);
 
     const a: HTMLAnchorElement = document.createElement("a");
 

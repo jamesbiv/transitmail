@@ -56,7 +56,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                 size="sm"
                 type="text"
                 placeholder="Enter email address"
-                value={recipient.value}
+                defaultValue={recipient.value}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => {
                   recipients[key].value = event.target.value;
 
@@ -125,7 +125,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
             size="sm"
             name="subject"
             type="text"
-            value={subject}
+            defaultValue={subject}
             placeholder="Enter email subject"
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
               updateSubject(event.target.value)

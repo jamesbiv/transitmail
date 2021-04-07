@@ -106,7 +106,7 @@ export class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
         <Card className="mt-0 mt-sm-3">
           <Card.Header>
             <Row>
-              <Col xs={6}>
+              <Col xs={12} sm={6}>
                 <h4 className="p-0 m-0 text-nowrap">
                   <FontAwesomeIcon icon={faFolderOpen} /> Folders
                   <Button
@@ -124,14 +124,14 @@ export class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
                 </h4>
               </Col>
               <Col
-                className="d-none d-sm-block text-right text-sm-right text-nowrap"
-                xs={6}
+                className="text-right text-sm-right text-nowrap mt-3 mt-sm-0"
+                xs={12}
+                sm={6}
               >
                 <Button
                   size="sm"
                   variant="outline-dark"
                   type="button"
-                  className="mr-2"
                   onClick={() => {
                     this.toggleActionModal(EFolderEntryActionType.ADD);
                   }}

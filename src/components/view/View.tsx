@@ -19,6 +19,8 @@ import {
   EImapResponseStatus,
   IComposeAttachment,
   IEmailAttachment,
+  IImapResponse,
+  IEmailFlags,
 } from "interfaces";
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
 
@@ -34,10 +36,7 @@ interface IViewProps {
 
 interface IViewState {
   email?: IEmail;
-  size: number;
-  seen: boolean;
-  deleted: boolean;
-  flags: string;
+  emailFlags?: IEmailFlags;
   progressBarNow: number;
   message: string;
   messageType: string;
@@ -97,11 +96,7 @@ export class View extends React.Component<IViewProps, IViewState> {
     this.stateManager = props.dependencies.stateManager;
 
     this.state = {
-      size: 0,
-      seen: false,
-      deleted: false,
       progressBarNow: 0,
-      flags: "",
       message: "",
       messageType: "",
       showEmail: false,
@@ -125,7 +120,7 @@ export class View extends React.Component<IViewProps, IViewState> {
   }
 
   async getEmail() {
-    const selectResponse = await this.imapSocket.imapRequest(
+    const selectResponse: IImapResponse = await this.imapSocket.imapRequest(
       `SELECT "${this.stateManager.getFolderId()}"`
     );
 
@@ -133,48 +128,42 @@ export class View extends React.Component<IViewProps, IViewState> {
       return;
     }
 
-    const fetchFlagsResponse = await this.imapSocket.imapRequest(
-      `UID FETCH ${this.stateManager.getActiveUid()} RFC822.SIZE`
+    const fetchFlagsResponse: IImapResponse = await this.imapSocket.imapRequest(
+      `UID FETCH ${this.stateManager.getActiveUid()} (RFC822.SIZE FLAGS)`
     );
 
-    if (selectResponse.status !== EImapResponseStatus.OK) {
+    if (fetchFlagsResponse.status !== EImapResponseStatus.OK) {
       return;
     }
 
-    const flagsResult: string[][] = fetchFlagsResponse.data;
+    const emailFlags:
+      | IEmailFlags
+      | undefined = this.imapHelper.formatFetchEmailFlagsResponse(
+      fetchFlagsResponse.data
+    );
 
-    const detailsRaw = flagsResult[0][2];
-    const details = detailsRaw.match(/.*FETCH \(UID (.*) RFC822.SIZE (.*)\)/);
-
-    if (details?.length === 3) {
-      this.progressBar.max = parseInt(details[2]);
-
-      this.setState({
-        size: parseInt(details[2]),
-        flags: details[2],
-        deleted: /\\Deleted/.test(details[2]),
-        seen: /\\Seen/.test(details[2]),
-      });
-
-      this.checkProgressBar();
-
-      /* Fetch Email */
-      const fetchEmailResponse = await this.imapSocket.imapRequest(
-        `UID FETCH ${this.stateManager.getActiveUid()} RFC822`
-      );
-
-      let emailRaw: string = fetchEmailResponse.data[1][0];
-
-      if (emailRaw.substring(emailRaw.length - 5) === "\r\n)\r\n") {
-        emailRaw = emailRaw.substring(0, emailRaw.length - 5);
-      }
-
-      const email: IEmail = this.emailParser.processEmail(emailRaw);
-
-      if (email) {
-        this.setState({ email });
-      }
+    if (!emailFlags) {
+      return;
     }
+
+    this.setState({ emailFlags });
+
+    this.progressBar.max = emailFlags.size;
+    this.checkProgressBar();
+
+    const fetchEmailResponse: IImapResponse = await this.imapSocket.imapRequest(
+      `UID FETCH ${this.stateManager.getActiveUid()} RFC822`
+    );
+
+    if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const email: IEmail = this.imapHelper.formatFetchEmailResponse(
+      fetchEmailResponse.data
+    );
+
+    this.setState({ email });
   }
 
   checkProgressBar = () => {
@@ -183,7 +172,7 @@ export class View extends React.Component<IViewProps, IViewState> {
 
     this.progressBar.now = this.imapSocket.getStreamAmount();
 
-    const progressBarNow = Math.ceil(
+    const progressBarNow: number = Math.ceil(
       (this.progressBar.now / this.progressBar.max) * 100
     );
 
@@ -213,7 +202,7 @@ export class View extends React.Component<IViewProps, IViewState> {
   };
 
   replyToEmail = (all: boolean = false) => {
-    const email = this.state.email;
+    const email: IEmail | undefined = this.state.email;
 
     if (email) {
       const convertedAttachments:
@@ -232,7 +221,7 @@ export class View extends React.Component<IViewProps, IViewState> {
   };
 
   forwardEmail = () => {
-    const email = this.state.email;
+    const email: IEmail | undefined = this.state.email;
 
     if (email) {
       const convertedAttachments:
@@ -276,7 +265,7 @@ export class View extends React.Component<IViewProps, IViewState> {
   };
 
   toggleActionModal = (actionType: EViewActionType): void => {
-    const actionUid = this.stateManager.getActiveUid();
+    const actionUid: number | undefined = this.stateManager.getActiveUid();
 
     this.setState({ actionUid, actionType, showActionModal: true });
   };
@@ -368,6 +357,7 @@ export class View extends React.Component<IViewProps, IViewState> {
           actionUid={this.state.actionUid}
           actionType={this.state.actionType}
           email={this.state.email!}
+          emailFlags={this.state.emailFlags!}
           showActionModal={this.state.showActionModal}
           imapHelper={this.imapHelper}
           imapSocket={this.imapSocket}

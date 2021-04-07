@@ -11,12 +11,22 @@ import {
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
 import { ImapSocket, ImapHelper } from "classes";
-import { EImapResponseStatus, IEmail, IFoldersEntry } from "interfaces";
+import {
+  EImapResponseStatus,
+  IEmail,
+  IEmailFlags,
+  IEmailFlagType,
+  IFoldersEntry,
+  IFoldersSubEntry,
+  IImapResponse,
+} from "interfaces";
+import { setFlagsFromString } from "node:v8";
 
 interface IViewActionsProps {
   actionUid?: number;
   actionType: EViewActionType;
   email: IEmail;
+  emailFlags: IEmailFlags;
   showActionModal: boolean;
   imapHelper: ImapHelper;
   imapSocket: ImapSocket;
@@ -39,12 +49,14 @@ interface IViewActionComponent {
   label: string;
   icon: IconDefinition;
   element: React.FC<IViewActionProps>;
+  hideSubmit?: boolean;
 }
 
 export const ViewActions: React.FC<IViewActionsProps> = ({
   actionUid,
   actionType,
   email,
+  emailFlags,
   showActionModal,
   imapHelper,
   imapSocket,
@@ -54,16 +66,22 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
   const [folders, updateFolders] = useState<IFoldersEntry[]>([]);
 
   useEffect(() => {
-    (async () => {
-      const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
+    if (showActionModal && folders.length == 0) {
+      (async () => {
+        const listResponse: IImapResponse = await imapSocket.imapRequest(
+          `LIST "" "*"`
+        );
 
-      const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
-        listResponse.data
-      );
+        const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
+          listResponse.data
+        );
 
-      updateFolders(folders);
-    })();
-  }, []);
+        updateFolders(folders);
+      })();
+    }
+  }, [showActionModal]);
+
+  const successfulSubmit = onHide;
 
   const ViewAction: IViewActionComponents = {
     [EViewActionType.MOVE]: {
@@ -85,6 +103,7 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
       label: "View source",
       icon: faCode,
       element: ViewActionView,
+      hideSubmit: true,
     },
     [EViewActionType.DELETE]: {
       label: "Delete email",
@@ -115,13 +134,16 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
           actionUid,
           folders,
           email,
+          emailFlags,
           imapSocket,
           submit,
           changeSubmit,
+          successfulSubmit,
         })}
       </Modal.Body>
       <Modal.Footer>
         <Button
+          className={`${ViewAction[actionType].hideSubmit && "d-none"}`}
           onClick={() => {
             changeSubmit(true);
           }}
@@ -129,6 +151,7 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
           Ok
         </Button>
         <Button
+          className={`${ViewAction[actionType].hideSubmit && "btn-block"}`}
           onClick={() => {
             onHide();
           }}
@@ -144,9 +167,11 @@ interface IViewActionProps {
   actionUid?: number;
   folders: IFoldersEntry[];
   email: IEmail;
+  emailFlags: IEmailFlags;
   imapSocket: ImapSocket;
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  successfulSubmit: () => void;
 }
 
 export const ViewActionMove: React.FC<IViewActionProps> = ({
@@ -155,6 +180,7 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   imapSocket,
   submit,
   changeSubmit,
+  successfulSubmit,
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<
     string | undefined
@@ -168,13 +194,15 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async () => {
-    const moveResponse = await imapSocket.imapRequest(
-      `MOVE ${actionUid} "${destinationFolder}"`
+    const moveResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID MOVE ${actionUid} "${destinationFolder}"`
     );
 
     if (moveResponse.status !== EImapResponseStatus.OK) {
       return;
     }
+
+    successfulSubmit();
   };
 
   return (
@@ -197,6 +225,14 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
+            {folder.folders?.map((subFolder: IFoldersSubEntry) => (
+              <option
+                key={subFolder.id}
+                value={`${folder.name}/${subFolder.name}`}
+              >
+                &nbsp;{subFolder.name}
+              </option>
+            ))}
           </React.Fragment>
         ))}
       </Form.Control>
@@ -210,6 +246,7 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   imapSocket,
   submit,
   changeSubmit,
+  successfulSubmit,
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<
     string | undefined
@@ -223,13 +260,15 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async () => {
-    const moveResponse = await imapSocket.imapRequest(
-      `COPY ${actionUid} "${destinationFolder}"`
+    const moveResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID COPY ${actionUid} "${destinationFolder}"`
     );
 
     if (moveResponse.status !== EImapResponseStatus.OK) {
       return;
     }
+
+    successfulSubmit();
   };
 
   return (
@@ -248,10 +287,17 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
           setDestinationFolder(event.target.value);
         }}
       >
-        <option>(root)</option>
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
+            {folder.folders?.map((subFolder: IFoldersSubEntry) => (
+              <option
+                key={subFolder.id}
+                value={`${folder.name}/${subFolder.name}`}
+              >
+                &nbsp;{subFolder.name}
+              </option>
+            ))}
           </React.Fragment>
         ))}
       </Form.Control>
@@ -261,9 +307,33 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
 
 export const ViewActionFlag: React.FC<IViewActionProps> = ({
   actionUid,
+  emailFlags,
+  imapSocket,
   submit,
   changeSubmit,
+  successfulSubmit,
 }) => {
+  const [flags, setFlags] = useState<IEmailFlagType[]>([
+    {
+      name: "Answered",
+      id: "\\Answered",
+      enabled: emailFlags.flags.includes("\\Answered"),
+      flagChanged: false,
+    },
+    {
+      name: "Urgent",
+      id: "\\Flagged",
+      enabled: emailFlags.flags.includes("\\Flagged"),
+      flagChanged: false,
+    },
+    {
+      name: "Draft",
+      id: "\\Draft",
+      enabled: emailFlags.flags.includes("\\Draft"),
+      flagChanged: false,
+    },
+  ]);
+
   useEffect(() => {
     if (submit) {
       submitAction();
@@ -271,36 +341,93 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
     }
   });
 
-  const submitAction = () => {
-    alert(actionUid);
+  const submitAction = async (): Promise<void> => {
+    const enabledFlags: string = flags
+      .reduce((flagResult: string[], flag: IEmailFlagType) => {
+        if (flag.enabled && flag.flagChanged) {
+          flagResult.push(flag.id);
+        }
+
+        return flagResult;
+      }, [])
+      .join(" ");
+
+    if (enabledFlags) {
+      const enabledFlagsResponse: IImapResponse = await imapSocket.imapRequest(
+        `UID STORE ${actionUid} +FLAGS (${enabledFlags})`
+      );
+
+      if (enabledFlagsResponse.status !== EImapResponseStatus.OK) {
+        return;
+      }
+    }
+
+    const disabledFlags: string = flags
+      .reduce((flagResult: string[], flag: IEmailFlagType) => {
+        if (!flag.enabled && flag.flagChanged) {
+          flagResult.push(flag.id);
+        }
+
+        return flagResult;
+      }, [])
+      .join(" ");
+
+    if (disabledFlags) {
+      const disabledFlagsResponse: IImapResponse = await imapSocket.imapRequest(
+        `UID STORE ${actionUid} -FLAGS (${disabledFlags})`
+      );
+
+      if (disabledFlagsResponse.status !== EImapResponseStatus.OK) {
+        return;
+      }
+    }
+
+    successfulSubmit();
+  };
+
+  const updateFlagProps = (): void => {
+    emailFlags.flags = flags
+      .reduce((flagResult: string[], flag: IEmailFlagType) => {
+        if (flag.enabled) {
+          flagResult.push(flag.id);
+        }
+
+        return flagResult;
+      }, [])
+      .filter((flagStatus: string | undefined) => flagStatus)
+      .join(" ");
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
-        Rename folder as{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
-      </Form.Label>
-      <Form.Control type="text" placeholder="Enter new folder name" />
+    <Form.Group controlId="formEmailAutoLogin">
+      <ul>
+        {flags.map((flag: IEmailFlagType, flagIndex: number) => (
+          <li key={flagIndex}>
+            <Form.Check
+              type="switch"
+              id={flags[flagIndex].name}
+              label={flags[flagIndex].name}
+              defaultChecked={flags[flagIndex].enabled}
+              onChange={() => {
+                flags[flagIndex].enabled = flags[flagIndex].enabled
+                  ? false
+                  : true;
+
+                flags[flagIndex].flagChanged = true;
+
+                updateFlagProps();
+
+                setFlags(flags);
+              }}
+            />
+          </li>
+        ))}
+      </ul>
     </Form.Group>
   );
 };
 
-export const ViewActionView: React.FC<IViewActionProps> = ({
-  email,
-  submit,
-  changeSubmit,
-}) => {
-  useEffect(() => {
-    if (submit) {
-      changeSubmit(false);
-    }
-  });
-
+export const ViewActionView: React.FC<IViewActionProps> = ({ email }) => {
   return (
     <div className="overflow-auto" style={{ height: 300 }}>
       <pre>{email.emailRaw}</pre>
@@ -313,6 +440,7 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
   imapSocket,
   submit,
   changeSubmit,
+  successfulSubmit,
 }) => {
   useEffect(() => {
     if (submit) {
@@ -322,13 +450,15 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async () => {
-    await imapSocket.imapRequest(`UID STORE ${actionUid} +FLAGS (\\Deleted)`);
+    const deleteResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID STORE ${actionUid} +FLAGS (\\Deleted)`
+    );
 
-    // this.setState({
-    //  deleted: true,
-    //  message: "This email has been marked for deletion.",
-    //  messageType: "danger",
-    // });
+    if (deleteResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    successfulSubmit();
   };
 
   return (

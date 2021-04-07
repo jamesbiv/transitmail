@@ -16,7 +16,10 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-}:focus {outline:0;}
+}
+:focus {
+  outline: 0;
+}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
@@ -32,7 +35,7 @@ pre {
 }
 
 .folder-sticky-top {
-  position: sticky;
+  position: sticky !important;
   top: 0px;
   z-index: 1020;
 }
