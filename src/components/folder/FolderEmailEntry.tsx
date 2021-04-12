@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   ButtonGroup,
@@ -14,7 +14,7 @@ import {
   faShare,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { IFolderEmail } from "interfaces";
+import { IFolderEmail, IFolderLongPress } from "interfaces";
 
 interface IFolderEmailEntryProps {
   email: IFolderEmail;
@@ -23,6 +23,9 @@ interface IFolderEmailEntryProps {
   replyToEmail: (uid: number) => void;
   forwardEmail: (uid: number) => void;
   deleteEmail: (uid: number) => void;
+  folderLongPress: IFolderLongPress;
+  handleLongPress: (uid: number) => void;
+  handleLongRelease: () => void;
 }
 
 export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
@@ -32,10 +35,16 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
   replyToEmail,
   forwardEmail,
   deleteEmail,
+  folderLongPress,
+  handleLongPress,
+  handleLongRelease,
 }) => {
   return (
     <Row
-      className={`border-bottom pt-1 pb-1 mt-0 mt-sm-2 pointer ${
+      className={`border-bottom pt-1 pt-sm-2 pb-1 pointer ${
+        email.selected && "bg-light"
+      }
+      ${
         !email.flags.includes("Seen") || email.flags.includes("Recent")
           ? "font-weight-bold"
           : ""
@@ -61,8 +70,18 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               md={2}
               lg={2}
               className="text-truncate"
+              onTouchStart={() => {
+                handleLongPress(email.uid);
+              }}
+              onTouchEnd={() => {
+                handleLongRelease();
+              }}
               onClick={() => {
-                viewEmail(email.uid);
+                if (!folderLongPress.isReturned) {
+                  viewEmail(email.uid);
+                } else {
+                  folderLongPress.isReturned = false;
+                }
               }}
             >
               {new Date(email.date).toDateString()}
@@ -75,8 +94,18 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               md={2}
               lg={2}
               className="text-truncate"
+              onTouchStart={() => {
+                handleLongPress(email.uid);
+              }}
+              onTouchEnd={() => {
+                handleLongRelease();
+              }}
               onClick={() => {
-                viewEmail(email.uid);
+                if (!folderLongPress.isReturned) {
+                  viewEmail(email.uid);
+                } else {
+                  folderLongPress.isReturned = false;
+                }
               }}
             >
               {email.from}
@@ -139,8 +168,18 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
               sm={0}
               md={0}
               lg={0}
+              onTouchStart={() => {
+                handleLongPress(email.uid);
+              }}
+              onTouchEnd={() => {
+                handleLongRelease();
+              }}
               onClick={() => {
-                viewEmail(email.uid);
+                if (!folderLongPress.isReturned) {
+                  viewEmail(email.uid);
+                } else {
+                  folderLongPress.isReturned = false;
+                }
               }}
             >
               <b>Subject</b>

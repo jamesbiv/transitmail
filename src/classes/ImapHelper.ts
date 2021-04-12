@@ -1,17 +1,28 @@
 import { IEmail, IEmailFlags, IFolderEmail, IFoldersEntry } from "interfaces";
-import { EmailParser } from "classes";
+import { MimeTools, EmailParser } from "classes";
 
 interface IImapHelper {
   emailParser: EmailParser;
+  mimeTools: MimeTools;
 }
 
 export class ImapHelper {
+  /**
+   * @var {EmailParser} emailParser
+   */
   protected emailParser: EmailParser;
+
+  /**
+   * @var {MimeTools} mimeTools
+   */
+  protected mimeTools: MimeTools;
+
   /**
    * @constructor
    */
-  constructor({ emailParser }: IImapHelper) {
+  constructor({ emailParser, mimeTools }: IImapHelper) {
     this.emailParser = emailParser;
+    this.mimeTools = mimeTools;
   }
 
   /**
@@ -24,7 +35,9 @@ export class ImapHelper {
   ): IEmailFlags | undefined {
     const flagDataRaw: string = fetchData[0][2];
     const flagData: RegExpMatchArray | undefined =
-      flagDataRaw.match(/.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/) ?? undefined;
+      flagDataRaw.match(
+        /.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/
+      ) ?? undefined;
 
     if (flagData?.length !== 4) {
       return undefined;
@@ -79,11 +92,11 @@ export class ImapHelper {
         folderData[i][0].match(/.*From: (.*).*/)?.[1] ?? undefined;
 
       if (emailSubject && emailSubject.indexOf("=?") > -1) {
-        emailSubject = this.emailParser.parseMimeWords(emailSubject);
+        emailSubject = this.mimeTools.parseMimeWords(emailSubject);
       }
 
       if (emailFrom && emailFrom?.indexOf("=?") > -1) {
-        emailFrom = this.emailParser.parseMimeWords(emailFrom);
+        emailFrom = this.mimeTools.parseMimeWords(emailFrom);
       }
 
       if (emailFlags && emailDate && emailFrom) {

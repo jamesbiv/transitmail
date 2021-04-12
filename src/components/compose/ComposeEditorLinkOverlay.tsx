@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React from "react";
 import { ContentState, EditorState, RichUtils, SelectionState } from "draft-js";
 import { Button, Overlay, Popover, Form, Row, Col } from "react-bootstrap/";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -66,7 +66,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 type="text"
                 placeholder="Link address"
                 defaultValue=""
-                onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                   event.preventDefault()
                 }
               />

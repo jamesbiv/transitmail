@@ -137,7 +137,7 @@ export class Settings extends React.PureComponent<
 
   render() {
     return (
-      <Card className="mt-0 mt-sm-3">
+      <Card className="mt-0 mt-sm-3 mb-3">
         <Card.Header>
           <h4 className="p-0 m-0 text-nowrap">
             <FontAwesomeIcon icon={faCog} /> Settings

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Form, Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -195,7 +195,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
           type="text"
           placeholder="Enter new folder name"
           defaultValue={folderName}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             setFolderName(event.target.value);
           }}
         />
@@ -211,7 +211,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
         </Form.Label>
         <Form.Control
           as="select"
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             setSubFolder(event.target.value);
           }}
         >
@@ -294,7 +294,7 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
           type="text"
           placeholder="Enter new folder name"
           defaultValue={newFolderName}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             setNewFolderName(event.target.value);
           }}
         />
@@ -310,7 +310,7 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
         </Form.Label>
         <Form.Control
           as="select"
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             setDestinationSubFolder(event.target.value);
           }}
         >
@@ -373,7 +373,7 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setDestinationFolder(event.target.value);
         }}
       >
@@ -430,7 +430,7 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
         type="text"
         placeholder="Enter new folder name"
         defaultValue={newFolderName}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setNewFolderName(event.target.value);
         }}
       />

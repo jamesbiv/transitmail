@@ -16,17 +16,17 @@ import { IEmail } from "interfaces";
 import { EViewActionType } from "./";
 
 interface IViewHeaderProps {
+  email: IEmail;
   toggleActionModal: (actionType: EViewActionType) => void;
   replyToEmail: (all?: boolean) => void;
   forwardEmail: () => void;
-  email: IEmail;
 }
 
 export const ViewHeader: React.FC<IViewHeaderProps> = ({
+  email,
   toggleActionModal,
   replyToEmail,
   forwardEmail,
-  email,
 }) => {
   return (
     <>

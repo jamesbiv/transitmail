@@ -22,7 +22,7 @@ import {
 import { stateFromHTML } from "draft-js-import-html";
 import {
   SmtpSocket,
-  EmailParser,
+  MimeTools,
   EmailComposer,
   LocalStorage,
   StateManager,
@@ -36,7 +36,6 @@ import {
   IComposeRecipient,
   IComposeAttachment,
   IPreparedEmail,
-  IImapResponse,
   ISmtpResponse,
   IComposePresets,
 } from "interfaces";
@@ -45,7 +44,7 @@ import { ESmtpResponseStatus } from "interfaces";
 interface IComposeProps {
   dependencies: {
     smtpSocket: SmtpSocket;
-    emailParser: EmailParser;
+    mimeTools: MimeTools;
     localStorage: LocalStorage;
     stateManager: StateManager;
   };
@@ -64,9 +63,9 @@ interface IComposeState {
 
 export class Compose extends React.Component<IComposeProps, IComposeState> {
   /**
-   * @var {EmailParser} emailParser
+   * @var {MimeTools} mimeTools
    */
-  protected emailParser: EmailParser;
+  protected mimeTools: MimeTools;
 
   /**
    * @var {SmtpSocket} smtpSocket
@@ -93,7 +92,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
 
     this.smtpSocket = props.dependencies.smtpSocket;
     this.localStorage = props.dependencies.localStorage;
-    this.emailParser = props.dependencies.emailParser;
+    this.mimeTools = props.dependencies.mimeTools;
     this.stateManager = props.dependencies.stateManager;
     this.emailComposer = new EmailComposer();
 
@@ -123,6 +122,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
   ) {
     contentBlock.findEntityRanges((entityRange: CharacterMetadata) => {
       const entityKey = entityRange.getEntity();
+
       return (
         entityKey !== null &&
         contentState.getEntity(entityKey).getType() === "LINK"
@@ -235,12 +235,15 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
     command: string,
     editorState: EditorState
   ): DraftHandleValue {
-    const newState = RichUtils.handleKeyCommand(editorState, command);
+    const newEditorState: EditorState | undefined =
+      RichUtils.handleKeyCommand(editorState, command) ?? undefined;
 
-    if (newState) {
-      this.updateEditorState(newState);
+    if (newEditorState) {
+      // this.updateEditorState(newEditorState);
+
       return "handled";
     }
+
     return "not-handled";
   }
 
@@ -369,6 +372,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
               />
             </div>
             <ComposeAttachments
+              binaryStringToBlob={this.mimeTools.binaryStringToBlob}
               updateAttachments={this.updateAttachments}
               attachments={this.state.attachments}
             />

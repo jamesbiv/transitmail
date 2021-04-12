@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Form, Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -192,7 +192,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setDestinationFolder(event.target.value);
         }}
       >
@@ -255,7 +255,7 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setDestinationFolder(event.target.value);
         }}
       >
@@ -284,7 +284,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [flags, setFlags] = useState<IEmailFlagType[]>([
+  const [flags, updateFlags] = useState<IEmailFlagType[]>([
     {
       name: "Answered",
       id: "\\Answered",
@@ -313,15 +313,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
   });
 
   const submitAction = () => {
-    const enabledFlags: string = flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (flag.enabled && flag.flagChanged) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .join(" ");
+    const enabledFlags: string | undefined = getValidFlags(true);
 
     if (enabledFlags) {
       actionUids?.forEach(async (actionUid: number) => {
@@ -331,15 +323,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
       });
     }
 
-    const disabledFlags: string = flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (!flag.enabled && flag.flagChanged) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .join(" ");
+    const disabledFlags: string | undefined = getValidFlags(false);
 
     if (disabledFlags) {
       actionUids?.forEach(async (actionUid: number) => {
@@ -350,6 +334,18 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
     }
 
     successfulSubmit();
+  };
+
+  const getValidFlags = (condition?: boolean): string | undefined => {
+    return flags
+      .reduce((flagResult: string[], flag: IEmailFlagType) => {
+        if (flag.enabled === condition && flag.flagChanged) {
+          flagResult.push(flag.id);
+        }
+
+        return flagResult;
+      }, [])
+      .join(" ");
   };
 
   return (
@@ -369,7 +365,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
 
                 flags[flagIndex].flagChanged = true;
 
-                setFlags(flags);
+                updateFlags(flags);
               }}
             />
           </li>

@@ -11,7 +11,7 @@ import {
   ImapHelper,
   ImapSocket,
   LocalStorage,
-  EmailParser,
+  MimeTools,
   StateManager,
 } from "classes";
 import {
@@ -29,7 +29,7 @@ interface IViewProps {
     imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
-    emailParser: EmailParser;
+    mimeTools: MimeTools;
     stateManager: StateManager;
   };
 }
@@ -53,9 +53,9 @@ interface IProgressBar {
 
 export class View extends React.Component<IViewProps, IViewState> {
   /**
-   * @var {EmailParser} emailParser
+   * @var {MimeTools} mimeTools
    */
-  protected emailParser: EmailParser;
+  protected mimeTools: MimeTools;
 
   /**
    * @var {ImapHelper} imapHelper
@@ -92,7 +92,7 @@ export class View extends React.Component<IViewProps, IViewState> {
     this.imapHelper = props.dependencies.imapHelper;
     this.imapSocket = props.dependencies.imapSocket;
     this.localStorage = props.dependencies.localStorage;
-    this.emailParser = props.dependencies.emailParser;
+    this.mimeTools = props.dependencies.mimeTools;
     this.stateManager = props.dependencies.stateManager;
 
     this.state = {
@@ -201,13 +201,13 @@ export class View extends React.Component<IViewProps, IViewState> {
     }
   };
 
-  replyToEmail = (all: boolean = false) => {
+  replyToEmail = async (all: boolean = false) => {
     const email: IEmail | undefined = this.state.email;
 
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
-        | undefined = this.convertAttachments(email.attachments);
+        | undefined = await this.convertAttachments(email.attachments);
 
       this.stateManager.setComposePresets({
         from: email?.from,
@@ -220,13 +220,13 @@ export class View extends React.Component<IViewProps, IViewState> {
     }
   };
 
-  forwardEmail = () => {
+  forwardEmail = async () => {
     const email: IEmail | undefined = this.state.email;
 
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
-        | undefined = this.convertAttachments(email.attachments);
+        | undefined = await this.convertAttachments(email.attachments);
 
       this.stateManager.setComposePresets({
         subject: email.subject,
@@ -238,29 +238,44 @@ export class View extends React.Component<IViewProps, IViewState> {
     }
   };
 
-  convertAttachments = (attachments: IEmailAttachment[] | undefined) => {
+  convertAttachments = async (
+    attachments: IEmailAttachment[] | undefined
+  ): Promise<IComposeAttachment[] | undefined> => {
     if (!attachments) {
       return undefined;
     }
 
     let count: number = 0;
 
-    return attachments.reduce(
-      (
-        convertedAttachments: IComposeAttachment[],
+    return await attachments.reduce(
+      async (
+        convertedAttachments: Promise<IComposeAttachment[]>,
         attachment: IEmailAttachment
       ) => {
-        convertedAttachments.push({
+        const attachmentContent: Blob = this.mimeTools.base64toBlob(
+          attachment.content,
+          attachment.mimeType
+        );
+
+        const fileReaderResponse: FileReader = await new Promise((resolve) => {
+          const fileReader = new FileReader();
+
+          fileReader.onload = () => resolve(fileReader);
+
+          fileReader.readAsBinaryString(attachmentContent);
+        });
+
+        (await convertedAttachments).push({
           id: count++,
           filename: attachment.filename,
           size: 0,
           mimeType: attachment.mimeType,
-          data: "",
+          data: fileReaderResponse.result,
         });
 
-        return convertedAttachments;
+        return Promise.resolve(convertedAttachments);
       },
-      []
+      Promise.resolve([])
     );
   };
 
@@ -281,7 +296,7 @@ export class View extends React.Component<IViewProps, IViewState> {
       </Card>
     ) : (
       <React.Fragment>
-        <Card className="mt-0 mt-sm-3">
+        <Card className="mt-0 mt-sm-3 mb-3">
           <Card.Header>
             <h4 className="p-0 m-0 text-truncate">
               <FontAwesomeIcon icon={faEnvelopeOpen} />{" "}
@@ -305,7 +320,7 @@ export class View extends React.Component<IViewProps, IViewState> {
           >
             <ViewAttachments
               attachments={this.state.email!.attachments}
-              base64toBlob={this.emailParser.base64toBlob}
+              base64toBlob={this.mimeTools.base64toBlob}
             />
           </Card.Body>
           <Card.Body>

@@ -103,7 +103,7 @@ export class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
   render() {
     return (
       <React.Fragment>
-        <Card className="mt-0 mt-sm-3">
+        <Card className="mt-0 mt-sm-3 mb-3">
           <Card.Header>
             <Row>
               <Col xs={12} sm={6}>

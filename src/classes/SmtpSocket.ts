@@ -10,12 +10,12 @@ type TSmtpCallback = (event: ISmtpResponseData | Event) => void;
 
 export class SmtpSocket {
   /**
-   * $var {ISmtpSession} session
+   * @var {ISmtpSession} session
    */
   public session: ISmtpSession;
 
   /**
-   * $var {ISmtpSettings} settings
+   * @var {ISmtpSettings} settings
    */
   public settings: ISmtpSettings;
 

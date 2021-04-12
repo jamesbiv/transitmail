@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert, Form, Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,7 +20,6 @@ import {
   IFoldersSubEntry,
   IImapResponse,
 } from "interfaces";
-import { setFlagsFromString } from "node:v8";
 
 interface IViewActionsProps {
   actionUid?: number;
@@ -217,14 +216,15 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setDestinationFolder(event.target.value);
         }}
       >
-        <option>(root)</option>
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>
-            <option key={folder.id}>{folder.name}</option>
+            <option key={folder.id} value={folder.name}>
+              {folder.name}
+            </option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
               <option
                 key={subFolder.id}
@@ -283,13 +283,15 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setDestinationFolder(event.target.value);
         }}
       >
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>
-            <option key={folder.id}>{folder.name}</option>
+            <option key={folder.id} value={folder.name}>
+              {folder.name}
+            </option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
               <option
                 key={subFolder.id}
@@ -313,7 +315,7 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [flags, setFlags] = useState<IEmailFlagType[]>([
+  const [flags, updateFlags] = useState<IEmailFlagType[]>([
     {
       name: "Answered",
       id: "\\Answered",
@@ -342,15 +344,7 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async (): Promise<void> => {
-    const enabledFlags: string = flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (flag.enabled && flag.flagChanged) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .join(" ");
+    const enabledFlags: string | undefined = getValidFlags(true);
 
     if (enabledFlags) {
       const enabledFlagsResponse: IImapResponse = await imapSocket.imapRequest(
@@ -362,15 +356,7 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
       }
     }
 
-    const disabledFlags: string = flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (!flag.enabled && flag.flagChanged) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .join(" ");
+    const disabledFlags: string | undefined = getValidFlags(false);
 
     if (disabledFlags) {
       const disabledFlagsResponse: IImapResponse = await imapSocket.imapRequest(
@@ -383,6 +369,18 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
     }
 
     successfulSubmit();
+  };
+
+  const getValidFlags = (condition?: boolean): string | undefined => {
+    return flags
+      .reduce((flagResult: string[], flag: IEmailFlagType) => {
+        if (flag.enabled === condition && flag.flagChanged) {
+          flagResult.push(flag.id);
+        }
+
+        return flagResult;
+      }, [])
+      .join(" ");
   };
 
   const updateFlagProps = (): void => {
@@ -415,9 +413,9 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
 
                 flags[flagIndex].flagChanged = true;
 
-                updateFlagProps();
+                updateFlags(flags);
 
-                setFlags(flags);
+                updateFlagProps();
               }}
             />
           </li>
@@ -464,7 +462,7 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
   return (
     <Alert variant="danger">
       <FontAwesomeIcon icon={faExclamationTriangle} /> Are you sure you want to
-      delete this folder?
+      delete this email?
     </Alert>
   );
 };

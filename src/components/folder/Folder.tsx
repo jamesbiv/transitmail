@@ -6,11 +6,15 @@ import {
   LocalStorage,
   StateManager,
   InfiniteScroll,
+  MimeTools,
 } from "classes";
 import {
   EImapResponseStatus,
+  IComposeAttachment,
   IEmail,
+  IEmailAttachment,
   IFolderEmail,
+  IFolderLongPress,
   IImapResponse,
 } from "interfaces";
 import {
@@ -43,6 +47,7 @@ interface IFolderProps {
     localStorage: LocalStorage;
     emailParser: EmailParser;
     stateManager: StateManager;
+    mimeTools: MimeTools;
   };
 }
 
@@ -90,6 +95,11 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   protected infiniteScroll: InfiniteScroll;
 
   /**
+   * @var {MimeTools} mimeTools
+   */
+  protected mimeTools: MimeTools;
+
+  /**
    * @var {boolean} toggleSelectionAll
    */
   protected toggleSelectionAll: boolean;
@@ -99,6 +109,11 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
    */
   protected emails?: IFolderEmail[];
 
+  /**
+   * @var {IFolderLongPress} longPress
+   */
+  protected folderLongPress: IFolderLongPress;
+
   constructor(props: IFolderProps) {
     super(props);
 
@@ -107,6 +122,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.localStorage = props.dependencies.localStorage;
     this.emailParser = props.dependencies.emailParser;
     this.stateManager = props.dependencies.stateManager;
+    this.mimeTools = props.dependencies.mimeTools;
 
     this.toggleSelectionAll = false;
 
@@ -127,6 +143,11 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       actionType: EFolderEmailActionType.COPY,
       folderSpinner: false,
     };
+
+    this.folderLongPress = {
+      timer: 0,
+      isReturned: false,
+    };
   }
 
   public async componentDidMount() {
@@ -146,14 +167,14 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     this.stateManager.updateCurrentFolder(this.emails);
 
-    this.clearSelection();
-
     this.infiniteScroll.setTotalEntries(this.emails?.length ?? 0);
 
     this.setState({
       emails: this.emails?.slice(0, 15),
       folderSpinner: false,
     });
+
+    this.clearAllSelections();
   }
 
   public componentWillUnmount() {
@@ -229,13 +250,10 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   };
 
   public deleteEmail = (uid: number): void => {
-    (async () => {
-      await this.imapSocket.imapRequest(`UID STORE ${uid} +FLAGS (\\Deleted)`);
-    })();
-
     this.setState({
-      message: "This email has been marked for deletion.",
-      messageType: "danger",
+      actionUids: [uid],
+      actionType: EFolderEmailActionType.DELETE,
+      showActionModal: true,
     });
   };
 
@@ -252,10 +270,15 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       fetchEmailResponse.data
     );
 
+    const convertedAttachments:
+      | IComposeAttachment[]
+      | undefined = await this.convertAttachments(email.attachments);
+
     this.stateManager.setComposePresets({
       subject: email.subject,
       from: email.from,
       email: email.bodyHtml ?? email.bodyText ?? "",
+      attachments: convertedAttachments,
     });
 
     this.stateManager.updateActiveKey("compose");
@@ -274,18 +297,58 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       fetchEmailResponse.data
     );
 
+    const convertedAttachments:
+      | IComposeAttachment[]
+      | undefined = await this.convertAttachments(email.attachments);
+
     this.stateManager.setComposePresets({
       subject: email.subject,
       email: email.bodyHtml ?? email.bodyText ?? "",
+      attachments: convertedAttachments,
     });
 
     this.stateManager.updateActiveKey("compose");
   };
 
-  public updateEmails = (emails: IFolderEmail[]): void => {
-    this.emails = emails;
+  convertAttachments = async (
+    attachments: IEmailAttachment[] | undefined
+  ): Promise<IComposeAttachment[] | undefined> => {
+    if (!attachments) {
+      return undefined;
+    }
 
-    this.setState({ emails: this.emails?.slice(0, 15) });
+    let count: number = 0;
+
+    return await attachments.reduce(
+      async (
+        convertedAttachments: Promise<IComposeAttachment[]>,
+        attachment: IEmailAttachment
+      ) => {
+        const attachmentContent: Blob = this.mimeTools.base64toBlob(
+          attachment.content,
+          attachment.mimeType
+        );
+
+        const fileReaderResponse: FileReader = await new Promise((resolve) => {
+          const fileReader = new FileReader();
+
+          fileReader.onload = () => resolve(fileReader);
+
+          fileReader.readAsBinaryString(attachmentContent);
+        });
+
+        (await convertedAttachments).push({
+          id: count++,
+          filename: attachment.filename,
+          size: 0,
+          mimeType: attachment.mimeType,
+          data: fileReaderResponse.result,
+        });
+
+        return Promise.resolve(convertedAttachments);
+      },
+      Promise.resolve([])
+    );
   };
 
   public updateVisibleEmails = (): void => {
@@ -351,12 +414,31 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     }
   };
 
-  public clearSelection = (): void => {
+  public clearAllSelections = (): void => {
     if (this.emails) {
       this.emails.forEach((email: IFolderEmail, emailKey: number) => {
         this.emails![emailKey].selected = false;
       });
     }
+  };
+
+  public handleLongPress: (emailUid: number, delay?: number) => void = (
+    emailUid,
+    delay = 1000
+  ) => {
+    this.folderLongPress.isReturned = false;
+
+    this.folderLongPress.timer = setTimeout((handler: TimerHandler): void => {
+      this.folderLongPress.isReturned = true;
+
+      this.toggleSelection(emailUid);
+    }, delay);
+  };
+
+  public handleLongRelease: () => void = () => {
+    clearTimeout(this.folderLongPress.timer);
+
+    this.folderLongPress.timer = 0;
   };
 
   public toggleActionModal = (actionType: EFolderEmailActionType): void => {
@@ -423,11 +505,10 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
             </Card.Body>
           ) : (
             <Container fluid>
-              {this.state.displayTableOptions && (
-                <FolderTableOptions
-                  toggleActionModal={this.toggleActionModal}
-                />
-              )}
+              <FolderTableOptions
+                displayTableOptions={this.state.displayTableOptions}
+                toggleActionModal={this.toggleActionModal}
+              />
               {this.state.displayTableHeader && (
                 <FolderTableHeader
                   emails={this.emails ?? []}
@@ -444,6 +525,9 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
                   replyToEmail={this.replyToEmail}
                   forwardEmail={this.forwardEmail}
                   deleteEmail={this.deleteEmail}
+                  folderLongPress={this.folderLongPress}
+                  handleLongPress={this.handleLongPress}
+                  handleLongRelease={this.handleLongRelease}
                 />
               ))}
             </Container>

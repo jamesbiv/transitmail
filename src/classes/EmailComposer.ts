@@ -25,6 +25,8 @@ export class EmailComposer {
       boundaryid: Math.random().toString(36).substring(5),
     };
 
+    preparedEmail.subject = emailData.subject;
+    
     preparedEmail.from = emailData.from;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
@@ -37,11 +39,13 @@ export class EmailComposer {
           }
         }
       }
+
       if (recipient.type === "Cc") {
         preparedEmail.cc
           ? (preparedEmail.cc += ", " + recipient.value)
           : (preparedEmail.cc = recipient.value ?? "");
       }
+      
       if (recipient.type === "Bcc") {
         preparedEmail.bcc
           ? (preparedEmail.bcc += ", " + recipient.value)

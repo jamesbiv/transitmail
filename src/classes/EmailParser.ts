@@ -1,3 +1,4 @@
+import { MimeTools } from "classes";
 import {
   IEmail,
   IEmailAttachment,
@@ -6,18 +7,41 @@ import {
   IEmailHeaders,
 } from "interfaces";
 
+interface IEmailParser {
+  mimeTools: MimeTools;
+}
+
 export class EmailParser {
   /**
    * @var {IEmail} email
    */
-  protected email: IEmail = {
-    attachments: [],
-    boundaries: [],
-    boundaryIds: [],
-    headers: {},
-    headersRaw: "",
-    contentRaw: "",
-  };
+  protected email: IEmail;
+
+  /**
+   * @var {MimeTools} mimeTools
+   */
+  protected mimeTools;
+
+  /**
+   * @constructor
+   * @param param0
+   */
+  constructor({ mimeTools }: IEmailParser) {
+    this.mimeTools = mimeTools;
+    this.email = {
+      emailRaw: "",
+      headersRaw: "",
+      contentRaw: "",
+    };
+  }
+
+  /**
+   * @name getEmail
+   * return IEmail
+   */
+  public getEmail(): IEmail {
+    return this.email;
+  }
 
   /**
    * @name processEmail
@@ -32,21 +56,129 @@ export class EmailParser {
 
     const email: IEmail = {
       emailRaw,
-      attachments: [],
-      bodyHtml: "",
-      bodyText: "",
-      boundaries: [],
-      boundaryIds: [],
-      headers: {},
       headersRaw: emailRaw.substring(0, headerPosition),
       contentRaw: emailRaw.substring(headerPosition + 4, emailRaw.length - 1),
     };
 
     email.headers = this.splitHeaders(email.headersRaw, false);
 
-    /* Sort header data */
-    Object.keys(email.headers).forEach((headerKey: string) => {
-      const headerData: string = email.headers[headerKey]!;
+    this.extractDetailsFromHeaders(email);
+
+    email.boundaries = this.parseBoundaries(
+      email.contentRaw,
+      email.boundaryIds
+    );
+
+    this.extractContentFromBoundaries(email);
+
+    if (!email.boundaries.length) {
+      if (email.mimeType === "text/html") {
+        if (email.encoding?.toLowerCase() === "quoted-printable") {
+          email.bodyHtml = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
+        } else if (email.encoding?.toLowerCase() === "base64") {
+          email.bodyHtml = this.mimeTools.decodeBase64(email.contentRaw);
+        } else {
+          email.bodyHtml = email.contentRaw;
+        }
+      } else {
+        if (email.encoding?.toLowerCase() === "quoted-printable") {
+          email.bodyText = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
+        } else if (email.encoding?.toLowerCase() === "base64") {
+          email.bodyHtml = this.mimeTools.decodeBase64(email.contentRaw);
+        } else {
+          email.bodyText = email.contentRaw;
+        }
+      }
+    }
+
+    if (email.bodyHtml) {
+      email.bodyHtml = this.stripScripts(email.bodyHtml).replace(
+        /http/gi,
+        "#http"
+      );
+    }
+
+    this.email = email;
+
+    return email;
+  }
+
+  /**
+   * @name splitHeaders
+   * @param {string} contentRaw
+   * @param {boolean} returnContent
+   * @returns IEmailHeaders
+   */
+  private splitHeaders(
+    headerRaw: string,
+    returnContent: boolean = true
+  ): IEmailHeaders {
+    const headerRows: string[] = headerRaw.split(/\r?\n|\r/);
+    const headerMaxLength: number = 76;
+
+    const headers: IEmailHeaders = {};
+
+    let currentHeaderName: string;
+    let currentHeaderData: string | undefined;
+
+    let headerEnd: boolean = false;
+    let headerContent: string = "";
+
+    headerRows.forEach((headerRow: string) => {
+      const [match, contentHeaderName, contentHeaderData]: RegExpMatchArray =
+        headerRow.match(/(^\S*):\s*(.*)/) ?? [];
+
+      if (!headerEnd) {
+        if (contentHeaderName) {
+          currentHeaderName = contentHeaderName.toLowerCase();
+          currentHeaderData = headers[currentHeaderName];
+
+          if (!currentHeaderData) {
+            headers[currentHeaderName] = contentHeaderData ?? "";
+          } else {
+            headers[currentHeaderName] =
+              currentHeaderData + " " + (contentHeaderData ?? "").trimLeft();
+          }
+        } else if (
+          !contentHeaderName &&
+          (headerRow[0] === "\t" || headerRow[0] === " ")
+        ) {
+          currentHeaderData = headers[currentHeaderName];
+
+          const lastHeaderLength: number = currentHeaderData
+            ? currentHeaderData.length - 1
+            : 0;
+
+          if (lastHeaderLength >= headerMaxLength) {
+            headers[currentHeaderName] =
+              currentHeaderData + headerRow.trimLeft();
+          } else {
+            headers[currentHeaderName] =
+              currentHeaderData + " " + headerRow.trimLeft();
+          }
+        } else {
+          headerEnd = true;
+        }
+      } else if (returnContent) {
+        headerContent += headerRow + "\r\n";
+      }
+    });
+
+    if (returnContent) {
+      headers.content = headerContent;
+    }
+
+    return headers;
+  }
+
+  /**
+   * extractDetailsFromHeaders
+   * @param {IEmail} email
+   * @returns void
+   */
+  private extractDetailsFromHeaders(email: IEmail): void {
+    Object.keys(email.headers ?? {}).forEach((headerKey: string) => {
+      const headerData: string = email.headers![headerKey]!;
 
       switch (headerKey.toLowerCase()) {
         case "date":
@@ -54,23 +186,23 @@ export class EmailParser {
           break;
 
         case "to":
-          email.to = this.parseMimeWords(headerData);
+          email.to = this.mimeTools.parseMimeWords(headerData);
           break;
 
         case "cc":
-          email.cc = this.parseMimeWords(headerData);
+          email.cc = this.mimeTools.parseMimeWords(headerData);
           break;
 
         case "from":
-          email.from = this.parseMimeWords(headerData);
+          email.from = this.mimeTools.parseMimeWords(headerData);
           break;
 
         case "reply-to":
-          email.replyTo = this.parseMimeWords(headerData);
+          email.replyTo = this.mimeTools.parseMimeWords(headerData);
           break;
 
         case "subject":
-          email.subject = this.parseMimeWords(headerData);
+          email.subject = this.mimeTools.parseMimeWords(headerData);
           break;
 
         case "content-transfer-encoding":
@@ -94,6 +226,10 @@ export class EmailParser {
             );
 
             if (newBoundaryId) {
+              if (!email.boundaryIds) {
+                email.boundaryIds = [];
+              }
+
               email.boundaryIds.push(newBoundaryId);
             }
           }
@@ -103,135 +239,6 @@ export class EmailParser {
           break;
       }
     });
-
-    email.boundaries = this.parseBoundaries(
-      email.contentRaw,
-      email.boundaryIds
-    );
-
-    email.boundaries.forEach((boundary: IEmailBoundary) => {
-      boundary.contents.forEach((contentRow: IEmailBoundaryContent) => {
-        switch (contentRow.mimeType) {
-          case "text/html":
-            email.bodyHtmlHeaders = contentRow.headers;
-
-            switch (contentRow.encoding?.toLowerCase()) {
-              case "quoted-printable":
-                email.bodyHtml += this.decodeQuotedPrintable(
-                  contentRow.content
-                );
-                break;
-
-              case "base64":
-                email.bodyHtml += this.decodeBase64(contentRow.content);
-                break;
-
-              default:
-                email.bodyHtml += contentRow.content;
-                break;
-            }
-            break;
-
-          case "text/plain":
-            email.bodyTextHeaders = contentRow.headers;
-
-            switch (contentRow.encoding?.toLowerCase()) {
-              case "quoted-printable":
-                email.bodyText += this.decodeQuotedPrintable(
-                  contentRow.content
-                );
-                break;
-
-              case "base64":
-                email.bodyText += this.decodeBase64(contentRow.content);
-                break;
-
-              default:
-                email.bodyText += contentRow.content;
-                break;
-            }
-            break;
-
-          default:
-            if (contentRow.isAttachment) {
-              email.attachments.push(contentRow as IEmailAttachment);
-            }
-            break;
-        }
-      });
-    });
-
-    if (!email.boundaries.length) {
-      if (email.mimeType === "text/html") {
-        if (email.encoding?.toLowerCase() === "quoted-printable") {
-          email.bodyHtml = this.decodeQuotedPrintable(email.contentRaw);
-        } else if (email.encoding?.toLowerCase() === "base64") {
-          email.bodyHtml = this.decodeBase64(email.contentRaw);
-        } else {
-          email.bodyHtml = email.contentRaw;
-        }
-      } else {
-        if (email.encoding?.toLowerCase() === "quoted-printable") {
-          email.bodyText = this.decodeQuotedPrintable(email.contentRaw);
-        } else if (email.encoding?.toLowerCase() === "base64") {
-          email.bodyHtml = this.decodeBase64(email.contentRaw);
-        } else {
-          email.bodyText = email.contentRaw;
-        }
-      }
-    }
-
-    if (email.bodyHtml) {
-      email.bodyHtml = this.stripScripts(email.bodyHtml).replace(
-        /http/gi,
-        "#http"
-      );
-    }
-
-    this.email = email;
-
-    return email;
-  }
-
-  /**
-   * @name getEmail
-   * return IEmail
-   */
-  public getEmail(): IEmail {
-    return this.email;
-  }
-
-  /**
-   * @name getHeaderAttribute
-   * @param {string} field
-   * @param {string} data
-   * @returns string | undefined
-   */
-  private getHeaderAttribute(field: string, data: string): string | undefined {
-    if (data.indexOf(field) === -1) {
-      return undefined;
-    }
-
-    const regex = new RegExp(field + "=['|\"]?(\\S+)");
-    const match: RegExpMatchArray | undefined = data.match(regex) ?? undefined;
-
-    let value: string | undefined;
-
-    if (match && match.length > 1) {
-      let matchedValue: string = match[1];
-
-      ["'", '"'].forEach((char: string) => {
-        const trim = matchedValue.indexOf(char);
-
-        if (trim > -1) {
-          matchedValue = matchedValue.substring(0, trim);
-        }
-      });
-
-      value = matchedValue;
-    }
-
-    return value;
   }
 
   /**
@@ -242,9 +249,9 @@ export class EmailParser {
    */
   private parseBoundaries(
     contentRaw: string,
-    boundaryIds: string[]
+    boundaryIds?: string[]
   ): IEmailBoundary[] {
-    if (!boundaryIds.length || !contentRaw.length) {
+    if (!boundaryIds?.length || !contentRaw.length) {
       return [];
     }
 
@@ -273,6 +280,77 @@ export class EmailParser {
       },
       []
     );
+  }
+
+  /**
+   * extractContentFromBoundaries
+   * @param {IEmail} email
+   * @returns void
+   */
+  private extractContentFromBoundaries(email: IEmail): void {
+    email.boundaries?.forEach((boundary: IEmailBoundary) => {
+      boundary.contents.forEach((contentRow: IEmailBoundaryContent) => {
+        switch (contentRow.mimeType) {
+          case "text/html":
+            if (!email.bodyHtml) {
+              email.bodyHtml = "";
+            }
+
+            email.bodyHtmlHeaders = contentRow.headers;
+
+            switch (contentRow.encoding?.toLowerCase()) {
+              case "quoted-printable":
+                email.bodyHtml += this.mimeTools.decodeQuotedPrintable(
+                  contentRow.content
+                );
+                break;
+
+              case "base64":
+                email.bodyHtml += this.mimeTools.decodeBase64(contentRow.content);
+                break;
+
+              default:
+                email.bodyHtml += contentRow.content;
+                break;
+            }
+            break;
+
+          case "text/plain":
+            if (!email.bodyText) {
+              email.bodyHtml = "";
+            }
+
+            email.bodyTextHeaders = contentRow.headers;
+
+            switch (contentRow.encoding?.toLowerCase()) {
+              case "quoted-printable":
+                email.bodyText += this.mimeTools.decodeQuotedPrintable(
+                  contentRow.content
+                );
+                break;
+
+              case "base64":
+                email.bodyText += this.mimeTools.decodeBase64(contentRow.content);
+                break;
+
+              default:
+                email.bodyText += contentRow.content;
+                break;
+            }
+            break;
+
+          default:
+            if (contentRow.isAttachment) {
+              if (!email.attachments) {
+                email.attachments = [];
+              }
+
+              email.attachments.push(contentRow as IEmailAttachment);
+            }
+            break;
+        }
+      });
+    });
   }
 
   /**
@@ -310,7 +388,6 @@ export class EmailParser {
           } else if (contentRow === "--" + boundaryId + "--") {
             allBoundariesMet = true;
           } else {
-            // may need to change this
             if (!allBoundariesMet && contents[contentIndex]) {
               contents[contentIndex].contentRaw += contentRow + "\r\n";
             }
@@ -423,74 +500,6 @@ export class EmailParser {
   }
 
   /**
-   * @name splitHeaders
-   * @param {string} contentRaw
-   * @param {boolean} returnContent
-   * @returns IEmailHeaders
-   */
-  private splitHeaders(
-    headerRaw: string,
-    returnContent: boolean = true
-  ): IEmailHeaders {
-    const headerRows: string[] = headerRaw.split(/\r?\n|\r/);
-    const headerMaxLength: number = 76;
-
-    const headers: IEmailHeaders = {};
-
-    let currentHeaderName: string;
-    let currentHeaderData: string | undefined;
-
-    let headerEnd: boolean = false;
-    let headerContent: string = "";
-
-    headerRows.forEach((headerRow: string) => {
-      const [match, contentHeaderName, contentHeaderData]: RegExpMatchArray =
-        headerRow.match(/(^\S*):\s*(.*)/) ?? [];
-
-      if (!headerEnd) {
-        if (contentHeaderName) {
-          currentHeaderName = contentHeaderName.toLowerCase();
-          currentHeaderData = headers[currentHeaderName];
-
-          if (!currentHeaderData) {
-            headers[currentHeaderName] = contentHeaderData ?? "";
-          } else {
-            headers[currentHeaderName] =
-              currentHeaderData + " " + (contentHeaderData ?? "").trimLeft();
-          }
-        } else if (
-          !contentHeaderName &&
-          (headerRow[0] === "\t" || headerRow[0] === " ")
-        ) {
-          currentHeaderData = headers[currentHeaderName];
-
-          const lastHeaderLength: number = currentHeaderData
-            ? currentHeaderData.length - 1
-            : 0;
-
-          if (lastHeaderLength >= headerMaxLength) {
-            headers[currentHeaderName] =
-              currentHeaderData + headerRow.trimLeft();
-          } else {
-            headers[currentHeaderName] =
-              currentHeaderData + " " + headerRow.trimLeft();
-          }
-        } else {
-          headerEnd = true;
-        }
-      } else if (returnContent) {
-        headerContent += headerRow + "\r\n";
-      }
-    });
-
-    if (returnContent) {
-      headers.content = headerContent;
-    }
-
-    return headers;
-  }
-
-  /**
    * @name stripScripts
    * @param {string} content
    * @returns string
@@ -513,169 +522,35 @@ export class EmailParser {
   }
 
   /**
-   * @name decodeQuotedPrintable
-   * @param {string} content
-   * @returns string
+   * @name getHeaderAttribute
+   * @param {string} field
+   * @param {string} data
+   * @returns string | undefined
    */
-  private decodeQuotedPrintable(content: string): string {
-    return this.mimeDecode(content.replace(/=(?:\r?\n|$)/g, ""));
-  }
-
-  /**
-   * @name parseMimeWords
-   * @param {string} content
-   * @returns string
-   */
-  public parseMimeWords(content: string): string {
-    const joinRegex: RegExp = /(=\?[^?]+\?[Bb]\?)([^?]+)\?=\s*\1([^?]+)\?=/g;
-    const decodeRegex: RegExp = /=\?([\w_-]+)\?([QqBb])\?[^?]*\?=/g;
-
-    const joinCallback: (...args: string[]) => string = (
-      match: string,
-      header: string,
-      part1: string,
-      part2: string
-    ) => {
-      const result: string = Buffer.concat([
-        Buffer.from(part1, "base64"),
-        Buffer.from(part2, "base64"),
-      ]).toString("base64");
-
-      return `${header}${result}?=`;
-    };
-
-    const decodeCallback: (...args: string[]) => string = (
-      mimeWord: string
-    ) => {
-      return this.decodeMimeWord(mimeWord.replace(/\s+/g, ""));
-    };
-
-    for (let loop; ; ) {
-      loop = content.replace(
-        /(=\?[^?]+\?[Qq]\?)([^?]*)\?=\s*\1([^?]*\?=)/g,
-        "$1$2$3"
-      );
-
-      if (loop === content) {
-        break;
-      }
-
-      content = loop;
+  private getHeaderAttribute(field: string, data: string): string | undefined {
+    if (data.indexOf(field) === -1) {
+      return undefined;
     }
 
-    return content
-      .replace(joinRegex, joinCallback)
-      .replace(decodeRegex, decodeCallback);
-  }
+    const regex = new RegExp(field + "=['|\"]?(\\S+)");
+    const match: RegExpMatchArray | undefined = data.match(regex) ?? undefined;
 
-  /**
-   * @name decodeMimeWord
-   * @param {string} content
-   * @resturns string
-   */
-  private decodeMimeWord(content: string): string {
-    const match: RegExpMatchArray | undefined =
-      content.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ??
-      undefined;
+    let value: string | undefined;
 
-    if (!match) {
-      return content;
+    if (match && match.length > 1) {
+      let matchedValue: string = match[1];
+
+      ["'", '"'].forEach((char: string) => {
+        const trim = matchedValue.indexOf(char);
+
+        if (trim > -1) {
+          matchedValue = matchedValue.substring(0, trim);
+        }
+      });
+
+      value = matchedValue;
     }
 
-    content = (match[3] ?? "").replace(/_/g, " ");
-
-    const encoding: string = (match[2] || "Q").toUpperCase();
-
-    switch (encoding) {
-      case "B":
-        return this.decodeBase64(content);
-
-      case "Q":
-        return this.mimeDecode(content);
-
-      default:
-        return content;
-    }
-  }
-
-  /**
-   * @name mimeDecode
-   * @param {string} content
-   * @returns string
-   */
-  private mimeDecode(content: string): string {
-    const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || [])
-      .length;
-    const bufferLength: number = content.length - encodedBytesCount * 2;
-    const buffer: Buffer = Buffer.alloc(bufferLength);
-
-    let bufferPos: number = 0;
-    let char: string, hexValue: string;
-
-    for (let i = 0, contentLength = content.length; i < contentLength; i++) {
-      char = content.charAt(i);
-
-      if (
-        char === "=" &&
-        (hexValue = content.substr(i + 1, 2)) &&
-        /[\da-fA-F]{2}/.test(hexValue)
-      ) {
-        buffer[bufferPos++] = parseInt(hexValue, 16);
-
-        i += 2;
-
-        continue;
-      }
-
-      buffer[bufferPos++] = char.charCodeAt(0);
-    }
-
-    return buffer.toString();
-  }
-
-  /**
-   * @name decodeBase64
-   * @param {string} content
-   * @returns string
-   */
-  private decodeBase64(content: string): string {
-    return Buffer.from(content, "base64").toString();
-  }
-
-  /**
-   * @name base64toBlob
-   * @param {string} content
-   * @param {string} contentType
-   * @param {number} sliceSize
-   * @returns Blob
-   */
-  public base64toBlob(
-    content: string,
-    contentType: string,
-    sliceSize: number = 512
-  ): Blob {
-    const byteCharacters: string = atob(content);
-    const byteArrays: Uint8Array[] = [];
-
-    for (
-      let byteOffset: number = 0;
-      byteOffset < byteCharacters.length;
-      byteOffset += sliceSize
-    ) {
-      const byteSlice: string = byteCharacters.slice(
-        byteOffset,
-        byteOffset + sliceSize
-      );
-
-      const byteNumbers = new Array(byteSlice.length);
-
-      for (let i: number = 0; i < byteSlice.length; i++) {
-        byteNumbers[i] = byteSlice.charCodeAt(i);
-      }
-
-      byteArrays.push(new Uint8Array(byteNumbers));
-    }
-
-    return new Blob(byteArrays, { type: contentType });
+    return value;
   }
 }

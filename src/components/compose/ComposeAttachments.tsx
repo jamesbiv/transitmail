@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React from "react";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -8,34 +8,39 @@ import {
   faFileWord,
   faFileExcel,
   faTimes,
+  faEye,
 } from "@fortawesome/free-solid-svg-icons";
 import { IComposeAttachment } from "interfaces";
 
 interface IComposeAttachmentProps {
+  binaryStringToBlob: (
+    content: string,
+    contentType: string,
+    sliceSize?: number
+  ) => Blob;
   updateAttachments: (attachments: IComposeAttachment[]) => void;
   attachments: IComposeAttachment[];
 }
 
 export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
+  binaryStringToBlob,
   updateAttachments,
   attachments,
 }) => {
-  const loadAttachments: (event: ChangeEvent<HTMLInputElement>) => void = (
-    event
-  ) => {
+  const loadAttachments: (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => void = (event) => {
     const fileList: FileList | undefined = event.target.files ?? undefined;
     const files: File[] = Array.from(fileList ?? []);
+
+    let count: number = 0;
 
     files.forEach((file: File) => {
       const reader: FileReader = new FileReader();
 
-      let count: number = 0;
-
       reader.onload = () => {
-        count++;
-
         attachments.push({
-          id: attachments.length + count,
+          id: count++,
           filename: file.name,
           size: file.size,
           mimeType: file.type,
@@ -49,6 +54,23 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
 
       reader.readAsBinaryString(file);
     });
+  };
+
+  const viewAttachment: (id: number) => void = (id) => {
+    const attachment = attachments.find(
+      (attachment: IComposeAttachment) => attachment.id === id
+    );
+
+    if (attachment) {
+      const blob: Blob = binaryStringToBlob(
+        attachment.data! as string,
+        attachment.mimeType
+      );
+
+      const blobUrl: string = URL.createObjectURL(blob);
+
+      window.open(blobUrl, "_blank");
+    }
   };
 
   const removeAttachment: (id: number) => void = (id) => {
@@ -66,14 +88,14 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
       name="files[]"
       hidden
       multiple
-      onChange={(event: ChangeEvent<HTMLInputElement> & Event) => {
+      onChange={(event: React.ChangeEvent<HTMLInputElement> & Event) => {
         loadAttachments(event);
       }}
     />
   );
 
   return (
-    <>
+    <React.Fragment>
       <AttachmentInput />
       {attachments.length > 0 && (
         <div className="mt-2 mb-2 pl-2 pt-2 border-top overflow-hidden">
@@ -91,6 +113,14 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
                 onClick={() => removeAttachment(attachment.id)}
               >
                 <FontAwesomeIcon icon={faTimes} />
+              </Button>
+              <Button
+                className="float-right p-0 ml-2"
+                variant="light"
+                size="sm"
+                onClick={() => viewAttachment(attachment.id)}
+              >
+                <FontAwesomeIcon icon={faEye} />
               </Button>
               <FontAwesomeIcon
                 className="mr-1"
@@ -118,6 +148,6 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
           ))}
         </div>
       )}
-    </>
+    </React.Fragment>
   );
 };

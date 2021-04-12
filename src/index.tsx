@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactHTML } from "react";
 import ReactDOM from "react-dom";
 import { Container, Navbar, Row, Col, Button, Tab } from "react-bootstrap";
 import {
@@ -8,6 +8,7 @@ import {
   SmtpSocket,
   EmailParser,
   StateManager,
+  MimeTools,
 } from "classes";
 import {
   Folder,
@@ -37,6 +38,12 @@ interface IIndexState {
   showMessageModal: boolean;
 }
 
+interface ITouchState {
+  start?: number;
+  end?: number;
+  threshold: number;
+}
+
 class Index extends React.Component<{}, IIndexState> {
   /**
    * @var {object} dependencies
@@ -48,20 +55,28 @@ class Index extends React.Component<{}, IIndexState> {
     localStorage: LocalStorage;
     emailParser: EmailParser;
     stateManager: StateManager;
+    mimeTools: MimeTools;
   };
+
+  /**
+   * @var {ITouchState} touchState
+   */
+  protected touchState: ITouchState;
 
   constructor(props: {}) {
     super(props);
 
-    const emailParser: EmailParser = new EmailParser();
+    const mimeTools: MimeTools = new MimeTools();
+    const emailParser: EmailParser = new EmailParser({ mimeTools });
 
     this.dependencies = {
       localStorage: new LocalStorage(),
       emailParser: emailParser,
-      imapHelper: new ImapHelper({ emailParser }),
+      imapHelper: new ImapHelper({ mimeTools, emailParser }),
       imapSocket: new ImapSocket(),
       smtpSocket: new SmtpSocket(),
       stateManager: new StateManager(this),
+      mimeTools: mimeTools,
     };
 
     this.state = {
@@ -70,6 +85,12 @@ class Index extends React.Component<{}, IIndexState> {
       sliderInitalDisplay: false,
       messageModalData: { title: "", content: "", action: () => {} },
       showMessageModal: false,
+    };
+
+    this.touchState = {
+      start: undefined,
+      end: undefined,
+      threshold: 150,
     };
   }
 
@@ -89,6 +110,40 @@ class Index extends React.Component<{}, IIndexState> {
       });
     };
   }
+
+  onTouchStartTrigger = (event: React.TouchEvent) => {
+    this.touchState.start = event.targetTouches[0].clientX;
+  };
+
+  onTouchMoveTrigger = (event: React.TouchEvent) => {
+    this.touchState.end = event.targetTouches[0].clientX;
+  };
+
+  onTouchEndTrigger = () => {
+    if(!this.touchState.start || !this.touchState.end) {
+      return;
+    }
+
+    if (
+      this.touchState.start - this.touchState.end >
+      this.touchState.threshold
+    ) {
+      this.setState({
+        sliderAction: false,
+        sliderInitalDisplay: true,
+      });
+    }
+
+    if (
+      this.touchState.start - this.touchState.end <
+      this.touchState.threshold * -1
+    ) {
+      this.setState({
+        sliderAction: true,
+        sliderInitalDisplay: true,
+      });
+    }
+  };
 
   render() {
     // Connection settings
@@ -142,7 +197,13 @@ class Index extends React.Component<{}, IIndexState> {
             <FontAwesomeIcon icon={faBars} />
           </Button>
         </Navbar>
-        <div id="container-main" tabIndex={0}>
+        <div
+          id="container-main"
+          tabIndex={0}
+          onTouchStart={this.onTouchStartTrigger}
+          onTouchEnd={this.onTouchEndTrigger}
+          onTouchMove={this.onTouchMoveTrigger}
+        >
           <Container fluid>
             <Tab.Container activeKey={this.state.activeKey}>
               <Row>
@@ -150,7 +211,9 @@ class Index extends React.Component<{}, IIndexState> {
                   className={`bg-light pt-4 sideMenu ${
                     this.state.sliderAction ? "slide-in" : "slide-out"
                   } ${
-                    !this.state.sliderInitalDisplay ? "d-none d-md-block" : "d-block"
+                    !this.state.sliderInitalDisplay
+                      ? "d-none d-md-block"
+                      : "d-block"
                   }`}
                   sm={0}
                   md={4}

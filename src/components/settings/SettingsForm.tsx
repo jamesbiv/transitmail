@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React from "react";
 import { Container, Row, Col, Card, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
@@ -29,7 +29,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           placeholder="Enter display name"
           isInvalid={!!errors.name}
           defaultValue={settings.name}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             settings.name = event.target.value;
           }}
         />
@@ -54,7 +54,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           placeholder="Enter email address"
           isInvalid={!!errors.email}
           defaultValue={settings.email}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             settings.email = event.target.value;
           }}
         />
@@ -73,7 +73,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           placeholder="Enter email signature"
           isInvalid={!!errors.signature}
           defaultValue={settings.signature}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             settings.signature = event.target.value;
           }}
         />
@@ -115,7 +115,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Incomming mail host"
                     isInvalid={!!errors.imapHost}
                     defaultValue={settings.imapHost}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapHost = event.target.value;
                     }}
                   />
@@ -137,7 +137,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Incomming mail port"
                     isInvalid={!!errors.imapPort}
                     defaultValue={settings.imapPort}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapPort = Number(event.target.value);
                     }}
                   />
@@ -159,7 +159,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Incomming mail username"
                     isInvalid={!!errors.imapUsername}
                     defaultValue={settings.imapUsername}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapUsername = event.target.value;
                     }}
                   />
@@ -181,7 +181,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Incomming mail password"
                     isInvalid={!!errors.imapPassword}
                     defaultValue={settings.imapPassword}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapPassword = event.target.value;
                     }}
                   />
@@ -210,7 +210,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Outgoing mail host"
                     isInvalid={!!errors.smtpHost}
                     defaultValue={settings.smtpHost}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpHost = event.target.value;
                     }}
                   />
@@ -232,7 +232,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Outgoing mail port"
                     isInvalid={!!errors.smtpPort}
                     defaultValue={settings.smtpPort}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpPort = Number(event.target.value);
                     }}
                   />
@@ -254,7 +254,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Outgoing mail username"
                     isInvalid={!!errors.smtpUsername}
                     defaultValue={settings.smtpUsername}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpUsername = event.target.value;
                     }}
                   />
@@ -276,7 +276,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                     placeholder="Outgoing mail password"
                     isInvalid={!!errors.smtpPassword}
                     defaultValue={settings.smtpPassword}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpPassword = event.target.value;
                     }}
                   />

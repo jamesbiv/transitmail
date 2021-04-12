@@ -6,6 +6,7 @@ import {
   LocalStorage,
   EmailParser,
   StateManager,
+  MimeTools,
 } from "classes";
 
 import { Folder } from "../folder";
@@ -17,6 +18,7 @@ interface IInboxProps {
     localStorage: LocalStorage;
     emailParser: EmailParser;
     stateManager: StateManager;
+    mimeTools: MimeTools;
   };
 }
 

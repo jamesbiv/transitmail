@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React from "react";
 import {
   Button,
   Form,
@@ -57,7 +57,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                 type="text"
                 placeholder="Enter email address"
                 defaultValue={recipient.value}
-                onChange={(event: ChangeEvent<HTMLInputElement>) => {
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                   recipients[key].value = event.target.value;
 
                   updateRecipients(recipients);
@@ -127,7 +127,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
             type="text"
             defaultValue={subject}
             placeholder="Enter email subject"
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               updateSubject(event.target.value)
             }
           />

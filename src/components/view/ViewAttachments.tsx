@@ -11,7 +11,7 @@ import {
 import { IEmailAttachment } from "interfaces";
 
 interface IViewAttachmentsProps {
-  attachments: IEmailAttachment[];
+  attachments?: IEmailAttachment[];
   base64toBlob: (
     content: string,
     contentType: string,

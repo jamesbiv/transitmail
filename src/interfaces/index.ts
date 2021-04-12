@@ -9,6 +9,7 @@ export * from "./IEmailAttachment";
 export * from "./IEmailBoundary";
 export * from "./IEmailHeaders";
 export * from "./IFolderEmail";
+export * from "./IFolderLongPress";
 export * from "./IFoldersEntry";
 export * from "./IImapRequest";
 export * from "./IImapResponse";
