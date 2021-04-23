@@ -69,26 +69,10 @@ export class EmailParser {
       email.boundaryIds
     );
 
-    this.extractContentFromBoundaries(email);
-
-    if (!email.boundaries.length) {
-      if (email.mimeType === "text/html") {
-        if (email.encoding?.toLowerCase() === "quoted-printable") {
-          email.bodyHtml = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
-        } else if (email.encoding?.toLowerCase() === "base64") {
-          email.bodyHtml = this.mimeTools.decodeBase64(email.contentRaw);
-        } else {
-          email.bodyHtml = email.contentRaw;
-        }
-      } else {
-        if (email.encoding?.toLowerCase() === "quoted-printable") {
-          email.bodyText = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
-        } else if (email.encoding?.toLowerCase() === "base64") {
-          email.bodyHtml = this.mimeTools.decodeBase64(email.contentRaw);
-        } else {
-          email.bodyText = email.contentRaw;
-        }
-      }
+    if (email.boundaries.length) {
+      this.extractContentFromBoundaries(email);
+    } else {
+      this.extractContentFromBody(email);
     }
 
     if (email.bodyHtml) {
@@ -306,7 +290,9 @@ export class EmailParser {
                 break;
 
               case "base64":
-                email.bodyHtml += this.mimeTools.decodeBase64(contentRow.content);
+                email.bodyHtml += this.mimeTools.decodeBase64(
+                  contentRow.content
+                );
                 break;
 
               default:
@@ -317,7 +303,7 @@ export class EmailParser {
 
           case "text/plain":
             if (!email.bodyText) {
-              email.bodyHtml = "";
+              email.bodyText = "";
             }
 
             email.bodyTextHeaders = contentRow.headers;
@@ -330,7 +316,9 @@ export class EmailParser {
                 break;
 
               case "base64":
-                email.bodyText += this.mimeTools.decodeBase64(contentRow.content);
+                email.bodyText += this.mimeTools.decodeBase64(
+                  contentRow.content
+                );
                 break;
 
               default:
@@ -351,6 +339,31 @@ export class EmailParser {
         }
       });
     });
+  }
+
+  /**
+   * extractContentFromBody
+   * @param {IEmail} email
+   * @returns void
+   */
+  private extractContentFromBody(email: IEmail): void {
+    if (email.mimeType === "text/html") {
+      if (email.encoding?.toLowerCase() === "quoted-printable") {
+        email.bodyHtml = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
+      } else if (email.encoding?.toLowerCase() === "base64") {
+        email.bodyHtml = this.mimeTools.decodeBase64(email.contentRaw);
+      } else {
+        email.bodyHtml = email.contentRaw;
+      }
+    } else {
+      if (email.encoding?.toLowerCase() === "quoted-printable") {
+        email.bodyText = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
+      } else if (email.encoding?.toLowerCase() === "base64") {
+        email.bodyText = this.mimeTools.decodeBase64(email.contentRaw);
+      } else {
+        email.bodyText = email.contentRaw;
+      }
+    }
   }
 
   /**

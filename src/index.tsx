@@ -1,4 +1,4 @@
-import React, { ReactHTML } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 import { Container, Navbar, Row, Col, Button, Tab } from "react-bootstrap";
 import {
@@ -79,6 +79,25 @@ class Index extends React.Component<{}, IIndexState> {
       mimeTools: mimeTools,
     };
 
+    // Connection settings
+    this.dependencies.imapSocket.settings = {
+      host: this.dependencies.localStorage.getSetting("imapHost"),
+      port: this.dependencies.localStorage.getSetting("imapPort"),
+      username: this.dependencies.localStorage.getSetting("imapUsername"),
+      password: this.dependencies.localStorage.getSetting("imapPassword"),
+    };
+
+    this.dependencies.imapSocket.session.debug = true;
+
+    this.dependencies.smtpSocket.settings = {
+      host: this.dependencies.localStorage.getSetting("smtpHost"),
+      port: this.dependencies.localStorage.getSetting("smtpPort"),
+      username: this.dependencies.localStorage.getSetting("smtpUsername"),
+      password: this.dependencies.localStorage.getSetting("smtpPassword"),
+    };
+
+    this.dependencies.smtpSocket.session.debug = true;
+
     this.state = {
       activeKey: window.location.hash.substring(1) || "inbox",
       sliderAction: false,
@@ -103,7 +122,6 @@ class Index extends React.Component<{}, IIndexState> {
   }
 
   componentDidUpdate() {
-    /* Handling back & forward browser buttons */
     window.onpopstate = () => {
       this.setState({
         activeKey: window.location.hash.substring(1) || "inbox",
@@ -112,15 +130,15 @@ class Index extends React.Component<{}, IIndexState> {
   }
 
   onTouchStartTrigger = (event: React.TouchEvent) => {
-    this.touchState.start = event.targetTouches[0].clientX;
+    this.touchState.start = event.targetTouches[0].screenX;
   };
 
   onTouchMoveTrigger = (event: React.TouchEvent) => {
-    this.touchState.end = event.targetTouches[0].clientX;
+    this.touchState.end = event.targetTouches[0].screenX;
   };
 
   onTouchEndTrigger = () => {
-    if(!this.touchState.start || !this.touchState.end) {
+    if (!this.touchState.start || !this.touchState.end) {
       return;
     }
 
@@ -145,38 +163,18 @@ class Index extends React.Component<{}, IIndexState> {
     }
   };
 
+  /* Component declarations */
+  components: IComponent[] = [
+    { id: 1, element: Inbox, eventKey: "inbox" },
+    { id: 2, element: Compose, eventKey: "compose" },
+    { id: 3, element: Folders, eventKey: "folders" },
+    { id: 4, element: Settings, eventKey: "settings" },
+    { id: 5, element: View, eventKey: "view" },
+    { id: 6, element: Folder, eventKey: "folder" },
+    { id: 7, element: Logout, eventKey: "logout" },
+  ];
+
   render() {
-    // Connection settings
-    this.dependencies.imapSocket.settings = {
-      host: this.dependencies.localStorage.getSetting("imapHost"),
-      port: this.dependencies.localStorage.getSetting("imapPort"),
-      username: this.dependencies.localStorage.getSetting("imapUsername"),
-      password: this.dependencies.localStorage.getSetting("imapPassword"),
-    };
-
-    this.dependencies.imapSocket.session.debug = true;
-
-    this.dependencies.smtpSocket.settings = {
-      host: this.dependencies.localStorage.getSetting("smtpHost"),
-      port: this.dependencies.localStorage.getSetting("smtpPort"),
-      username: this.dependencies.localStorage.getSetting("smtpUsername"),
-      password: this.dependencies.localStorage.getSetting("smtpPassword"),
-    };
-
-    this.dependencies.smtpSocket.session.debug = true;
-
-    /* Component declarations */
-    const components: IComponent[] = [
-      { id: 1, element: Inbox, eventKey: "inbox" },
-      { id: 2, element: Compose, eventKey: "compose" },
-      { id: 3, element: Folders, eventKey: "folders" },
-      { id: 4, element: Settings, eventKey: "settings" },
-      { id: 5, element: View, eventKey: "view" },
-      { id: 6, element: Folder, eventKey: "folder" },
-      { id: 7, element: Logout, eventKey: "logout" },
-    ];
-
-    /* Body template */
     return (
       <React.StrictMode>
         <Navbar bg="dark" variant="dark" className="fixed-top pt-2 pb-2">
@@ -229,7 +227,7 @@ class Index extends React.Component<{}, IIndexState> {
                 >
                   <Tab.Content>
                     <ErrorBoundary dependencies={this.dependencies}>
-                      {components.map((component: IComponent) => (
+                      {this.components.map((component: IComponent) => (
                         <Tab.Pane
                           key={component.id}
                           mountOnEnter={true}

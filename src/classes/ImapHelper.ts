@@ -83,13 +83,13 @@ export class ImapHelper {
         ) ?? undefined;
 
       const emailDate: string | undefined =
-        folderData[i][0].match(/.*Date: (.*).*/)?.[1] ?? undefined;
+        folderData[i][0].match(/.*date: (.*).*/i)?.[1] ?? undefined;
 
       let emailSubject: string | undefined =
-        folderData[i][0].match(/.*Subject: (.*).*/)?.[1] ?? undefined;
+        folderData[i][0].match(/.*subject: (.*).*/i)?.[1] ?? undefined;
 
       let emailFrom: string | undefined =
-        folderData[i][0].match(/.*From: (.*).*/)?.[1] ?? undefined;
+        folderData[i][0].match(/.*from: (.*).*/i)?.[1] ?? undefined;
 
       if (emailSubject && emailSubject.indexOf("=?") > -1) {
         emailSubject = this.mimeTools.parseMimeWords(emailSubject);
@@ -99,7 +99,10 @@ export class ImapHelper {
         emailFrom = this.mimeTools.parseMimeWords(emailFrom);
       }
 
-      if (emailFlags && emailDate && emailFrom) {
+      const emailBodyStructure =
+        folderData[i][0].match(/.*bodystructure \((.*)\)/i)?.[1] ?? undefined;
+
+      if (emailFlags && emailDate && emailFrom && emailBodyStructure) {
         emails.push({
           id: Number(emailFlags[1]),
           date: emailDate,
@@ -109,6 +112,7 @@ export class ImapHelper {
           uid: Number(emailFlags[1]),
           ref: emailFlags[3],
           flags: emailFlags[2],
+          hasAttachment: /attachment/i.test(emailBodyStructure),
           selected: false,
         });
       }

@@ -1,4 +1,4 @@
-export interface IPreparedEmail {
+export interface IComposedEmail {
     boundaryid?: string;
     to?: string;
     cc?: string;

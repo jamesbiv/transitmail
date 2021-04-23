@@ -21,6 +21,7 @@ interface IFolderEmailActionsProps {
   actionUids?: number[];
   actionType: EFolderEmailActionType;
   showActionModal: boolean;
+  removeUids: (uids?: number[]) => void;
   imapHelper: ImapHelper;
   imapSocket: ImapSocket;
   onHide: () => void;
@@ -47,6 +48,7 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
   actionUids,
   actionType,
   showActionModal,
+  removeUids,
   imapHelper,
   imapSocket,
   onHide,
@@ -116,6 +118,7 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
         {React.createElement(FolderEmailAction[actionType].element, {
           actionUids,
           folders,
+          removeUids,
           imapSocket,
           submit,
           changeSubmit,
@@ -145,6 +148,7 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
 interface IFolderEmailActionProps {
   actionUids?: number[];
   folders: IFoldersEntry[];
+  removeUids: (uids?: number[]) => void;
   imapSocket: ImapSocket;
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
@@ -155,6 +159,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   folders,
   submit,
+  removeUids,
   imapSocket,
   changeSubmit,
   successfulSubmit,
@@ -176,6 +181,8 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
         `UID MOVE ${actionUid} "${destinationFolder}"`
       );
     });
+
+    removeUids(actionUids);
 
     successfulSubmit();
   };
@@ -378,6 +385,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
 export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   imapSocket,
+  removeUids,
   submit,
   changeSubmit,
   successfulSubmit,
@@ -393,6 +401,8 @@ export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
     actionUids?.forEach(async (actionUid: number) => {
       await imapSocket.imapRequest(`UID STORE ${actionUid} +FLAGS (\\Deleted)`);
     });
+
+    removeUids(actionUids);
 
     successfulSubmit();
   };

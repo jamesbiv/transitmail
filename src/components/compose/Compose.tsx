@@ -35,7 +35,7 @@ import {
 import {
   IComposeRecipient,
   IComposeAttachment,
-  IPreparedEmail,
+  IComposedEmail,
   ISmtpResponse,
   IComposePresets,
 } from "interfaces";
@@ -171,7 +171,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
   async sendEmail(): Promise<void> {
     this.smtpSocket.smtpConnect();
 
-    const emailData: IPreparedEmail = this.emailComposer.prepareEmail({
+    const emailData: IComposedEmail = this.emailComposer.composeEmail({
       editorState: this.state.editorState,
       from: this.state.from,
       subject: this.state.subject,

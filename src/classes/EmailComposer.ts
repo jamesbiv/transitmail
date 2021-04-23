@@ -3,7 +3,7 @@ import { stateToHTML } from "draft-js-export-html";
 import {
   IComposeRecipient,
   IComposeAttachment,
-  IPreparedEmail,
+  IComposedEmail,
 } from "interfaces";
 
 interface IEmailData {
@@ -16,12 +16,12 @@ interface IEmailData {
 
 export class EmailComposer {
   /**
-   * prepareEmail
+   * composeEmail
    * @param {IEmailData} emailData
-   * @returns IPreparedEmail
+   * @returns IComposedEmail
    */
-  public prepareEmail(emailData: IEmailData): IPreparedEmail {
-    const preparedEmail: IPreparedEmail = {
+  public composeEmail(emailData: IEmailData): IComposedEmail {
+    const preparedEmail: IComposedEmail = {
       boundaryid: Math.random().toString(36).substring(5),
     };
 

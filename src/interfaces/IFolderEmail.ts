@@ -9,5 +9,6 @@ export interface IFolderEmail {
   uid: number;
   ref: string;
   flags: string;
+  hasAttachment: boolean;
   selected: boolean;
 }

@@ -15,6 +15,8 @@ import {
   IEmailAttachment,
   IFolderEmail,
   IFolderLongPress,
+  IFolderPlaceholder,
+  IFolderScrollSpinner,
   IImapResponse,
 } from "interfaces";
 import {
@@ -38,6 +40,7 @@ import {
   EFolderEmailActionType,
   FolderTableHeader,
   FolderTableOptions,
+  FolderPlaceholder,
 } from ".";
 
 interface IFolderProps {
@@ -61,9 +64,16 @@ interface IFolderState {
   actionUids?: number[];
   actionType: EFolderEmailActionType;
   showActionModal: boolean;
+  folderPlaceholder?: IFolderPlaceholder;
+  folderScrollSpinner?: IFolderScrollSpinner;
 }
 
 export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
+  /**
+   * @var {number} folderPageSize
+   */
+  protected folderPageSize: number = 15;
+
   /**
    * @var {EmailParser} emailParser
    */
@@ -114,6 +124,9 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
    */
   protected folderLongPress: IFolderLongPress;
 
+  /**
+   * @constructor
+   */
   constructor(props: IFolderProps) {
     super(props);
 
@@ -128,12 +141,26 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     this.infiniteScroll = new InfiniteScroll(
       "container-main",
-      (minIndex: number, maxIndex: number) => {
-        this.setState({
-          emails: this.emails?.slice(minIndex, maxIndex),
-          displayTableHeader: minIndex === 0,
-        });
-      }
+      "topObserver",
+      "bottomObserver",
+      ({
+        minIndex,
+        maxIndex,
+        folderPlaceholder,
+        folderScrollSpinner,
+        callback,
+      }) => {
+        this.setState(
+          {
+            emails: this.emails?.slice(minIndex, maxIndex),
+            displayTableHeader: minIndex === 0,
+            folderPlaceholder,
+            folderScrollSpinner,
+          },
+          callback
+        );
+      },
+      this.folderPageSize
     );
 
     this.state = {
@@ -151,8 +178,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   }
 
   public async componentDidMount() {
-    this.infiniteScroll.startHandler();
-
     if (this.imapSocket.getReadyState() !== 1) {
       this.imapSocket.imapConnect();
     }
@@ -167,18 +192,25 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     this.stateManager.updateCurrentFolder(this.emails);
 
-    this.infiniteScroll.setTotalEntries(this.emails?.length ?? 0);
+    this.setState(
+      {
+        emails: this.emails?.slice(0, this.folderPageSize),
+        folderSpinner: false,
+      },
+      () => {
+        this.infiniteScroll.setTotalEntries(this.emails?.length ?? 0);
 
-    this.setState({
-      emails: this.emails?.slice(0, 15),
-      folderSpinner: false,
-    });
+        this.infiniteScroll.startObservation();
+        this.infiniteScroll.startHandleScroll();
 
-    this.clearAllSelections();
+        this.clearAllSelections();
+      }
+    );
   }
 
   public componentWillUnmount() {
-    this.infiniteScroll.stopHandler();
+    this.infiniteScroll.stopObservertion();
+    this.infiniteScroll.stopHandleScroll();
   }
 
   public checkEmail = async (): Promise<void> => {
@@ -207,7 +239,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     this.setState({
       folderSpinner: false,
-      emails: this.emails?.slice(0, 15),
+      emails: this.emails?.slice(0, this.folderPageSize),
     });
   };
 
@@ -227,7 +259,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     const fetchUid: number = (lastUid ?? 0) + 1;
 
     const fetchResponse: IImapResponse = await this.imapSocket.imapRequest(
-      `UID FETCH ${fetchUid}:* (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)])`
+      `UID FETCH ${fetchUid}:* (FLAGS BODY[HEADER.FIELDS (DATE FROM SUBJECT)] BODYSTRUCTURE)`
     );
 
     if (fetchResponse.status !== EImapResponseStatus.OK) {
@@ -333,7 +365,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
           const fileReader = new FileReader();
 
           fileReader.onload = () => resolve(fileReader);
-
           fileReader.readAsBinaryString(attachmentContent);
         });
 
@@ -351,11 +382,24 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     );
   };
 
+  public removeUids = (uids?: number[]): void => {
+    uids?.forEach((uid: number) => {
+      this.emails?.forEach((email: IFolderEmail, emailKey: number) => {
+        if (email.uid === uid) {
+          this.emails?.splice(emailKey, 1);
+        }
+      });
+    });
+
+    this.updateVisibleEmails();
+  };
+
   public updateVisibleEmails = (): void => {
     if (this.emails) {
       const visibleEmailUid: number | undefined = this.state.emails?.[0].uid;
+      const visibleEmailLength: number | undefined = this.state.emails?.length;
 
-      if (visibleEmailUid) {
+      if (visibleEmailUid && visibleEmailLength) {
         const firstEmailKey: number | undefined = this.emails.reduce(
           (
             validKey: number | undefined,
@@ -372,7 +416,12 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
         );
 
         if (firstEmailKey !== undefined) {
-          this.setState({ emails: this.emails.slice(firstEmailKey, 15) });
+          this.setState({
+            emails: this.emails.slice(
+              firstEmailKey,
+              firstEmailKey + visibleEmailLength
+            ),
+          });
         }
       }
     }
@@ -513,9 +562,20 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
                 <FolderTableHeader
                   emails={this.emails ?? []}
                   toggleSelection={this.toggleSelection}
-                  updateEmails={this.updateVisibleEmails}
+                  updateVisibleEmails={this.updateVisibleEmails}
                 />
               )}
+              <FolderPlaceholder height={this.state.folderPlaceholder?.top} />
+              {this.state.folderScrollSpinner?.top && (
+                <div className="w-100 text-center d-block d-sm-none">
+                  <Spinner
+                    className="mt-3 mb-3"
+                    animation="grow"
+                    variant="dark"
+                  />
+                </div>
+              )}
+              <div id="topObserver"></div>
               {this.state.emails.map((email: IFolderEmail) => (
                 <FolderEmailEntry
                   key={email.id}
@@ -530,6 +590,19 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
                   handleLongRelease={this.handleLongRelease}
                 />
               ))}
+              <div id="bottomObserver"></div>
+              {this.state.folderScrollSpinner?.bottom && (
+                <div className="w-100 text-center d-block d-sm-none">
+                  <Spinner
+                    className="mt-3 mb-3"
+                    animation="grow"
+                    variant="dark"
+                  />
+                </div>
+              )}
+              <FolderPlaceholder
+                height={this.state.folderPlaceholder?.bottom}
+              />
             </Container>
           )}
         </Card>
@@ -537,6 +610,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
           actionUids={this.state.actionUids}
           actionType={this.state.actionType}
           showActionModal={this.state.showActionModal}
+          removeUids={this.removeUids}
           imapHelper={this.imapHelper}
           imapSocket={this.imapSocket}
           onHide={() => this.setState({ showActionModal: false })}

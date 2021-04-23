@@ -46,12 +46,12 @@ interface IViewState {
   showActionModal: boolean;
 }
 
-interface IProgressBar {
+interface IViewProgressBar {
   max: number;
   now: number;
 }
 
-export class View extends React.Component<IViewProps, IViewState> {
+export class View extends React.PureComponent<IViewProps, IViewState> {
   /**
    * @var {MimeTools} mimeTools
    */
@@ -78,9 +78,9 @@ export class View extends React.Component<IViewProps, IViewState> {
   protected stateManager: StateManager;
 
   /**
-   * @var {IProgressBar} progressBar
+   * @var {IViewProgressBar} progressBar
    */
-  protected progressBar: IProgressBar;
+  protected progressBar: IViewProgressBar;
 
   /**
    * @constructor
@@ -107,10 +107,6 @@ export class View extends React.Component<IViewProps, IViewState> {
     this.progressBar = { max: 0, now: 0 };
   }
 
-  componentWillUnmount() {
-    // perform clean up on the data when leaving the component
-  }
-
   componentDidMount() {
     if (this.imapSocket.getReadyState() !== 1) {
       this.imapSocket.imapConnect();
@@ -119,9 +115,15 @@ export class View extends React.Component<IViewProps, IViewState> {
     this.getEmail();
   }
 
-  async getEmail() {
+  getEmail = async () => {
+    const folderId: string | undefined = this.stateManager.getFolderId();
+
+    if (!folderId) {
+      this.stateManager.updateActiveKey("inbox");
+    }
+
     const selectResponse: IImapResponse = await this.imapSocket.imapRequest(
-      `SELECT "${this.stateManager.getFolderId()}"`
+      `SELECT "${folderId}"`
     );
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
@@ -164,7 +166,7 @@ export class View extends React.Component<IViewProps, IViewState> {
     );
 
     this.setState({ email });
-  }
+  };
 
   checkProgressBar = () => {
     const setTimeoutMaxMs: number = 300000; // 5mins
