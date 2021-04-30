@@ -1,4 +1,4 @@
-import { MimeTools } from "classes";
+import { MimeTools } from "lib";
 import {
   IEmail,
   IEmailAttachment,
@@ -7,10 +7,6 @@ import {
   IEmailHeaders,
 } from "interfaces";
 
-interface IEmailParser {
-  mimeTools: MimeTools;
-}
-
 export class EmailParser {
   /**
    * @var {IEmail} email
@@ -18,16 +14,10 @@ export class EmailParser {
   protected email: IEmail;
 
   /**
-   * @var {MimeTools} mimeTools
-   */
-  protected mimeTools;
-
-  /**
    * @constructor
    * @param param0
    */
-  constructor({ mimeTools }: IEmailParser) {
-    this.mimeTools = mimeTools;
+  constructor() {
     this.email = {
       emailRaw: "",
       headersRaw: "",
@@ -170,23 +160,23 @@ export class EmailParser {
           break;
 
         case "to":
-          email.to = this.mimeTools.parseMimeWords(headerData);
+          email.to = MimeTools.parseMimeWords(headerData);
           break;
 
         case "cc":
-          email.cc = this.mimeTools.parseMimeWords(headerData);
+          email.cc = MimeTools.parseMimeWords(headerData);
           break;
 
         case "from":
-          email.from = this.mimeTools.parseMimeWords(headerData);
+          email.from = MimeTools.parseMimeWords(headerData);
           break;
 
         case "reply-to":
-          email.replyTo = this.mimeTools.parseMimeWords(headerData);
+          email.replyTo = MimeTools.parseMimeWords(headerData);
           break;
 
         case "subject":
-          email.subject = this.mimeTools.parseMimeWords(headerData);
+          email.subject = MimeTools.parseMimeWords(headerData);
           break;
 
         case "content-transfer-encoding":
@@ -284,13 +274,13 @@ export class EmailParser {
 
             switch (contentRow.encoding?.toLowerCase()) {
               case "quoted-printable":
-                email.bodyHtml += this.mimeTools.decodeQuotedPrintable(
+                email.bodyHtml += MimeTools.decodeQuotedPrintable(
                   contentRow.content
                 );
                 break;
 
               case "base64":
-                email.bodyHtml += this.mimeTools.decodeBase64(
+                email.bodyHtml += MimeTools.decodeBase64(
                   contentRow.content
                 );
                 break;
@@ -310,13 +300,13 @@ export class EmailParser {
 
             switch (contentRow.encoding?.toLowerCase()) {
               case "quoted-printable":
-                email.bodyText += this.mimeTools.decodeQuotedPrintable(
+                email.bodyText += MimeTools.decodeQuotedPrintable(
                   contentRow.content
                 );
                 break;
 
               case "base64":
-                email.bodyText += this.mimeTools.decodeBase64(
+                email.bodyText += MimeTools.decodeBase64(
                   contentRow.content
                 );
                 break;
@@ -349,17 +339,17 @@ export class EmailParser {
   private extractContentFromBody(email: IEmail): void {
     if (email.mimeType === "text/html") {
       if (email.encoding?.toLowerCase() === "quoted-printable") {
-        email.bodyHtml = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
+        email.bodyHtml = MimeTools.decodeQuotedPrintable(email.contentRaw);
       } else if (email.encoding?.toLowerCase() === "base64") {
-        email.bodyHtml = this.mimeTools.decodeBase64(email.contentRaw);
+        email.bodyHtml = MimeTools.decodeBase64(email.contentRaw);
       } else {
         email.bodyHtml = email.contentRaw;
       }
     } else {
       if (email.encoding?.toLowerCase() === "quoted-printable") {
-        email.bodyText = this.mimeTools.decodeQuotedPrintable(email.contentRaw);
+        email.bodyText = MimeTools.decodeQuotedPrintable(email.contentRaw);
       } else if (email.encoding?.toLowerCase() === "base64") {
-        email.bodyText = this.mimeTools.decodeBase64(email.contentRaw);
+        email.bodyText = MimeTools.decodeBase64(email.contentRaw);
       } else {
         email.bodyText = email.contentRaw;
       }

@@ -6,8 +6,8 @@ import {
   LocalStorage,
   StateManager,
   InfiniteScroll,
-  MimeTools,
 } from "classes";
+import { MimeTools } from "lib";
 import {
   EImapResponseStatus,
   IComposeAttachment,
@@ -50,7 +50,6 @@ interface IFolderProps {
     localStorage: LocalStorage;
     emailParser: EmailParser;
     stateManager: StateManager;
-    mimeTools: MimeTools;
   };
 }
 
@@ -105,11 +104,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
   protected infiniteScroll: InfiniteScroll;
 
   /**
-   * @var {MimeTools} mimeTools
-   */
-  protected mimeTools: MimeTools;
-
-  /**
    * @var {boolean} toggleSelectionAll
    */
   protected toggleSelectionAll: boolean;
@@ -135,7 +129,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.localStorage = props.dependencies.localStorage;
     this.emailParser = props.dependencies.emailParser;
     this.stateManager = props.dependencies.stateManager;
-    this.mimeTools = props.dependencies.mimeTools;
 
     this.toggleSelectionAll = false;
 
@@ -198,12 +191,14 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
         folderSpinner: false,
       },
       () => {
-        this.infiniteScroll.setTotalEntries(this.emails?.length ?? 0);
+        if (this.emails?.length) {
+          this.infiniteScroll.setTotalEntries(this.emails.length ?? 0);
 
-        this.infiniteScroll.startObservation();
-        this.infiniteScroll.startHandleScroll();
+          this.infiniteScroll.startObservation();
+          this.infiniteScroll.startHandleScroll();
 
-        this.clearAllSelections();
+          this.clearAllSelections();
+        }
       }
     );
   }
@@ -236,11 +231,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.stateManager.updateCurrentFolder(this.emails);
 
     this.infiniteScroll.setTotalEntries(this.emails.length);
-
-    this.setState({
-      folderSpinner: false,
-      emails: this.emails?.slice(0, this.folderPageSize),
-    });
   };
 
   private async getLatestEmails(
@@ -273,6 +263,34 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     emails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
 
     return emails;
+  }
+
+  public searchEmails(searchQuery: string) {
+    const searchQueryLowercase: string = searchQuery.toLowerCase();
+    
+    const currentEmails: IFolderEmail[] =
+      this.stateManager.getCurrentFolder()?.emails ?? [];
+
+    this.emails =
+      searchQuery.length > 0
+        ? currentEmails.filter((email: IFolderEmail) => {
+            let queryFound: boolean = false;
+
+            if (
+              email.date.toLowerCase().indexOf(searchQueryLowercase) > -1 ||
+              email.from.toLowerCase().indexOf(searchQueryLowercase) > -1 ||
+              email.subject.toLowerCase().indexOf(searchQueryLowercase) > -1
+            ) {
+              queryFound = true;
+            }
+
+            return queryFound;
+          })
+        : currentEmails;
+
+    this.infiniteScroll.setTotalEntries(this.emails.length);
+
+    this.updateVisibleEmails(this.folderPageSize);
   }
 
   public viewEmail = (uid: number): void => {
@@ -342,7 +360,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.stateManager.updateActiveKey("compose");
   };
 
-  convertAttachments = async (
+  public convertAttachments = async (
     attachments: IEmailAttachment[] | undefined
   ): Promise<IComposeAttachment[] | undefined> => {
     if (!attachments) {
@@ -356,7 +374,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
         convertedAttachments: Promise<IComposeAttachment[]>,
         attachment: IEmailAttachment
       ) => {
-        const attachmentContent: Blob = this.mimeTools.base64toBlob(
+        const attachmentContent: Blob = MimeTools.base64toBlob(
           attachment.content,
           attachment.mimeType
         );
@@ -394,35 +412,17 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.updateVisibleEmails();
   };
 
-  public updateVisibleEmails = (): void => {
+  public updateVisibleEmails = (definedLength?: number): void => {
     if (this.emails) {
-      const visibleEmailUid: number | undefined = this.state.emails?.[0].uid;
-      const visibleEmailLength: number | undefined = this.state.emails?.length;
+      const currentSlice = this.infiniteScroll.getCurrentSlice();
+      const currentSliceLength: number | undefined = definedLength
+        ? definedLength
+        : currentSlice.maxIndex - currentSlice.minIndex;
 
-      if (visibleEmailUid && visibleEmailLength) {
-        const firstEmailKey: number | undefined = this.emails.reduce(
-          (
-            validKey: number | undefined,
-            email: IFolderEmail,
-            emailKey: number
-          ) => {
-            if (visibleEmailUid === email.uid) {
-              validKey = emailKey;
-            }
-
-            return validKey;
-          },
-          undefined
-        );
-
-        if (firstEmailKey !== undefined) {
-          this.setState({
-            emails: this.emails.slice(
-              firstEmailKey,
-              firstEmailKey + visibleEmailLength
-            ),
-          });
-        }
+      if (currentSlice && currentSliceLength) {
+        this.setState({
+          emails: this.emails.slice(currentSlice.minIndex, currentSliceLength),
+        });
       }
     }
   };
@@ -441,19 +441,27 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     }
   };
 
-  public toggleSelection = (uid: number): void => {
+  public toggleSelection = (uid: number, forceToogle?: boolean): void => {
     if (this.emails) {
       if (uid === -1) {
-        this.toggleSelectionAll = this.toggleSelectionAll ? false : true;
+        if (forceToogle !== undefined) {
+          this.toggleSelectionAll = forceToogle;
+        } else {
+          this.toggleSelectionAll = this.toggleSelectionAll ? false : true;
+        }
       }
 
       this.emails.forEach((email: IFolderEmail, emailKey: number) => {
         if (uid === -1) {
           this.emails![emailKey].selected = this.toggleSelectionAll;
         } else if (email.uid === uid) {
-          this.emails![emailKey].selected = this.emails![emailKey].selected
-            ? false
-            : true;
+          if (forceToogle !== undefined) {
+            this.emails![emailKey].selected = forceToogle;
+          } else {
+            this.emails![emailKey].selected = this.emails![emailKey].selected
+              ? false
+              : true;
+          }
         }
       });
 
@@ -535,7 +543,13 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
                   </h4>
                 </Col>
                 <Col xs={12} sm={6} md={5} lg={3} className="mt-3 mt-sm-0">
-                  <Form.Control type="text" placeholder="Search &hellip;" />
+                  <Form.Control
+                    type="text"
+                    placeholder="Search &hellip;"
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      this.searchEmails(event.target.value)
+                    }
+                  />
                 </Col>
               </Row>
             </Card.Header>
@@ -556,6 +570,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
             <Container fluid>
               <FolderTableOptions
                 displayTableOptions={this.state.displayTableOptions}
+                toggleSelection={this.toggleSelection}
                 toggleActionModal={this.toggleActionModal}
               />
               {this.state.displayTableHeader && (

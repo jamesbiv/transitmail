@@ -9,8 +9,8 @@ import { IFolderEmail } from "interfaces";
 
 interface IFolderTableHeaderProps {
   emails: IFolderEmail[];
-  toggleSelection: (uid: number) => void;
-  updateVisibleEmails: (emails: IFolderEmail[]) => void;
+  toggleSelection: (uid: number, forceToogle?: boolean) => void;
+  updateVisibleEmails: (definedLength?: number) => void;
 }
 
 export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
@@ -32,7 +32,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
       );
     }
 
-    updateVisibleEmails(emails);
+    updateVisibleEmails();
   };
 
   return (
@@ -58,17 +58,13 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
       <Col xs={4} sm={2} md={2} lg={2} className="pl-3 pl-sm-0 text-nowrap">
         Date{" "}
         <FontAwesomeIcon
-          onClick={() => {
-            sortFolder("epoch", "asc");
-          }}
+          onClick={() => sortFolder("epoch", "asc")}
           size="sm"
           icon={faLongArrowAltUp}
           className="text-secondary pointer"
         />
         <FontAwesomeIcon
-          onClick={() => {
-            sortFolder("epoch", "desc");
-          }}
+          onClick={() => sortFolder("epoch", "desc")}
           size="sm"
           icon={faLongArrowAltDown}
           className="text-secondary pointer"
@@ -77,17 +73,13 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
       <Col xs={5} sm={2} md={2} lg={2} className="pl-3 pl-sm-0 text-nowrap">
         From{" "}
         <FontAwesomeIcon
-          onClick={() => {
-            sortFolder("from", "asc");
-          }}
+          onClick={() => sortFolder("from", "asc")}
           size="sm"
           icon={faLongArrowAltUp}
           className="text-secondary pointer"
         />
         <FontAwesomeIcon
-          onClick={() => {
-            sortFolder("from", "desc");
-          }}
+          onClick={() => sortFolder("from", "desc")}
           size="sm"
           icon={faLongArrowAltDown}
           className="text-secondary pointer"
@@ -102,17 +94,13 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
       >
         Subject{" "}
         <FontAwesomeIcon
-          onClick={() => {
-            sortFolder("subject", "asc");
-          }}
+          onClick={() => sortFolder("subject", "asc")}
           size="sm"
           icon={faLongArrowAltUp}
           className="text-secondary pointer"
         />
         <FontAwesomeIcon
-          onClick={() => {
-            sortFolder("subject", "desc");
-          }}
+          onClick={() => sortFolder("subject", "desc")}
           size="sm"
           icon={faLongArrowAltDown}
           className="text-secondary pointer"

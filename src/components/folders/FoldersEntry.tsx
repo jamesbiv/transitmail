@@ -29,9 +29,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
 }) => {
   return !folderEntry.folders.length ? (
     <ListGroup.Item
-      onClick={() => {
-        updateActiveKeyFolderId("folder", folderEntry.ref);
-      }}
+      onClick={() => updateActiveKeyFolderId("folder", folderEntry.ref)}
       key={folderEntry.id}
       className="pointer"
     >
@@ -48,9 +46,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             toggleActionModal={toggleActionModal}
           />
           <Button
-            onClick={() => {
-              updateActiveKeyFolderId("folder", folderEntry.ref);
-            }}
+            onClick={() => updateActiveKeyFolderId("folder", folderEntry.ref)}
             size="sm"
             variant="primary"
             type="button"
@@ -87,9 +83,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
               toggleActionModal={toggleActionModal}
             />
             <Button
-              onClick={() => {
-                updateActiveKeyFolderId("folder", folderEntry.ref);
-              }}
+              onClick={() => updateActiveKeyFolderId("folder", folderEntry.ref)}
               size="sm"
               variant="primary"
               type="button"
@@ -106,12 +100,12 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           {folderEntry.folders.map((folderSubEntry: IFoldersSubEntry) => (
             <ListGroup.Item
               key={folderSubEntry.id}
-              onClick={() => {
+              onClick={() =>
                 updateActiveKeyFolderId(
                   "folder",
                   `${folderEntry.ref}/${folderSubEntry.ref}`
-                );
-              }}
+                )
+              }
               className="pl-sm-5 pointer"
             >
               <Row>
@@ -127,12 +121,12 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                     toggleActionModal={toggleActionModal}
                   />
                   <Button
-                    onClick={() => {
+                    onClick={() =>
                       updateActiveKeyFolderId(
                         "folder",
                         `${folderEntry.ref}/${folderSubEntry.ref}`
-                      );
-                    }}
+                      )
+                    }
                     size="sm"
                     variant="primary"
                     type="button"

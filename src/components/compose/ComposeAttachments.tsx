@@ -11,19 +11,14 @@ import {
   faEye,
 } from "@fortawesome/free-solid-svg-icons";
 import { IComposeAttachment } from "interfaces";
+import { MimeTools } from "lib";
 
 interface IComposeAttachmentProps {
-  binaryStringToBlob: (
-    content: string,
-    contentType: string,
-    sliceSize?: number
-  ) => Blob;
   updateAttachments: (attachments: IComposeAttachment[]) => void;
   attachments: IComposeAttachment[];
 }
 
 export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
-  binaryStringToBlob,
   updateAttachments,
   attachments,
 }) => {
@@ -62,7 +57,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
     );
 
     if (attachment) {
-      const blob: Blob = binaryStringToBlob(
+      const blob: Blob = MimeTools.binaryStringToBlob(
         attachment.data! as string,
         attachment.mimeType
       );
@@ -88,9 +83,9 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
       name="files[]"
       hidden
       multiple
-      onChange={(event: React.ChangeEvent<HTMLInputElement> & Event) => {
-        loadAttachments(event);
-      }}
+      onChange={(event: React.ChangeEvent<HTMLInputElement> & Event) =>
+        loadAttachments(event)
+      }
     />
   );
 

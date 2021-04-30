@@ -1,10 +1,10 @@
 import React from "react";
 
-interface FolderPlaceholderProps {
+interface IFolderPlaceholderProps {
   height?: number;
 }
 
-export const FolderPlaceholder: React.FC<FolderPlaceholderProps> = ({
+export const FolderPlaceholder: React.FC<IFolderPlaceholderProps> = ({
   height = 0,
 }) => {
   return <div style={{ height }}></div>;

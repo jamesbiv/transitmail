@@ -21,58 +21,58 @@ export class EmailComposer {
    * @returns IComposedEmail
    */
   public composeEmail(emailData: IEmailData): IComposedEmail {
-    const preparedEmail: IComposedEmail = {
+    const composedEmail: IComposedEmail = {
       boundaryid: Math.random().toString(36).substring(5),
     };
 
-    preparedEmail.subject = emailData.subject;
+    composedEmail.subject = emailData.subject;
     
-    preparedEmail.from = emailData.from;
+    composedEmail.from = emailData.from;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
       if (recipient.type === "To") {
-        if (preparedEmail.to) {
+        if (composedEmail.to) {
           // nothing
         } else {
           if (recipient.value) {
-            preparedEmail.to = recipient.value;
+            composedEmail.to = recipient.value;
           }
         }
       }
 
       if (recipient.type === "Cc") {
-        preparedEmail.cc
-          ? (preparedEmail.cc += ", " + recipient.value)
-          : (preparedEmail.cc = recipient.value ?? "");
+        composedEmail.cc
+          ? (composedEmail.cc += ", " + recipient.value)
+          : (composedEmail.cc = recipient.value ?? "");
       }
       
       if (recipient.type === "Bcc") {
-        preparedEmail.bcc
-          ? (preparedEmail.bcc += ", " + recipient.value)
-          : (preparedEmail.bcc = recipient.value ?? "");
+        composedEmail.bcc
+          ? (composedEmail.bcc += ", " + recipient.value)
+          : (composedEmail.bcc = recipient.value ?? "");
       }
     });
 
-    preparedEmail.contentText = "";
+    composedEmail.contentText = "";
 
     [...convertToRaw(emailData.editorState.getCurrentContent()).blocks].forEach(
       (contentRow) => {
-        preparedEmail.contentText += contentRow.text + "\r\n";
+        composedEmail.contentText += contentRow.text + "\r\n";
       }
     );
 
-    preparedEmail.contentHTML = stateToHTML(
+    composedEmail.contentHTML = stateToHTML(
       emailData.editorState.getCurrentContent()
     );
 
     if (emailData.attachments) {
-      preparedEmail.attachmentsEncoded = "";
+      composedEmail.attachmentsEncoded = "";
 
       emailData.attachments.forEach((attachment: IComposeAttachment) => {
         const attachmentEncoded = btoa(attachment.data as string);
 
-        preparedEmail.attachmentsEncoded += `\
---transit--client--${preparedEmail.boundaryid}\r\n\
+        composedEmail.attachmentsEncoded += `\
+--transit--client--${composedEmail.boundaryid}\r\n\
 Content-Type: ${attachment.mimeType}; name="${attachment.filename}"\r\n\
 Content-Disposition: attachment; filename="${attachment.filename}"\r\n\
 Content-Transfer-Encoding: base64\r\n\r\n\
@@ -80,26 +80,26 @@ ${attachmentEncoded}\r\n\r\n`;
       });
     }
 
-    preparedEmail.payload = `\
-Subject: ${preparedEmail.subject ?? "(no subject)"}\r\n\
-To: ${preparedEmail.to}\r\n\
-Cc: ${preparedEmail.cc ?? ""}\r\n\
-Bcc: ${preparedEmail.bcc ?? ""}\r\n\
-From: ${preparedEmail.from}\r\n\
+    composedEmail.payload = `\
+Subject: ${composedEmail.subject ?? "(no subject)"}\r\n\
+To: ${composedEmail.to}\r\n\
+Cc: ${composedEmail.cc ?? ""}\r\n\
+Bcc: ${composedEmail.bcc ?? ""}\r\n\
+From: ${composedEmail.from}\r\n\
 MIME-Version: 1.0\r\n\
 X-Mailer: Transit alpha0.0.1\r\n\
 Content-Type: multipart/alternative; boundary="transit--client--${
-      preparedEmail.boundaryid
+      composedEmail.boundaryid
     }"\r\n\r\n\
---transit--client--${preparedEmail.boundaryid}\r\n\
+--transit--client--${composedEmail.boundaryid}\r\n\
 Content-Type: text/plain; charset="utf-8"\r\n\r\n\
-${preparedEmail.contentText}\r\n\r\n\
---transit--client--${preparedEmail.boundaryid}\r\n\
+${composedEmail.contentText}\r\n\r\n\
+--transit--client--${composedEmail.boundaryid}\r\n\
 Content-Type: text/html; charset="utf-8"\r\n\r\n\
-${preparedEmail.contentHTML}\r\n\r\n\
-${preparedEmail.attachmentsEncoded}\
---transit--client--${preparedEmail.boundaryid}--`;
+${composedEmail.contentHTML}\r\n\r\n\
+${composedEmail.attachmentsEncoded}\
+--transit--client--${composedEmail.boundaryid}--`;
 
-    return preparedEmail;
+    return composedEmail;
   }
 }

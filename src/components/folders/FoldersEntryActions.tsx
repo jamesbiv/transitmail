@@ -11,12 +11,7 @@ import {
   faSuitcase,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  IFoldersEntry,
-  IFoldersSubEntry,
-  EImapResponseStatus,
-  IImapResponse,
-} from "interfaces";
+import { IFoldersEntry, EImapResponseStatus, IImapResponse } from "interfaces";
 import { ImapSocket } from "classes";
 
 interface IFoldersEntryActionsProps {
@@ -97,12 +92,7 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
       centered={true}
       aria-labelledby="contained-modal-title-vcenter"
     >
-      <Modal.Header
-        closeButton
-        onClick={() => {
-          onHide();
-        }}
-      >
+      <Modal.Header closeButton onClick={() => onHide()}>
         <Modal.Title id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={folderEntryAction[actionType].icon} />{" "}
           {folderEntryAction[actionType].label}
@@ -119,20 +109,8 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
         })}
       </Modal.Body>
       <Modal.Footer>
-        <Button
-          onClick={() => {
-            changeSubmit(true);
-          }}
-        >
-          Ok
-        </Button>
-        <Button
-          onClick={() => {
-            onHide();
-          }}
-        >
-          Close
-        </Button>
+        <Button onClick={() => changeSubmit(true)}>Ok</Button>
+        <Button onClick={() => onHide()}>Close</Button>
       </Modal.Footer>
     </Modal>
   );
@@ -142,16 +120,16 @@ interface IFoldersEntryActionProps {
   folderId?: string;
   folders?: IFoldersEntry[];
   submit: boolean;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
   imapSocket: ImapSocket;
+  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
   successfulSubmit: () => void;
 }
 
 export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   folders,
   submit,
-  changeSubmit,
   imapSocket,
+  changeSubmit,
   successfulSubmit,
 }) => {
   const [folderName, setFolderName] = useState<string | undefined>();
@@ -195,9 +173,9 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
           type="text"
           placeholder="Enter new folder name"
           defaultValue={folderName}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setFolderName(event.target.value);
-          }}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setFolderName(event.target.value)
+          }
         />
       </Form.Group>
       <Form.Group controlId="formDisplayName">
@@ -211,9 +189,9 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
         </Form.Label>
         <Form.Control
           as="select"
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setSubFolder(event.target.value);
-          }}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setSubFolder(event.target.value)
+          }
         >
           <option>(root)</option>
           {folders?.map((folder: IFoldersEntry) => (
@@ -231,8 +209,8 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   folderId,
   folders,
   submit,
-  changeSubmit,
   imapSocket,
+  changeSubmit,
   successfulSubmit,
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
@@ -294,9 +272,9 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
           type="text"
           placeholder="Enter new folder name"
           defaultValue={newFolderName}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setNewFolderName(event.target.value);
-          }}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setNewFolderName(event.target.value)
+          }
         />
       </Form.Group>
       <Form.Group controlId="formDisplayName">
@@ -310,9 +288,9 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
         </Form.Label>
         <Form.Control
           as="select"
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            setDestinationSubFolder(event.target.value);
-          }}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setDestinationSubFolder(event.target.value)
+          }
         >
           <option>(root)</option>
           {folders?.map((folder: IFoldersEntry) => (
@@ -330,8 +308,8 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   folderId,
   folders,
   submit,
-  changeSubmit,
   imapSocket,
+  changeSubmit,
   successfulSubmit,
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<
@@ -373,9 +351,9 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setDestinationFolder(event.target.value);
-        }}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setDestinationFolder(event.target.value)
+        }
       >
         <option>(root)</option>
         {folders?.map((folder: IFoldersEntry) => (
@@ -391,8 +369,8 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
 export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   folderId,
   submit,
-  changeSubmit,
   imapSocket,
+  changeSubmit,
   successfulSubmit,
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
@@ -430,9 +408,9 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
         type="text"
         placeholder="Enter new folder name"
         defaultValue={newFolderName}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setNewFolderName(event.target.value);
-        }}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setNewFolderName(event.target.value)
+        }
       />
     </Form.Group>
   );
@@ -441,8 +419,8 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
 export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   folderId,
   submit,
-  changeSubmit,
   imapSocket,
+  changeSubmit,
   successfulSubmit,
 }) => {
   useEffect(() => {

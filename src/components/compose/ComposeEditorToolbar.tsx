@@ -33,7 +33,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   const linkButtonTarget: React.RefObject<HTMLButtonElement> = React.useRef<HTMLButtonElement>(
     null
   );
-  
+
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
   const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {
@@ -77,6 +77,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
+
             toggleInlineStyle("BOLD");
           }}
           className={checkInlineStyle("BOLD") ? "active" : ""}
@@ -240,20 +241,6 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faRedo} />
         </Button>
       </ButtonGroup>
-      {/* 
-        <ButtonGroup size="sm" className="mr-2 mt-2" aria-label="">
-          <Button
-            size="sm"
-            variant="outline-dark"
-            type="button"
-            onMouseDown={(event: React.SyntheticEvent) => {
-              event.preventDefault();
-            }}
-          >
-            <FontAwesomeIcon icon={faCode} />
-          </Button>
-        </ButtonGroup>
-        */}
       <ButtonGroup
         size="sm"
         className="mr-2 mt-2 d-block d-sm-none"

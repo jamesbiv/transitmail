@@ -117,12 +117,7 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
       centered={true}
       aria-labelledby="contained-modal-title-vcenter"
     >
-      <Modal.Header
-        closeButton
-        onClick={() => {
-          onHide();
-        }}
-      >
+      <Modal.Header closeButton onClick={() => onHide()}>
         <Modal.Title id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={ViewAction[actionType].icon} />{" "}
           {ViewAction[actionType].label}
@@ -143,17 +138,13 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
       <Modal.Footer>
         <Button
           className={`${ViewAction[actionType].hideSubmit && "d-none"}`}
-          onClick={() => {
-            changeSubmit(true);
-          }}
+          onClick={() => changeSubmit(true)}
         >
           Ok
         </Button>
         <Button
           className={`${ViewAction[actionType].hideSubmit && "btn-block"}`}
-          onClick={() => {
-            onHide();
-          }}
+          onClick={() => onHide()}
         >
           Close
         </Button>
@@ -216,9 +207,9 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setDestinationFolder(event.target.value);
-        }}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setDestinationFolder(event.target.value)
+        }
       >
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>
@@ -283,9 +274,9 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
       </Form.Label>
       <Form.Control
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setDestinationFolder(event.target.value);
-        }}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setDestinationFolder(event.target.value)
+        }
       >
         {folders?.map((folder: IFoldersEntry) => (
           <React.Fragment key={folder.id}>

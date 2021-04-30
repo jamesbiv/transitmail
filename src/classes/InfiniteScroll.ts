@@ -143,8 +143,13 @@ export class InfiniteScroll {
    * @returns void
    */
   public startObservation(): void {
-    this.topObserverElement = document.getElementById(this.topElementId)!;
-    this.bottomObserverElement = document.getElementById(this.bottomElementId)!;
+    this.topObserverElement = document.getElementById(
+      this.topElementId
+    ) as HTMLElement;
+    
+    this.bottomObserverElement = document.getElementById(
+      this.bottomElementId
+    ) as HTMLElement;
 
     this.topObserver.observe(this.topObserverElement);
     this.bottomObserver.observe(this.bottomObserverElement);
@@ -164,7 +169,9 @@ export class InfiniteScroll {
    * @returns void
    */
   public startHandleScroll = (): void => {
-    this.scrollElement = document.getElementById(this.scrollElementId)!;
+    this.scrollElement = document.getElementById(
+      this.scrollElementId
+    ) as HTMLElement;
 
     this.scrollElement.addEventListener("scroll", this.handleDesktopScroll);
   };
@@ -192,6 +199,14 @@ export class InfiniteScroll {
   }
 
   /**
+   * @name getCurrentSlice
+   * @returns IInfiniteScrollSlice
+   */
+  public getCurrentSlice(): IInfiniteScrollSlice {
+    return this.slice;
+  }
+
+  /**
    * @name topObservationCallback
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
@@ -202,8 +217,6 @@ export class InfiniteScroll {
     intersectionEntries.forEach(
       (intersectionEntry: IntersectionObserverEntry) => {
         if (intersectionEntry.intersectionRatio > 0) {
-          console.log(1);
-
           const minIndex: number =
             this.slice.minIndex - this.settings.increment;
           const maxIndex: number = minIndex + this.settings.increment * 2;

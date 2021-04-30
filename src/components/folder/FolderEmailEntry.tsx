@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Button,
-  ButtonGroup,
-  Row,
-  Col,
-  Form,
-  Container,
-} from "react-bootstrap";
+import { Button, ButtonGroup, Row, Col, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEnvelopeOpen,
@@ -63,9 +56,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           id=""
           label=""
           checked={email.selected}
-          onChange={() => {
-            toggleSelection(email.uid);
-          }}
+          onChange={() => toggleSelection(email.uid)}
         />
       </Col>
       <Col
@@ -74,12 +65,8 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         md={2}
         lg={2}
         className="text-truncate pl-3 pl-sm-0"
-        onTouchStart={() => {
-          handleLongPress(email.uid);
-        }}
-        onTouchEnd={() => {
-          handleLongRelease();
-        }}
+        onTouchStart={() => handleLongPress(email.uid)}
+        onTouchEnd={() => handleLongRelease()}
         onClick={() => {
           if (!folderLongPress.isReturned) {
             viewEmail(email.uid);
@@ -98,12 +85,8 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         md={2}
         lg={2}
         className="text-truncate pl-3 pl-sm-0"
-        onTouchStart={() => {
-          handleLongPress(email.uid);
-        }}
-        onTouchEnd={() => {
-          handleLongRelease();
-        }}
+        onTouchStart={() => handleLongPress(email.uid)}
+        onTouchEnd={() => handleLongRelease()}
         onClick={() => {
           if (!folderLongPress.isReturned) {
             viewEmail(email.uid);
@@ -112,53 +95,28 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           }
         }}
       >
-        {email.from.match(/"(.*)"/)![1] ?? undefined}
+        {email.from.match(/"(.*)"/)?.[1] ?? undefined}
         <br />
         <small>
-          <em>{email.from.match(/<(.*)>/)![1] ?? undefined}</em>
+          <em>{email.from.match(/<(.*)>/)?.[1] ?? undefined}</em>
         </small>
       </Col>
-      <Col
-        className="text-truncate"
-        onClick={() => {
-          viewEmail(email.uid);
-        }}
-      >
+      <Col className="text-truncate">
         <ButtonGroup
           className="float-right pl-0 pl-sm-3 btn-group-vertical-xs"
           size="sm"
           aria-label=""
         >
-          <Button
-            variant="primary"
-            onClick={() => {
-              viewEmail(email.uid);
-            }}
-          >
+          <Button variant="primary" onClick={() => viewEmail(email.uid)}>
             <FontAwesomeIcon icon={faEnvelopeOpen} />
           </Button>
-          <Button
-            variant="success"
-            onClick={() => {
-              replyToEmail(email.uid);
-            }}
-          >
+          <Button variant="success" onClick={() => replyToEmail(email.uid)}>
             <FontAwesomeIcon icon={faReply} />
           </Button>
-          <Button
-            variant="success"
-            onClick={() => {
-              forwardEmail(email.uid);
-            }}
-          >
+          <Button variant="success" onClick={() => forwardEmail(email.uid)}>
             <FontAwesomeIcon icon={faShare} />
           </Button>
-          <Button
-            variant="danger"
-            onClick={() => {
-              deleteEmail(email.uid);
-            }}
-          >
+          <Button variant="danger" onClick={() => deleteEmail(email.uid)}>
             <FontAwesomeIcon icon={faTrash} />
           </Button>
         </ButtonGroup>
@@ -167,7 +125,6 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
             <FontAwesomeIcon className="mr-2" icon={faPaperclip} />
           )}
           {email.subject || "(no subject)"}
-
         </p>
       </Col>
       <Col
@@ -176,12 +133,8 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         sm={0}
         md={0}
         lg={0}
-        onTouchStart={() => {
-          handleLongPress(email.uid);
-        }}
-        onTouchEnd={() => {
-          handleLongRelease();
-        }}
+        onTouchStart={() => handleLongPress(email.uid)}
+        onTouchEnd={() => handleLongRelease()}
         onClick={() => {
           if (!folderLongPress.isReturned) {
             viewEmail(email.uid);

@@ -29,7 +29,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
   forwardEmail,
 }) => {
   return (
-    <>
+    <React.Fragment>
       <div className="ml-2 float-right text-right">
         <div className="mb-2 d-none d-sm-block">
           <Button
@@ -98,8 +98,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
         </Dropdown>
       </div>
       <p className="m-0">
-        Date:
-        {new Date(email.date!).toDateString()}{" "}
+        Date: {new Date(email.date!).toDateString()}{" "}
         {new Date(email.date!).toTimeString().split(" ")[0]}
       </p>
       <p className="m-0">From: {email.from}</p>
@@ -143,6 +142,6 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
           <FontAwesomeIcon icon={faTrash} />
         </Button>
       </div>
-    </>
+    </React.Fragment>
   );
 };

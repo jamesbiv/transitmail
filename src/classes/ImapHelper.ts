@@ -1,9 +1,9 @@
 import { IEmail, IEmailFlags, IFolderEmail, IFoldersEntry } from "interfaces";
-import { MimeTools, EmailParser } from "classes";
+import { EmailParser } from "classes";
+import { MimeTools } from "lib";
 
 interface IImapHelper {
   emailParser: EmailParser;
-  mimeTools: MimeTools;
 }
 
 export class ImapHelper {
@@ -13,16 +13,10 @@ export class ImapHelper {
   protected emailParser: EmailParser;
 
   /**
-   * @var {MimeTools} mimeTools
-   */
-  protected mimeTools: MimeTools;
-
-  /**
    * @constructor
    */
-  constructor({ emailParser, mimeTools }: IImapHelper) {
+  constructor({ emailParser }: IImapHelper) {
     this.emailParser = emailParser;
-    this.mimeTools = mimeTools;
   }
 
   /**
@@ -92,11 +86,11 @@ export class ImapHelper {
         folderData[i][0].match(/.*from: (.*).*/i)?.[1] ?? undefined;
 
       if (emailSubject && emailSubject.indexOf("=?") > -1) {
-        emailSubject = this.mimeTools.parseMimeWords(emailSubject);
+        emailSubject = MimeTools.parseMimeWords(emailSubject);
       }
 
       if (emailFrom && emailFrom?.indexOf("=?") > -1) {
-        emailFrom = this.mimeTools.parseMimeWords(emailFrom);
+        emailFrom = MimeTools.parseMimeWords(emailFrom);
       }
 
       const emailBodyStructure =

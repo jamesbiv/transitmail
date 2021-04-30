@@ -6,5 +6,3 @@ export { SmtpSocket } from "./SmtpSocket";
 export { StateManager } from "./StateManager";
 export { InfiniteScroll } from "./InfiniteScroll";
 export { EmailComposer } from "./EmailComposer";
-export { MimeTools } from "./MimeTools";
-

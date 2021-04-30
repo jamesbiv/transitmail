@@ -3,18 +3,24 @@ import { Container, Row, Col, Card, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import { ISettings, ISettingsErrors } from "interfaces";
+import { SettingsSecondaryEmails } from "./SettingsSecondaryEmails";
+import { SettingsFormAdvanced } from "./SettingsFormAdvanced";
 
 interface ISettingsFormProps {
   settings: ISettings;
-  errors: ISettingsErrors;
+  errors?: ISettingsErrors;
+  showSecondaryEmailsModal: boolean;
+  toggleSecondaryEmailsModal: (showSecondaryEmailsModal: boolean) => void;
 }
 
 export const SettingsForm: React.FC<ISettingsFormProps> = ({
   settings,
   errors,
+  showSecondaryEmailsModal,
+  toggleSecondaryEmailsModal,
 }) => {
   return (
-    <>
+    <React.Fragment>
       <Form.Group controlId="formDisplayName">
         <Form.Label>
           Display name{" "}
@@ -27,7 +33,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
         <Form.Control
           type="text"
           placeholder="Enter display name"
-          isInvalid={!!errors.name}
+          isInvalid={!!errors?.name}
           defaultValue={settings.name}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             settings.name = event.target.value;
@@ -37,7 +43,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
         </Form.Text>
         <Form.Control.Feedback type="invalid">
-          {errors.name}
+          {errors?.name}
         </Form.Control.Feedback>
       </Form.Group>
       <Form.Group controlId="formEmailAddress">
@@ -52,7 +58,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
         <Form.Control
           type="email"
           placeholder="Enter email address"
-          isInvalid={!!errors.email}
+          isInvalid={!!errors?.email}
           defaultValue={settings.email}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             settings.email = event.target.value;
@@ -62,7 +68,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
         </Form.Text>
         <Form.Control.Feedback type="invalid">
-          {errors.email}
+          {errors?.email}
         </Form.Control.Feedback>
       </Form.Group>
       <Form.Group controlId="formEmailSignature">
@@ -71,30 +77,20 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           as="textarea"
           rows={3}
           placeholder="Enter email signature"
-          isInvalid={!!errors.signature}
+          isInvalid={!!errors?.signature}
           defaultValue={settings.signature}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
             settings.signature = event.target.value;
           }}
         />
         <Form.Control.Feedback type="invalid">
-          {errors.signature}
+          {errors?.signature}
         </Form.Control.Feedback>
       </Form.Group>
-      <Form.Group controlId="formEmailAutoLogin">
-        <Form.Check
-          type="switch"
-          id="autoLogin"
-          label="Ask for password before sign-in"
-          defaultChecked={settings.autoLogin}
-          onChange={() => {
-            settings.autoLogin = settings.autoLogin ? false : true;
-          }}
-        />
-        <Form.Text className="text-muted">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
-        </Form.Text>
-      </Form.Group>
+      <SettingsSecondaryEmails
+        showSecondaryEmailsModal={showSecondaryEmailsModal}
+        toggleSecondaryEmailsModal={toggleSecondaryEmailsModal}
+      />
       <Container fluid className="p-0">
         <Row>
           <Col md={12} lg={6}>
@@ -113,14 +109,14 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="text"
                     placeholder="Incomming mail host"
-                    isInvalid={!!errors.imapHost}
+                    isInvalid={!!errors?.imapHost}
                     defaultValue={settings.imapHost}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapHost = event.target.value;
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.imapHost}
+                    {errors?.imapHost}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formIncommingPort">
@@ -135,14 +131,14 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="text"
                     placeholder="Incomming mail port"
-                    isInvalid={!!errors.imapPort}
+                    isInvalid={!!errors?.imapPort}
                     defaultValue={settings.imapPort}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapPort = Number(event.target.value);
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.imapPort}
+                    {errors?.imapPort}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formIncommingUser">
@@ -157,14 +153,14 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="text"
                     placeholder="Incomming mail username"
-                    isInvalid={!!errors.imapUsername}
+                    isInvalid={!!errors?.imapUsername}
                     defaultValue={settings.imapUsername}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapUsername = event.target.value;
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.imapUsername}
+                    {errors?.imapUsername}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formIncommingPassword">
@@ -179,14 +175,14 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="password"
                     placeholder="Incomming mail password"
-                    isInvalid={!!errors.imapPassword}
+                    isInvalid={!!errors?.imapPassword}
                     defaultValue={settings.imapPassword}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.imapPassword = event.target.value;
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.imapPassword}
+                    {errors?.imapPassword}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Card.Body>
@@ -208,19 +204,19 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="text"
                     placeholder="Outgoing mail host"
-                    isInvalid={!!errors.smtpHost}
+                    isInvalid={!!errors?.smtpHost}
                     defaultValue={settings.smtpHost}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpHost = event.target.value;
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.smtpHost}
+                    {errors?.smtpHost}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formOutgoingPort">
                   <Form.Label>
-                    Outgoing Mail Port{" "}
+                    Outgoing mail port{" "}
                     <FontAwesomeIcon
                       icon={faAsterisk}
                       size="xs"
@@ -230,14 +226,14 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="text"
                     placeholder="Outgoing mail port"
-                    isInvalid={!!errors.smtpPort}
+                    isInvalid={!!errors?.smtpPort}
                     defaultValue={settings.smtpPort}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpPort = Number(event.target.value);
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.smtpPort}
+                    {errors?.smtpPort}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formOutgoingUser">
@@ -252,14 +248,14 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="text"
                     placeholder="Outgoing mail username"
-                    isInvalid={!!errors.smtpUsername}
+                    isInvalid={!!errors?.smtpUsername}
                     defaultValue={settings.smtpUsername}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpUsername = event.target.value;
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.smtpUsername}
+                    {errors?.smtpUsername}
                   </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formOutgoingPassword">
@@ -274,21 +270,22 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                   <Form.Control
                     type="password"
                     placeholder="Outgoing mail password"
-                    isInvalid={!!errors.smtpPassword}
+                    isInvalid={!!errors?.smtpPassword}
                     defaultValue={settings.smtpPassword}
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       settings.smtpPassword = event.target.value;
                     }}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.smtpPassword}
+                    {errors?.smtpPassword}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Card.Body>
             </Card>
           </Col>
         </Row>
-      </Container>{" "}
-    </>
+        <SettingsFormAdvanced />
+      </Container>
+    </React.Fragment>
   );
 };

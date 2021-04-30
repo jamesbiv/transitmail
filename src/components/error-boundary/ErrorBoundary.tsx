@@ -46,9 +46,7 @@ export class ErrorBoundary extends React.PureComponent<
             </p>
           </>
         ),
-        action: () => {
-          this.stateManager.updateActiveKey("settings");
-        },
+        action: () => this.stateManager.updateActiveKey("settings"),
       };
 
       this.stateManager.showMessageModal(messageModalData);

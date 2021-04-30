@@ -7,13 +7,8 @@ import {
   faCheck,
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  ImapHelper,
-  ImapSocket,
-  LocalStorage,
-  MimeTools,
-  StateManager,
-} from "classes";
+import { ImapHelper, ImapSocket, LocalStorage, StateManager } from "classes";
+import { MimeTools } from "lib";
 import {
   IEmail,
   EImapResponseStatus,
@@ -29,7 +24,6 @@ interface IViewProps {
     imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
-    mimeTools: MimeTools;
     stateManager: StateManager;
   };
 }
@@ -52,11 +46,6 @@ interface IViewProgressBar {
 }
 
 export class View extends React.PureComponent<IViewProps, IViewState> {
-  /**
-   * @var {MimeTools} mimeTools
-   */
-  protected mimeTools: MimeTools;
-
   /**
    * @var {ImapHelper} imapHelper
    */
@@ -92,7 +81,6 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
     this.imapHelper = props.dependencies.imapHelper;
     this.imapSocket = props.dependencies.imapSocket;
     this.localStorage = props.dependencies.localStorage;
-    this.mimeTools = props.dependencies.mimeTools;
     this.stateManager = props.dependencies.stateManager;
 
     this.state = {
@@ -254,7 +242,7 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
         convertedAttachments: Promise<IComposeAttachment[]>,
         attachment: IEmailAttachment
       ) => {
-        const attachmentContent: Blob = this.mimeTools.base64toBlob(
+        const attachmentContent: Blob = MimeTools.base64toBlob(
           attachment.content,
           attachment.mimeType
         );
@@ -291,9 +279,9 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
     return !this.state.showEmail ? (
       <Card className="mt-0 mt-sm-3">
         <Card.Body>
-          <>
+          <React.Fragment>
             <ProgressBar className="mb-2" now={this.state.progressBarNow} />
-          </>
+          </React.Fragment>
         </Card.Body>
       </Card>
     ) : (
@@ -320,10 +308,7 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
               !this.state.email?.attachments?.length ? "d-none" : "d-block"
             }`}
           >
-            <ViewAttachments
-              attachments={this.state.email!.attachments}
-              base64toBlob={this.mimeTools.base64toBlob}
-            />
+            <ViewAttachments attachments={this.state.email!.attachments} />
           </Card.Body>
           <Card.Body>
             <Alert

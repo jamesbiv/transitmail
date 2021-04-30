@@ -20,13 +20,7 @@ import {
   RichUtils,
 } from "draft-js";
 import { stateFromHTML } from "draft-js-import-html";
-import {
-  SmtpSocket,
-  MimeTools,
-  EmailComposer,
-  LocalStorage,
-  StateManager,
-} from "classes";
+import { SmtpSocket, EmailComposer, LocalStorage, StateManager } from "classes";
 import {
   ComposeAttachments,
   ComposeRecipientDetails,
@@ -44,7 +38,6 @@ import { ESmtpResponseStatus } from "interfaces";
 interface IComposeProps {
   dependencies: {
     smtpSocket: SmtpSocket;
-    mimeTools: MimeTools;
     localStorage: LocalStorage;
     stateManager: StateManager;
   };
@@ -62,11 +55,6 @@ interface IComposeState {
 }
 
 export class Compose extends React.Component<IComposeProps, IComposeState> {
-  /**
-   * @var {MimeTools} mimeTools
-   */
-  protected mimeTools: MimeTools;
-
   /**
    * @var {SmtpSocket} smtpSocket
    */
@@ -92,7 +80,6 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
 
     this.smtpSocket = props.dependencies.smtpSocket;
     this.localStorage = props.dependencies.localStorage;
-    this.mimeTools = props.dependencies.mimeTools;
     this.stateManager = props.dependencies.stateManager;
     this.emailComposer = new EmailComposer();
 
@@ -299,9 +286,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
               xs={6}
             >
               <Button
-                onClick={() => {
-                  this.sendEmail();
-                }}
+                onClick={() => this.sendEmail()}
                 className="mr-2"
                 variant="primary"
                 type="button"
@@ -372,7 +357,6 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
               />
             </div>
             <ComposeAttachments
-              binaryStringToBlob={this.mimeTools.binaryStringToBlob}
               updateAttachments={this.updateAttachments}
               attachments={this.state.attachments}
             />
@@ -380,9 +364,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
           <Card.Footer className="d-block d-sm-none">
             <Button
               block
-              onClick={() => {
-                this.sendEmail();
-              }}
+              onClick={() => this.sendEmail()}
               variant="primary"
               type="button"
             >

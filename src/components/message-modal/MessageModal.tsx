@@ -31,19 +31,13 @@ export const MessageModal: React.FC<IMessageModalProps> = ({
       <Modal.Footer>
         <Button
           onClick={() => {
-            onHide();
             messageModalData?.action();
+            onHide();
           }}
         >
           Ok
         </Button>
-        <Button
-          onClick={() => {
-            onHide();
-          }}
-        >
-          Close
-        </Button>
+        <Button onClick={() => onHide()}>Close</Button>
       </Modal.Footer>
     </Modal>
   );

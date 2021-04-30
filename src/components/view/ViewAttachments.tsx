@@ -9,24 +9,19 @@ import {
   faMinusSquare,
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmailAttachment } from "interfaces";
+import { MimeTools } from "lib";
 
 interface IViewAttachmentsProps {
   attachments?: IEmailAttachment[];
-  base64toBlob: (
-    content: string,
-    contentType: string,
-    sliceSize?: number
-  ) => Blob;
 }
 
 export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   attachments,
-  base64toBlob,
 }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
-    const blob: Blob = base64toBlob(content, attachment.mimeType);
+    const blob: Blob = MimeTools.base64toBlob(content, attachment.mimeType);
     const blobUrl: string = URL.createObjectURL(blob);
 
     window.open(blobUrl, "_blank");
@@ -35,7 +30,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   const downloadAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
-    const blob: Blob = base64toBlob(content, attachment.mimeType);
+    const blob: Blob = MimeTools.base64toBlob(content, attachment.mimeType);
     const blobUrl: string = URL.createObjectURL(blob);
 
     const a: HTMLAnchorElement = document.createElement("a");
@@ -53,13 +48,9 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(
     null
   );
-  
+
   return (
-    <Accordion
-      onSelect={(id) => {
-        setAttachmentEventKey(id);
-      }}
-    >
+    <Accordion onSelect={(eventKey) => setAttachmentEventKey(eventKey)}>
       <Accordion.Toggle
         className="text-dark font-weight-bold text-decoration-none p-0 m-0"
         as={Button}
@@ -85,9 +76,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
                     size="sm"
                     style={{ zIndex: 20000 }}
                     className="float-right p-0 ml-2"
-                    onClick={() => {
-                      downloadAttachment(attachment);
-                    }}
+                    onClick={() => downloadAttachment(attachment)}
                   >
                     <FontAwesomeIcon icon={faDownload} />
                   </Button>
@@ -96,9 +85,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
                     size="sm"
                     style={{ zIndex: 20000 }}
                     className="float-right p-0 ml-2"
-                    onClick={() => {
-                      viewAttachment(attachment);
-                    }}
+                    onClick={() => viewAttachment(attachment)}
                   >
                     <FontAwesomeIcon icon={faEye} />
                   </Button>

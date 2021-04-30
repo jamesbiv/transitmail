@@ -5,17 +5,20 @@ import {
   faCopy,
   faFlag,
   faSuitcase,
+  faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { EFolderEmailActionType } from ".";
 
 interface FolderTableOptionsProps {
   displayTableOptions: boolean;
+  toggleSelection: (uid: number, forceToogle?: boolean) => void;
   toggleActionModal: (actionType: EFolderEmailActionType) => void;
 }
 
 export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
   displayTableOptions,
+  toggleSelection,
   toggleActionModal,
 }) => {
   return (
@@ -62,6 +65,16 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
           >
             <FontAwesomeIcon icon={faTrash} />{" "}
             <span className="d-none d-md-inline-block">Delete</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="outline-dark"
+            type="button"
+            className="ml-2"
+            onClick={() => toggleSelection(-1, false)}
+          >
+            <FontAwesomeIcon icon={faTimes} />{" "}
+            <span className="d-none d-md-inline-block">Clear</span>
           </Button>
         </Col>
       </Row>

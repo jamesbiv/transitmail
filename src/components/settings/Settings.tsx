@@ -21,9 +21,10 @@ interface ISettingsProps {
 }
 
 interface ISettingsState {
-  message: string;
-  messageType: string;
-  errors: ISettingsErrors;
+  message?: string;
+  messageType?: string;
+  errors?: ISettingsErrors;
+  showSecondaryEmailsModal: boolean;
 }
 
 export class Settings extends React.PureComponent<
@@ -55,23 +56,19 @@ export class Settings extends React.PureComponent<
     this.imapSocket = props.dependencies.imapSocket;
     this.localStorage = props.dependencies.localStorage;
 
-    // Copy the object and only update on validation
     this.settings = Object.assign({}, this.localStorage.getSettings());
 
     this.state = {
-      errors: {},
-      message: "",
-      messageType: "",
+      showSecondaryEmailsModal: false,
       // autoLogin: false,
     };
   }
 
-  saveSettings() {
+  public saveSettings() {
     const emailRegex: RegExp = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     const errors: ISettingsErrors = {};
 
-    /* Validation conditions */
     if (this.settings.name === "") {
       errors.name = "Please specify a valid display name";
     }
@@ -126,14 +123,19 @@ export class Settings extends React.PureComponent<
     }
 
     this.setState({
-      errors: {},
+      errors: undefined,
       message: "Settings saved successfully",
       messageType: "info",
     });
 
-    /* update local version of settings globally on validation */
     this.localStorage.setSettings(this.settings);
   }
+
+  public toggleSecondaryEmailsModal = (
+    showSecondaryEmailsModal: boolean
+  ): void => {
+    this.setState({ showSecondaryEmailsModal });
+  };
 
   render() {
     return (
@@ -146,17 +148,19 @@ export class Settings extends React.PureComponent<
         <Form
           onSubmit={(event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
+
             (document.getElementById("container-main") as HTMLElement).scroll(
               0,
               0
             );
+
             this.saveSettings();
           }}
           noValidate={true}
         >
           <Card.Body>
             <Alert
-              className={!this.state.message.length ? "d-none" : "d-block"}
+              className={!this.state.message?.length ? "d-none" : "d-block"}
               variant={
                 this.state.messageType === "info"
                   ? "success"
@@ -176,11 +180,16 @@ export class Settings extends React.PureComponent<
               />{" "}
               <span
                 dangerouslySetInnerHTML={{
-                  __html: this.state.message,
+                  __html: this.state.message ?? "",
                 }}
               />
             </Alert>
-            <SettingsForm settings={this.settings} errors={this.state.errors} />
+            <SettingsForm
+              settings={this.settings}
+              errors={this.state.errors}
+              showSecondaryEmailsModal={this.state.showSecondaryEmailsModal}
+              toggleSecondaryEmailsModal={this.toggleSecondaryEmailsModal}
+            />
           </Card.Body>
           <Card.Footer>
             <Row>

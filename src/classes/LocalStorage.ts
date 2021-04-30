@@ -50,41 +50,6 @@ export class LocalStorage {
   }
 
   /**
-   * @name setLocalStorage
-   * @param {string} name
-   * @param {T} data
-   * @returns Promise<void>
-   */
-  private async setLocalStorage<T>(name: string, data: T): Promise<void> {
-    const encryptedData: string = CryptoES.AES.encrypt(
-      JSON.stringify(data),
-      this.passPhrase
-    ).toString();
-
-    localStorage.setItem(name, encryptedData);
-  }
-
-  /**
-   * @name getLocalStorage
-   * @param {string} name
-   * @returns T
-   */
-  private getLocalStorage<T>(name: string): T {
-    const data: string = localStorage.getItem(name) ?? "";
-
-    const decryptedData: string = CryptoES.AES.decrypt(
-      data,
-      this.passPhrase
-    ).toString(CryptoES.enc.Utf8);
-
-    try {
-      return JSON.parse(decryptedData);
-    } catch (error) {
-      return {} as T;
-    }
-  }
-
-  /**
    * @name setData
    * @param {TDataKeys} name
    * @param {T} value
@@ -142,5 +107,40 @@ export class LocalStorage {
    */
   public getSettings(): Pick<ISettings, TSettingsKeys> {
     return this.settings;
+  }
+
+  /**
+   * @name setLocalStorage
+   * @param {string} name
+   * @param {T} data
+   * @returns Promise<void>
+   */
+   private async setLocalStorage<T>(name: string, data: T): Promise<void> {
+    const encryptedData: string = CryptoES.AES.encrypt(
+      JSON.stringify(data),
+      this.passPhrase
+    ).toString();
+
+    localStorage.setItem(name, encryptedData);
+  }
+
+  /**
+   * @name getLocalStorage
+   * @param {string} name
+   * @returns T
+   */
+  private getLocalStorage<T>(name: string): T {
+    const data: string = localStorage.getItem(name) ?? "";
+
+    const decryptedData: string = CryptoES.AES.decrypt(
+      data,
+      this.passPhrase
+    ).toString(CryptoES.enc.Utf8);
+
+    try {
+      return JSON.parse(decryptedData);
+    } catch (error) {
+      return {} as T;
+    }
   }
 }

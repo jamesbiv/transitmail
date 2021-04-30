@@ -8,7 +8,6 @@ import {
   SmtpSocket,
   EmailParser,
   StateManager,
-  MimeTools,
 } from "classes";
 import {
   Folder,
@@ -55,7 +54,6 @@ class Index extends React.Component<{}, IIndexState> {
     localStorage: LocalStorage;
     emailParser: EmailParser;
     stateManager: StateManager;
-    mimeTools: MimeTools;
   };
 
   /**
@@ -66,20 +64,17 @@ class Index extends React.Component<{}, IIndexState> {
   constructor(props: {}) {
     super(props);
 
-    const mimeTools: MimeTools = new MimeTools();
-    const emailParser: EmailParser = new EmailParser({ mimeTools });
+    const emailParser: EmailParser = new EmailParser();
 
     this.dependencies = {
       localStorage: new LocalStorage(),
       emailParser: emailParser,
-      imapHelper: new ImapHelper({ mimeTools, emailParser }),
+      imapHelper: new ImapHelper({ emailParser }),
       imapSocket: new ImapSocket(),
       smtpSocket: new SmtpSocket(),
       stateManager: new StateManager(this),
-      mimeTools: mimeTools,
     };
 
-    // Connection settings
     this.dependencies.imapSocket.settings = {
       host: this.dependencies.localStorage.getSetting("imapHost"),
       port: this.dependencies.localStorage.getSetting("imapPort"),
@@ -163,7 +158,6 @@ class Index extends React.Component<{}, IIndexState> {
     }
   };
 
-  /* Component declarations */
   components: IComponent[] = [
     { id: 1, element: Inbox, eventKey: "inbox" },
     { id: 2, element: Compose, eventKey: "compose" },

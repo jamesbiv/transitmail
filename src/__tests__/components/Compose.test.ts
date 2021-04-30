@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+export {}
 
 test("renders learn react link", () => {
   expect(111).toEqual(111);

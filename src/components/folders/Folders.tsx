@@ -132,9 +132,9 @@ export class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
                   size="sm"
                   variant="outline-dark"
                   type="button"
-                  onClick={() => {
-                    this.toggleActionModal(EFolderEntryActionType.ADD);
-                  }}
+                  onClick={() =>
+                    this.toggleActionModal(EFolderEntryActionType.ADD)
+                  }
                 >
                   <FontAwesomeIcon icon={faPlus} /> Add Folder
                 </Button>
