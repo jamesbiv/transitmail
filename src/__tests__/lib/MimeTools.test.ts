@@ -2,7 +2,7 @@ import { MimeTools } from "lib";
 
 describe("Testing the MimeTools class", () => {
   describe("Test parseMimeWords", () => {
-    test("With valid string content", () => {
+    test("With a valid quoted printable string content", () => {
       const mockParseMimeWordsContent: string = "";
 
       const mockParseMimeWordsResponse: string = "";

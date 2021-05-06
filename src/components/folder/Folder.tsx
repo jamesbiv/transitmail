@@ -7,12 +7,11 @@ import {
   StateManager,
   InfiniteScroll,
 } from "classes";
-import { MimeTools } from "lib";
+import { convertAttachments } from "lib";
 import {
   EImapResponseStatus,
   IComposeAttachment,
   IEmail,
-  IEmailAttachment,
   IFolderEmail,
   IFolderLongPress,
   IFolderPlaceholder,
@@ -42,6 +41,7 @@ import {
   FolderTableOptions,
   FolderPlaceholder,
 } from ".";
+import { FolderCardHeader } from "./FolderCardHeader";
 
 interface IFolderProps {
   dependencies: {
@@ -55,7 +55,7 @@ interface IFolderProps {
 
 interface IFolderState {
   emails?: IFolderEmail[];
-  displayTableHeader: boolean;
+  displayHeaders: boolean;
   displayTableOptions: boolean;
   folderSpinner: boolean;
   message?: string;
@@ -146,7 +146,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
         this.setState(
           {
             emails: this.emails?.slice(minIndex, maxIndex),
-            displayTableHeader: minIndex === 0,
+            displayHeaders: minIndex === 0,
             folderPlaceholder,
             folderScrollSpinner,
           },
@@ -157,7 +157,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     );
 
     this.state = {
-      displayTableHeader: true,
+      displayHeaders: true,
       displayTableOptions: false,
       showActionModal: false,
       actionType: EFolderEmailActionType.COPY,
@@ -233,9 +233,9 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.infiniteScroll.setTotalEntries(this.emails.length);
   };
 
-  private async getLatestEmails(
+  private getLatestEmails = async (
     lastUid?: number
-  ): Promise<IFolderEmail[] | undefined> {
+  ): Promise<IFolderEmail[] | undefined> => {
     const folderId: string | undefined = this.stateManager.getFolderId();
 
     const selectResponse: IImapResponse = await this.imapSocket.imapRequest(
@@ -263,11 +263,15 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     emails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
 
     return emails;
-  }
+  };
 
-  public searchEmails(searchQuery: string) {
+  public searchEmails = (searchQuery: string): void => {
+    if (!this.state.emails?.length) {
+      return;
+    }
+
     const searchQueryLowercase: string = searchQuery.toLowerCase();
-    
+
     const currentEmails: IFolderEmail[] =
       this.stateManager.getCurrentFolder()?.emails ?? [];
 
@@ -291,7 +295,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.infiniteScroll.setTotalEntries(this.emails.length);
 
     this.updateVisibleEmails(this.folderPageSize);
-  }
+  };
 
   public viewEmail = (uid: number): void => {
     this.stateManager.setActiveUid(uid);
@@ -322,7 +326,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     const convertedAttachments:
       | IComposeAttachment[]
-      | undefined = await this.convertAttachments(email.attachments);
+      | undefined = await convertAttachments(email.attachments);
 
     this.stateManager.setComposePresets({
       subject: email.subject,
@@ -349,7 +353,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
 
     const convertedAttachments:
       | IComposeAttachment[]
-      | undefined = await this.convertAttachments(email.attachments);
+      | undefined = await convertAttachments(email.attachments);
 
     this.stateManager.setComposePresets({
       subject: email.subject,
@@ -358,46 +362,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     });
 
     this.stateManager.updateActiveKey("compose");
-  };
-
-  public convertAttachments = async (
-    attachments: IEmailAttachment[] | undefined
-  ): Promise<IComposeAttachment[] | undefined> => {
-    if (!attachments) {
-      return undefined;
-    }
-
-    let count: number = 0;
-
-    return await attachments.reduce(
-      async (
-        convertedAttachments: Promise<IComposeAttachment[]>,
-        attachment: IEmailAttachment
-      ) => {
-        const attachmentContent: Blob = MimeTools.base64toBlob(
-          attachment.content,
-          attachment.mimeType
-        );
-
-        const fileReaderResponse: FileReader = await new Promise((resolve) => {
-          const fileReader = new FileReader();
-
-          fileReader.onload = () => resolve(fileReader);
-          fileReader.readAsBinaryString(attachmentContent);
-        });
-
-        (await convertedAttachments).push({
-          id: count++,
-          filename: attachment.filename,
-          size: 0,
-          mimeType: attachment.mimeType,
-          data: fileReaderResponse.result,
-        });
-
-        return Promise.resolve(convertedAttachments);
-      },
-      Promise.resolve([])
-    );
   };
 
   public removeUids = (uids?: number[]): void => {
@@ -518,41 +482,18 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
       <React.Fragment>
         <Card
           className={`${
-            this.state.displayTableHeader ? "mt-0 mt-sm-3" : ""
+            this.state.displayHeaders ? "mt-0 mt-sm-3" : ""
           } mb-3`}
         >
-          {this.state.displayTableHeader && (
-            <Card.Header>
-              <Row className="pt-3 pt-sm-0">
-                <Col xs={12} sm={6} md={7} lg={9}>
-                  <h4 className="p-0 m-0 text-nowrap text-truncate">
-                    <FontAwesomeIcon icon={faInbox} />{" "}
-                    {(this.stateManager.getFolderId() ?? "").split("/").pop()}
-                    <Button
-                      className="ml-2 float-right float-sm-none"
-                      onClick={this.checkEmail}
-                      size="sm"
-                      variant="primary"
-                      type="button"
-                    >
-                      <FontAwesomeIcon
-                        icon={faSync}
-                        spin={this.state.folderSpinner}
-                      />
-                    </Button>
-                  </h4>
-                </Col>
-                <Col xs={12} sm={6} md={5} lg={3} className="mt-3 mt-sm-0">
-                  <Form.Control
-                    type="text"
-                    placeholder="Search &hellip;"
-                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                      this.searchEmails(event.target.value)
-                    }
-                  />
-                </Col>
-              </Row>
-            </Card.Header>
+          {this.state.displayHeaders && (
+            <FolderCardHeader
+              folderName={
+                this.stateManager.getFolderId()?.split("/").pop() ?? ""
+              }
+              folderSpinner={this.state.folderSpinner}
+              checkEmail={this.checkEmail}
+              searchEmails={this.searchEmails}
+            />
           )}
           {!this.state.emails ? (
             <Spinner
@@ -573,7 +514,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
                 toggleSelection={this.toggleSelection}
                 toggleActionModal={this.toggleActionModal}
               />
-              {this.state.displayTableHeader && (
+              {this.state.displayHeaders && (
                 <FolderTableHeader
                   emails={this.emails ?? []}
                   toggleSelection={this.toggleSelection}

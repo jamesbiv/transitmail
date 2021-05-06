@@ -11,7 +11,11 @@ import {
   faCog,
   faSync,
 } from "@fortawesome/free-solid-svg-icons";
-import { ISettings, ISettingsErrors } from "interfaces";
+import {
+  ISettings,
+  ISettingsErrors,
+  ISettingsSecondaryEmail,
+} from "interfaces";
 
 interface ISettingsProps {
   dependencies: {
@@ -60,7 +64,6 @@ export class Settings extends React.PureComponent<
 
     this.state = {
       showSecondaryEmailsModal: false,
-      // autoLogin: false,
     };
   }
 
@@ -137,6 +140,17 @@ export class Settings extends React.PureComponent<
     this.setState({ showSecondaryEmailsModal });
   };
 
+  public addSecondaryEmail = (
+    secondaryEmail: ISettingsSecondaryEmail
+  ): void => {};
+
+  public updateSecondaryEmail = (
+    secondaryEmail: ISettingsSecondaryEmail,
+    secondaryEmailKey: number
+  ): void => {};
+
+  public deleteSecondaryEmail = (secondaryEmailKey: number): void => {};
+
   render() {
     return (
       <Card className="mt-0 mt-sm-3 mb-3">
@@ -189,6 +203,9 @@ export class Settings extends React.PureComponent<
               errors={this.state.errors}
               showSecondaryEmailsModal={this.state.showSecondaryEmailsModal}
               toggleSecondaryEmailsModal={this.toggleSecondaryEmailsModal}
+              addSecondaryEmail={this.addSecondaryEmail}
+              updateSecondaryEmail={this.updateSecondaryEmail}
+              deleteSecondaryEmail={this.deleteSecondaryEmail}
             />
           </Card.Body>
           <Card.Footer>

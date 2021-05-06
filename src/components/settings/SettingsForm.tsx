@@ -2,7 +2,11 @@ import React from "react";
 import { Container, Row, Col, Card, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
-import { ISettings, ISettingsErrors } from "interfaces";
+import {
+  ISettings,
+  ISettingsErrors,
+  ISettingsSecondaryEmail,
+} from "interfaces";
 import { SettingsSecondaryEmails } from "./SettingsSecondaryEmails";
 import { SettingsFormAdvanced } from "./SettingsFormAdvanced";
 
@@ -11,6 +15,12 @@ interface ISettingsFormProps {
   errors?: ISettingsErrors;
   showSecondaryEmailsModal: boolean;
   toggleSecondaryEmailsModal: (showSecondaryEmailsModal: boolean) => void;
+  addSecondaryEmail: (econdaryEmail: ISettingsSecondaryEmail) => void;
+  updateSecondaryEmail: (
+    secondaryEmail: ISettingsSecondaryEmail,
+    secondaryEmailKey: number
+  ) => void;
+  deleteSecondaryEmail: (secondaryEmailKey: number) => void;
 }
 
 export const SettingsForm: React.FC<ISettingsFormProps> = ({
@@ -18,6 +28,9 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
   errors,
   showSecondaryEmailsModal,
   toggleSecondaryEmailsModal,
+  addSecondaryEmail,
+  updateSecondaryEmail,
+  deleteSecondaryEmail,
 }) => {
   return (
     <React.Fragment>
@@ -90,6 +103,9 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
       <SettingsSecondaryEmails
         showSecondaryEmailsModal={showSecondaryEmailsModal}
         toggleSecondaryEmailsModal={toggleSecondaryEmailsModal}
+        addSecondaryEmail={addSecondaryEmail}
+        updateSecondaryEmail={updateSecondaryEmail}
+        deleteSecondaryEmail={deleteSecondaryEmail}
       />
       <Container fluid className="p-0">
         <Row>

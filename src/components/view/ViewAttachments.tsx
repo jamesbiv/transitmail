@@ -21,8 +21,12 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   const viewAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
-    const blob: Blob = MimeTools.base64toBlob(content, attachment.mimeType);
-    const blobUrl: string = URL.createObjectURL(blob);
+    const blob: Blob =
+      attachment.encoding.toLowerCase() === "base64"
+        ? MimeTools.base64toBlob(content, attachment.mimeType)
+        : MimeTools.binaryStringToBlob(content, attachment.mimeType);
+
+    const blobUrl = URL.createObjectURL(blob);
 
     window.open(blobUrl, "_blank");
   };
@@ -30,19 +34,23 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
   const downloadAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
-    const blob: Blob = MimeTools.base64toBlob(content, attachment.mimeType);
-    const blobUrl: string = URL.createObjectURL(blob);
+    const blob: Blob =
+      attachment.encoding.toLowerCase() === "base64"
+        ? MimeTools.base64toBlob(content, attachment.mimeType)
+        : MimeTools.binaryStringToBlob(content, attachment.mimeType);
 
-    const a: HTMLAnchorElement = document.createElement("a");
+    const blobUrl = URL.createObjectURL(blob);
 
-    document.body.appendChild(a);
+    const anchorElement: HTMLAnchorElement = document.createElement("a");
 
-    a.style.display = "none";
-    a.href = blobUrl;
-    a.download = attachment.filename;
-    a.click();
+    document.body.appendChild(anchorElement);
 
-    document.body.removeChild(a);
+    anchorElement.style.display = "none";
+    anchorElement.href = blobUrl;
+    anchorElement.download = attachment.filename;
+    anchorElement.click();
+
+    document.body.removeChild(anchorElement);
   };
 
   const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(

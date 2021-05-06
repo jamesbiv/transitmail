@@ -11,4 +11,17 @@ export interface ISettings {
   smtpPort: number;
   smtpUsername: string;
   smtpPassword: string;
+  secondaryEmails: ISettingsSecondaryEmail[];
+  advancedSettings: ISettingsAdvanced;
+}
+
+export interface ISettingsSecondaryEmail {
+  name: string;
+  email: string;
+  signature: string;
+}
+
+export interface ISettingsAdvanced {
+  trashFolder: string;
+  spamFolder: string;
 }

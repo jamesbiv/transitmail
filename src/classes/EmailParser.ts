@@ -186,7 +186,9 @@ export class EmailParser {
         case "content-type":
           {
             const [match, mimeType]: RegExpMatchArray =
-              headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ?? [];
+              headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
+              headerData.match(/['|"]?(\S+)['|"]?/i) ??
+              [];
 
             if (mimeType) {
               email.mimeType = mimeType.toLowerCase();
@@ -280,9 +282,7 @@ export class EmailParser {
                 break;
 
               case "base64":
-                email.bodyHtml += MimeTools.decodeBase64(
-                  contentRow.content
-                );
+                email.bodyHtml += MimeTools.decodeBase64(contentRow.content);
                 break;
 
               default:
@@ -306,9 +306,7 @@ export class EmailParser {
                 break;
 
               case "base64":
-                email.bodyText += MimeTools.decodeBase64(
-                  contentRow.content
-                );
+                email.bodyText += MimeTools.decodeBase64(contentRow.content);
                 break;
 
               default:
@@ -423,7 +421,9 @@ export class EmailParser {
             case "content-disposition":
               {
                 const [match, mimeType, contentData]: RegExpMatchArray =
-                  headerData.match(/['|"]?(\S+)['|"]?;(.*)/) ?? [];
+                  headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
+                  headerData.match(/['|"]?(\S+)['|"]?/i) ??
+                  [];
 
                 if (mimeType) {
                   boundary.contents[contentIndex].isAttachment = true;
@@ -455,7 +455,9 @@ export class EmailParser {
             case "content-type":
               {
                 const [match, mimeType, contentData]: RegExpMatchArray =
-                  headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ?? [];
+                  headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
+                  headerData.match(/['|"]?(\S+)['|"]?/i) ??
+                  [];
 
                 if (mimeType) {
                   boundary.contents[

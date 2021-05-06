@@ -8,12 +8,11 @@ import {
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
 import { ImapHelper, ImapSocket, LocalStorage, StateManager } from "classes";
-import { MimeTools } from "lib";
+import { convertAttachments } from "lib";
 import {
   IEmail,
   EImapResponseStatus,
   IComposeAttachment,
-  IEmailAttachment,
   IImapResponse,
   IEmailFlags,
 } from "interfaces";
@@ -197,7 +196,7 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
-        | undefined = await this.convertAttachments(email.attachments);
+        | undefined = await convertAttachments(email.attachments);
 
       this.stateManager.setComposePresets({
         from: email?.from,
@@ -216,7 +215,7 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
-        | undefined = await this.convertAttachments(email.attachments);
+        | undefined = await convertAttachments(email.attachments);
 
       this.stateManager.setComposePresets({
         subject: email.subject,
@@ -226,47 +225,6 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
 
       this.stateManager.updateActiveKey("compose");
     }
-  };
-
-  convertAttachments = async (
-    attachments: IEmailAttachment[] | undefined
-  ): Promise<IComposeAttachment[] | undefined> => {
-    if (!attachments) {
-      return undefined;
-    }
-
-    let count: number = 0;
-
-    return await attachments.reduce(
-      async (
-        convertedAttachments: Promise<IComposeAttachment[]>,
-        attachment: IEmailAttachment
-      ) => {
-        const attachmentContent: Blob = MimeTools.base64toBlob(
-          attachment.content,
-          attachment.mimeType
-        );
-
-        const fileReaderResponse: FileReader = await new Promise((resolve) => {
-          const fileReader = new FileReader();
-
-          fileReader.onload = () => resolve(fileReader);
-
-          fileReader.readAsBinaryString(attachmentContent);
-        });
-
-        (await convertedAttachments).push({
-          id: count++,
-          filename: attachment.filename,
-          size: 0,
-          mimeType: attachment.mimeType,
-          data: fileReaderResponse.result,
-        });
-
-        return Promise.resolve(convertedAttachments);
-      },
-      Promise.resolve([])
-    );
   };
 
   toggleActionModal = (actionType: EViewActionType): void => {

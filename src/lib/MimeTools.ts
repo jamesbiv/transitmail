@@ -7,40 +7,88 @@ export const parseMimeWords = (content: string): string => {
   const joinRegex: RegExp = /(=\?[^?]+\?[Bb]\?)([^?]+)\?=\s*\1([^?]+)\?=/g;
   const decodeRegex: RegExp = /=\?([\w_-]+)\?([QqBb])\?[^?]*\?=/g;
 
-  const joinCallback: (...args: string[]) => string = (
-    match: string,
-    header: string,
-    firstSegment: string,
-    secondSegment: string
-  ) => {
-    const result: string = Buffer.concat([
-      Buffer.from(firstSegment, "base64"),
-      Buffer.from(secondSegment, "base64"),
-    ]).toString("base64");
-
-    return `${header}${result}?=`;
-  };
-
-  const decodeCallback: (...args: string[]) => string = (mimeWord: string) => {
-    return decodeMimeWord(mimeWord.replace(/\s+/g, ""));
-  };
-
-  /* for (let loop; ; ) {
-      loop = content.replace(
-        /(=\?[^?]+\?[Qq]\?)([^?]*)\?=\s*\1([^?]*\?=)/g,
-        "$1$2$3"
-      );
-
-      if (loop === content) {
-        break;
-      }
-
-      content = loop;
-    } */
-
   return content
-    .replace(joinRegex, joinCallback)
-    .replace(decodeRegex, decodeCallback);
+    .replace(
+      joinRegex,
+      (
+        match: string,
+        header: string,
+        firstSegment: string,
+        secondSegment: string
+      ) => joinMimeWords(match, header, firstSegment, secondSegment)
+    )
+    .replace(decodeRegex, (mimeWord: string) => decodeMimeWord(mimeWord));
+};
+
+/**
+ * joinMimeWords
+ * @param {string} match
+ * @param {string} header
+ * @param {string} firstSegment
+ * @param {string} secondSegment
+ * @returns string
+ */
+const joinMimeWords = (
+  match: string,
+  header: string,
+  firstSegment: string,
+  secondSegment: string
+) => {
+  const result: string = Buffer.concat([
+    Buffer.from(firstSegment, "base64"),
+    Buffer.from(secondSegment, "base64"),
+  ]).toString("base64");
+
+  return `${header}${result}?=`;
+};
+
+/**
+ * @name decodeMimeWord
+ * @param {string} content
+ * @resturns string
+ */
+const decodeMimeWord = (content: string): string => {
+  const contentNoWhitespace: string = content.replace(/\s+/g, "");
+
+  const [match, charset, encoding, encodedContent]: RegExpMatchArray =
+    contentNoWhitespace.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ??
+    [];
+
+  if (!encodedContent) {
+    return content;
+  }
+
+  const sanitisedEncodedContent: string = encodedContent.replace(/_/g, " ");
+  const encodingType: string = (encoding ?? "Q").toUpperCase();
+
+  switch (encodingType) {
+    case "B":
+      return decodeBase64(sanitisedEncodedContent);
+
+    case "Q":
+      return decodeQuotedPrintable(sanitisedEncodedContent);
+
+    default:
+      return sanitisedEncodedContent;
+  }
+};
+
+/**
+ * @name decodeQuotedPrintable
+ * @param {string} content
+ * @returns string
+ */
+export const decodeQuotedPrintable = (content: string): string => {
+  return quotedPrintableDecoder(content.replace(/=(?:\r?\n|$)/g, ""));
+};
+
+/**
+ * @name decodeBase64
+ * @param {string} content
+ * @returns string
+ */
+export const decodeBase64 = (content: string): string => {
+  return Buffer.from(content, "base64").toString();
 };
 
 /**
@@ -55,29 +103,7 @@ export const base64toBlob = (
   contentType: string,
   sliceSize: number = 512
 ): Blob => {
-  const byteCharacters: string = atob(content);
-  const byteArrays: Uint8Array[] = [];
-
-  for (
-    let byteOffset: number = 0;
-    byteOffset < byteCharacters.length;
-    byteOffset += sliceSize
-  ) {
-    const byteSlice: string = byteCharacters.slice(
-      byteOffset,
-      byteOffset + sliceSize
-    );
-
-    const byteNumbers: number[] = new Array(byteSlice.length);
-
-    for (let increment: number = 0; increment < byteSlice.length; increment++) {
-      byteNumbers[increment] = byteSlice.charCodeAt(increment);
-    }
-
-    byteArrays.push(new Uint8Array(byteNumbers));
-  }
-
-  return new Blob(byteArrays, { type: contentType });
+  return binaryStringToBlob(atob(content), contentType, sliceSize);
 };
 
 /**
@@ -100,7 +126,6 @@ export const binaryStringToBlob = (
     byteOffset += sliceSize
   ) {
     const byteSlice: string = content.slice(byteOffset, byteOffset + sliceSize);
-
     const byteNumbers: number[] = new Array(byteSlice.length);
 
     for (let increment: number = 0; increment < byteSlice.length; increment++) {
@@ -114,11 +139,11 @@ export const binaryStringToBlob = (
 };
 
 /**
- * @name mimeDecode
+ * @name quotedPrintableDecoder
  * @param {string} content
  * @returns string
  */
-export const mimeDecode = (content: string): string => {
+ const quotedPrintableDecoder = (content: string): string => {
   const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || [])
     .length;
   const bufferLength: number = content.length - encodedBytesCount * 2;
@@ -148,51 +173,4 @@ export const mimeDecode = (content: string): string => {
   }
 
   return buffer.toString();
-};
-
-/**
- * @name decodeMimeWord
- * @param {string} content
- * @resturns string
- */
-export const decodeMimeWord = (content: string): string => {
-  const match: RegExpMatchArray | undefined =
-    content.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ?? undefined;
-
-  if (!match) {
-    return content;
-  }
-
-  content = (match[3] ?? "").replace(/_/g, " ");
-
-  const encodingType: string = (match[2] || "Q").toUpperCase();
-
-  switch (encodingType) {
-    case "B":
-      return decodeBase64(content);
-
-    case "Q":
-      return mimeDecode(content);
-
-    default:
-      return content;
-  }
-};
-
-/**
- * @name decodeQuotedPrintable
- * @param {string} content
- * @returns string
- */
-export const decodeQuotedPrintable = (content: string): string => {
-  return mimeDecode(content.replace(/=(?:\r?\n|$)/g, ""));
-};
-
-/**
- * @name decodeBase64
- * @param {string} content
- * @returns string
- */
-export const decodeBase64 = (content: string): string => {
-  return Buffer.from(content, "base64").toString();
 };

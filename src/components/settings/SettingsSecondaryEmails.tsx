@@ -6,6 +6,7 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ISettingsSecondaryEmail } from "interfaces";
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -20,11 +21,20 @@ import {
 interface ISettingsSecondaryEmailsProps {
   showSecondaryEmailsModal: boolean;
   toggleSecondaryEmailsModal: (showSecondaryEmailsModal: boolean) => void;
+  addSecondaryEmail: (econdaryEmail: ISettingsSecondaryEmail) => void;
+  updateSecondaryEmail: (
+    secondaryEmail: ISettingsSecondaryEmail,
+    secondaryEmailKey: number
+  ) => void;
+  deleteSecondaryEmail: (secondaryEmailKey: number) => void;
 }
 
 export const SettingsSecondaryEmails: React.FC<ISettingsSecondaryEmailsProps> = ({
   showSecondaryEmailsModal,
   toggleSecondaryEmailsModal,
+  addSecondaryEmail,
+  updateSecondaryEmail,
+  deleteSecondaryEmail,
 }) => {
   return (
     <React.Fragment>
@@ -79,6 +89,8 @@ export const SettingsSecondaryEmails: React.FC<ISettingsSecondaryEmailsProps> = 
         secondayEmailId={1}
         showModal={showSecondaryEmailsModal}
         onHide={() => toggleSecondaryEmailsModal(false)}
+        addSecondaryEmail={addSecondaryEmail}
+        updateSecondaryEmail={updateSecondaryEmail}
       />
     </React.Fragment>
   );
@@ -88,12 +100,19 @@ interface ISettingsSecondaryEmailsModalProps {
   secondayEmailId?: number;
   showModal: boolean;
   onHide: () => void;
+  addSecondaryEmail: (econdaryEmail: ISettingsSecondaryEmail) => void;
+  updateSecondaryEmail: (
+    secondaryEmail: ISettingsSecondaryEmail,
+    secondaryEmailKey: number
+  ) => void;
 }
 
 export const SettingsSecondaryEmailsModal: React.FC<ISettingsSecondaryEmailsModalProps> = ({
   secondayEmailId,
   showModal,
   onHide,
+  addSecondaryEmail,
+  updateSecondaryEmail,
 }) => {
   const [submit, changeSubmit] = useState(false);
   useEffect(() => {}, []);
@@ -122,7 +141,7 @@ export const SettingsSecondaryEmailsModal: React.FC<ISettingsSecondaryEmailsModa
           </Form.Label>
           <Form.Control
             type="text"
-            placeholder="Enter display name"
+            placeholder="Enter a secondary display name"
             onChange={() => {}}
           />
           <Form.Text className="text-muted">
@@ -141,7 +160,7 @@ export const SettingsSecondaryEmailsModal: React.FC<ISettingsSecondaryEmailsModa
           </Form.Label>
           <Form.Control
             type="email"
-            placeholder="Enter email address"
+            placeholder="Enter a secondary email address"
             onChange={() => {}}
           />
           <Form.Text className="text-muted">
@@ -154,7 +173,7 @@ export const SettingsSecondaryEmailsModal: React.FC<ISettingsSecondaryEmailsModa
           <Form.Control
             as="textarea"
             rows={3}
-            placeholder="Enter email signature"
+            placeholder="Enter a secondary email signature"
             onChange={() => {}}
           />
           <Form.Control.Feedback type="invalid">{""}</Form.Control.Feedback>

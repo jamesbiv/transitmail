@@ -18,7 +18,9 @@ type TSettingsKeys =
   | "smtpHost"
   | "smtpPort"
   | "smtpUsername"
-  | "smtpPassword";
+  | "smtpPassword"
+  | "secondaryEmails"
+  | "advancedSettings";
 
 interface ISettings {
   [key: string]: any;
@@ -115,7 +117,7 @@ export class LocalStorage {
    * @param {T} data
    * @returns Promise<void>
    */
-   private async setLocalStorage<T>(name: string, data: T): Promise<void> {
+  private async setLocalStorage<T>(name: string, data: T): Promise<void> {
     const encryptedData: string = CryptoES.AES.encrypt(
       JSON.stringify(data),
       this.passPhrase
