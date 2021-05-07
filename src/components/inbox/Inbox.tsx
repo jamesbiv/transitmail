@@ -4,7 +4,6 @@ import {
   ImapHelper,
   ImapSocket,
   LocalStorage,
-  EmailParser,
   StateManager,
 } from "classes";
 
@@ -15,7 +14,6 @@ interface IInboxProps {
     imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
-    emailParser: EmailParser;
     stateManager: StateManager;
   };
 }

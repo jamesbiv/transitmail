@@ -1,7 +1,5 @@
 import { LocalStorage } from "classes";
 
-const mockItem: any = {};
-
 const localStorage = new LocalStorage();
 
 describe("Testing the LocalStorage class", () => {
@@ -9,7 +7,7 @@ describe("Testing the LocalStorage class", () => {
     test("Test a successful set and get senario", () => {
       localStorage.setData("activeUid", "mockVariableContent");
 
-      const getDataResponse = localStorage.getData("activeUid");
+      const getDataResponse: any = localStorage.getData("activeUid");
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });
@@ -18,7 +16,7 @@ describe("Testing the LocalStorage class", () => {
     test("Test a successful set and get senario", () => {
       localStorage.setSetting("name", "mockVariableContent");
 
-      const getDataResponse = localStorage.getSetting("name");
+      const getDataResponse: any = localStorage.getSetting("name");
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });

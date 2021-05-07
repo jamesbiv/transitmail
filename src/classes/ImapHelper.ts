@@ -2,23 +2,7 @@ import { IEmail, IEmailFlags, IFolderEmail, IFoldersEntry } from "interfaces";
 import { EmailParser } from "classes";
 import { MimeTools } from "lib";
 
-interface IImapHelper {
-  emailParser: EmailParser;
-}
-
-export class ImapHelper {
-  /**
-   * @var {EmailParser} emailParser
-   */
-  protected emailParser: EmailParser;
-
-  /**
-   * @constructor
-   */
-  constructor({ emailParser }: IImapHelper) {
-    this.emailParser = emailParser;
-  }
-
+export class ImapHelper extends EmailParser {
   /**
    * formatFetchEmailFlagsResponse
    * @param {string[][]} fetchData
@@ -57,7 +41,7 @@ export class ImapHelper {
       emailRaw = emailRaw.substring(0, emailRaw.length - 5);
     }
 
-    return this.emailParser.processEmail(emailRaw);
+    return this.processEmail(emailRaw);
   }
 
   /**
@@ -129,13 +113,18 @@ export class ImapHelper {
         const rawFolder: RegExpMatchArray | undefined =
           folderDataRow[2].match(/\((.*)\) "(.*)" (.*)/) ?? undefined;
 
-        if (rawFolder?.length === 4) {
-          rawFolders.push(rawFolder[3].replace(/"/g, ""));
+        const santatisedRawfolder: string | undefined = rawFolder?.[3].replace(
+          /"/g,
+          ""
+        );
+
+        if (santatisedRawfolder) {
+          rawFolders.push(santatisedRawfolder);
         }
       }
     });
 
-    let id: number = 0;
+    let id: number = 1;
 
     [...rawFolders].sort().forEach((rawFolderRow: string) => {
       const slash: number | undefined = rawFolderRow.indexOf("/");

@@ -2,7 +2,6 @@ import React from "react";
 import {
   ImapHelper,
   ImapSocket,
-  EmailParser,
   LocalStorage,
   StateManager,
   InfiniteScroll,
@@ -48,7 +47,6 @@ interface IFolderProps {
     imapHelper: ImapHelper;
     imapSocket: ImapSocket;
     localStorage: LocalStorage;
-    emailParser: EmailParser;
     stateManager: StateManager;
   };
 }
@@ -72,11 +70,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
    * @var {number} folderPageSize
    */
   protected folderPageSize: number = 15;
-
-  /**
-   * @var {EmailParser} emailParser
-   */
-  protected emailParser: EmailParser;
 
   /**
    * @var {ImapHelper} imapHelper
@@ -127,7 +120,6 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.imapHelper = props.dependencies.imapHelper;
     this.imapSocket = props.dependencies.imapSocket;
     this.localStorage = props.dependencies.localStorage;
-    this.emailParser = props.dependencies.emailParser;
     this.stateManager = props.dependencies.stateManager;
 
     this.toggleSelectionAll = false;

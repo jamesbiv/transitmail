@@ -7,8 +7,7 @@ import {
   ISettingsErrors,
   ISettingsSecondaryEmail,
 } from "interfaces";
-import { SettingsSecondaryEmails } from "./SettingsSecondaryEmails";
-import { SettingsFormAdvanced } from "./SettingsFormAdvanced";
+import { SettingsSecondaryEmails, SettingsFormFolders } from "./";
 
 interface ISettingsFormProps {
   settings: ISettings;
@@ -99,6 +98,20 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
         <Form.Control.Feedback type="invalid">
           {errors?.signature}
         </Form.Control.Feedback>
+      </Form.Group>
+      <Form.Group controlId="formEmailAutoLogin">
+        <Form.Check
+          type="switch"
+          id="autoLogin"
+          label="Ask for password before sign-in"
+          /*defaultChecked={settings.autoLogin}
+                    onChange={() => {
+                      settings.autoLogin = settings.autoLogin ? false : true;
+                    }}*/
+        />
+        <Form.Text className="text-muted">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
+        </Form.Text>
       </Form.Group>
       <SettingsSecondaryEmails
         showSecondaryEmailsModal={showSecondaryEmailsModal}
@@ -300,7 +313,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
             </Card>
           </Col>
         </Row>
-        <SettingsFormAdvanced />
+        <SettingsFormFolders />
       </Container>
     </React.Fragment>
   );

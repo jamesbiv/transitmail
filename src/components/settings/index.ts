@@ -1,4 +1,4 @@
 export { Settings } from "./Settings";
 export { SettingsForm } from "./SettingsForm";
-export { SettingsFormAdvanced } from "./SettingsFormAdvanced";
+export { SettingsFormFolders } from "./SettingsFormFolders";
 export { SettingsSecondaryEmails } from "./SettingsSecondaryEmails";

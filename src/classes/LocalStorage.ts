@@ -20,7 +20,7 @@ type TSettingsKeys =
   | "smtpUsername"
   | "smtpPassword"
   | "secondaryEmails"
-  | "advancedSettings";
+  | "folderSettings";
 
 interface ISettings {
   [key: string]: any;

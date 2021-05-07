@@ -6,7 +6,6 @@ import {
   ImapSocket,
   LocalStorage,
   SmtpSocket,
-  EmailParser,
   StateManager,
 } from "classes";
 import {
@@ -52,7 +51,6 @@ class Index extends React.Component<{}, IIndexState> {
     imapSocket: ImapSocket;
     smtpSocket: SmtpSocket;
     localStorage: LocalStorage;
-    emailParser: EmailParser;
     stateManager: StateManager;
   };
 
@@ -64,12 +62,9 @@ class Index extends React.Component<{}, IIndexState> {
   constructor(props: {}) {
     super(props);
 
-    const emailParser: EmailParser = new EmailParser();
-
     this.dependencies = {
       localStorage: new LocalStorage(),
-      emailParser: emailParser,
-      imapHelper: new ImapHelper({ emailParser }),
+      imapHelper: new ImapHelper(),
       imapSocket: new ImapSocket(),
       smtpSocket: new SmtpSocket(),
       stateManager: new StateManager(this),
