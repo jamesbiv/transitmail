@@ -1,12 +1,10 @@
 import React from "react";
-
 import {
   ImapHelper,
   ImapSocket,
   LocalStorage,
   StateManager,
 } from "classes";
-
 import { Folder } from "../folder";
 
 interface IInboxProps {

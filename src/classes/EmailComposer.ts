@@ -16,7 +16,7 @@ interface IEmailData {
 
 export class EmailComposer {
   /**
-   * composeEmail
+   * @name composeEmail
    * @param {IEmailData} emailData
    * @returns IComposedEmail
    */

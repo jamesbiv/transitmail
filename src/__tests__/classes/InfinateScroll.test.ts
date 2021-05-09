@@ -18,7 +18,7 @@ import { InfiniteScroll } from "classes";
 
 const mockEmailRaw: any = {};
 
-const imapSocket = new InfiniteScroll(
+const infiniteScroll = new InfiniteScroll(
   "container-main",
   "topObserver",
   "bottomObserver",
@@ -33,7 +33,46 @@ const imapSocket = new InfiniteScroll(
 );
 
 describe("Testing the InfiniteScroll class", () => {
-  describe("Test ", () => {
-    test("", () => {});
+  describe("Test startObservation", () => {
+    test("", () => {
+      infiniteScroll.startObservation();
+    });
+  });
+
+  describe("Test stopObservertion", () => {
+    test("", () => {
+      infiniteScroll.stopObservertion();
+    });
+  });
+
+  describe("Test startHandleScroll", () => {
+    test("", () => {
+     // infiniteScroll.startHandleScroll();
+    });
+  });
+
+  describe("Test stopHandleScroll", () => {
+    test("", () => {
+    //  infiniteScroll.stopHandleScroll();
+    });
+  });
+
+  describe("Test setTotalEntries", () => {
+    test("", () => {
+      const totalEntries: number = 100;
+
+      infiniteScroll.setTotalEntries(totalEntries);
+    });
+  });
+
+  describe("Test stopHandleScroll", () => {
+    test("", () => {
+      const getCurrentSliceResponse: any = infiniteScroll.getCurrentSlice();
+
+      expect(getCurrentSliceResponse).toEqual({
+        maxIndex: 1,
+        minIndex: 0,
+      });
+    });
   });
 });

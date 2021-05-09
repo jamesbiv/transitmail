@@ -5,31 +5,17 @@ import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import {
   ISettings,
   ISettingsErrors,
-  ISettingsSecondaryEmail,
 } from "interfaces";
 import { SettingsSecondaryEmails, SettingsFormFolders } from "./";
 
 interface ISettingsFormProps {
   settings: ISettings;
   errors?: ISettingsErrors;
-  showSecondaryEmailsModal: boolean;
-  toggleSecondaryEmailsModal: (showSecondaryEmailsModal: boolean) => void;
-  addSecondaryEmail: (econdaryEmail: ISettingsSecondaryEmail) => void;
-  updateSecondaryEmail: (
-    secondaryEmail: ISettingsSecondaryEmail,
-    secondaryEmailKey: number
-  ) => void;
-  deleteSecondaryEmail: (secondaryEmailKey: number) => void;
 }
 
 export const SettingsForm: React.FC<ISettingsFormProps> = ({
   settings,
   errors,
-  showSecondaryEmailsModal,
-  toggleSecondaryEmailsModal,
-  addSecondaryEmail,
-  updateSecondaryEmail,
-  deleteSecondaryEmail,
 }) => {
   return (
     <React.Fragment>
@@ -113,13 +99,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
         </Form.Text>
       </Form.Group>
-      <SettingsSecondaryEmails
-        showSecondaryEmailsModal={showSecondaryEmailsModal}
-        toggleSecondaryEmailsModal={toggleSecondaryEmailsModal}
-        addSecondaryEmail={addSecondaryEmail}
-        updateSecondaryEmail={updateSecondaryEmail}
-        deleteSecondaryEmail={deleteSecondaryEmail}
-      />
+      <SettingsSecondaryEmails secondaryEmails={settings.secondaryEmails} />
       <Container fluid className="p-0">
         <Row>
           <Col md={12} lg={6}>
@@ -313,7 +293,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
             </Card>
           </Col>
         </Row>
-        <SettingsFormFolders />
+        <SettingsFormFolders folderSettings={settings.folderSettings} />
       </Container>
     </React.Fragment>
   );

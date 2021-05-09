@@ -17,21 +17,9 @@ import {
   IFolderScrollSpinner,
   IImapResponse,
 } from "interfaces";
-import {
-  Card,
-  Button,
-  Spinner,
-  Form,
-  Container,
-  Row,
-  Col,
-} from "react-bootstrap";
+import { Card, Spinner, Container } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFolderOpen,
-  faInbox,
-  faSync,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import {
   FolderEmailEntry,
   FolderEmailActions,
@@ -39,8 +27,8 @@ import {
   FolderTableHeader,
   FolderTableOptions,
   FolderPlaceholder,
+  FolderCardHeader,
 } from ".";
-import { FolderCardHeader } from "./FolderCardHeader";
 
 interface IFolderProps {
   dependencies: {
@@ -223,6 +211,8 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     this.stateManager.updateCurrentFolder(this.emails);
 
     this.infiniteScroll.setTotalEntries(this.emails.length);
+
+    this.updateVisibleEmails(this.folderPageSize);
   };
 
   private getLatestEmails = async (
@@ -473,9 +463,7 @@ export class Folder extends React.PureComponent<IFolderProps, IFolderState> {
     return (
       <React.Fragment>
         <Card
-          className={`${
-            this.state.displayHeaders ? "mt-0 mt-sm-3" : ""
-          } mb-3`}
+          className={`${this.state.displayHeaders ? "mt-0 mt-sm-3" : ""} mb-3`}
         >
           {this.state.displayHeaders && (
             <FolderCardHeader

@@ -65,10 +65,10 @@ describe("Testing the StateManager class", () => {
             uid: 1,
           },
         ],
-        latestUid: 1,
+        latestUid: "1",
       };
 
-      stateManager.updateCurrentFolder(mockFolderEmails, 1);
+      stateManager.updateCurrentFolder(mockFolderEmails, "1");
 
       const updateCurrentFolderResponse:
         | any

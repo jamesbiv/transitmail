@@ -5,21 +5,19 @@ interface IFolderEmails {
   latestUid?: string;
 }
 
-type TIndexClass = React.Component<
-  {},
-  {
-    activeKey: string;
-    sliderAction: boolean;
-    messageModalData: IMessageModalData;
-    showMessageModal: boolean;
-  }
->;
+type TIndexState = {
+  sliderAction: boolean;
+  setActiveKey: React.Dispatch<string>;
+  setSliderAction: React.Dispatch<boolean>;
+  setMessageModalData: React.Dispatch<IMessageModalData>;
+  setShowMessageModal: React.Dispatch<boolean>;
+};
 
 export class StateManager {
   /**
-   * @var {TIndexClass} indexClass;
+   * @var {TIndexState} indexState;
    */
-  protected indexClass: TIndexClass;
+  public indexState: TIndexState = {} as TIndexState;
 
   /**
    * @var {IComposePresets} composePresets;
@@ -44,35 +42,22 @@ export class StateManager {
   } = {};
 
   /**
-   * @constructor
-   * @params {TIndexClass} indexClass
-   */
-  constructor(indexClass: TIndexClass) {
-    this.indexClass = indexClass;
-  }
-
-  /**
-   * updateActiveKey
+   * @name updateActiveKey
    * @param {string} activeKey
    * @returns void
    */
   public updateActiveKey(activeKey: string): void {
     window.location.hash = "#" + activeKey;
 
-    /* Update page location */
-    this.indexClass.setState({
-      activeKey: activeKey,
-    });
+    this.indexState.setActiveKey(activeKey);
 
-    if (this.indexClass.state.sliderAction) {
-      this.indexClass.setState({
-        sliderAction: false,
-      });
+    if (this.indexState.sliderAction) {
+      this.indexState.setSliderAction(false);
     }
   }
 
   /**
-   * setActiveUid
+   * @name setActiveUid
    * @param {string} activeUid
    * @returns void
    */
@@ -81,7 +66,7 @@ export class StateManager {
   }
 
   /**
-   * getActiveUid
+   * @name getActiveUid
    * @returns void
    */
   public getActiveUid(): number | undefined {
@@ -89,7 +74,7 @@ export class StateManager {
   }
 
   /**
-   * setFolderId
+   * @name setFolderId
    * @param {string} folderId
    * @returns void
    */
@@ -98,7 +83,7 @@ export class StateManager {
   }
 
   /**
-   * getFolderId
+   * @name getFolderId
    * @returns void
    */
   public getFolderId(): string | undefined {
@@ -106,7 +91,7 @@ export class StateManager {
   }
 
   /**
-   * getCurrentFolder
+   * @name getCurrentFolder
    * @returns IFolderEmails | undefined
    */
   public getCurrentFolder(): IFolderEmails | undefined {
@@ -127,7 +112,7 @@ export class StateManager {
   }
 
   /**
-   * updateCurrentFolder
+   * @name updateCurrentFolder
    * @param {IFolderEmail[]} folderEmails
    * @returns void
    */
@@ -138,19 +123,17 @@ export class StateManager {
   }
 
   /**
-   * showMessageModal
+   * @name showMessageModal
    * @param {string} messageModalData
    * @returns void
    */
   public showMessageModal(messageModalData: IMessageModalData): void {
-    this.indexClass.setState({
-      messageModalData: messageModalData,
-      showMessageModal: true,
-    });
+    this.indexState.setMessageModalData(messageModalData);
+    this.indexState.setShowMessageModal(true);
   }
 
   /**
-   * setComposePresets
+   * @name setComposePresets
    * @param {IComposePresets} setComposePresets
    * @returns void
    */
@@ -159,7 +142,7 @@ export class StateManager {
   }
 
   /**
-   * getComposePresets
+   * @name getComposePresets
    * @returns IComposePresets
    */
   public getComposePresets(): IComposePresets | undefined {

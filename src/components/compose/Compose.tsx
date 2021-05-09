@@ -83,11 +83,18 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
     this.stateManager = props.dependencies.stateManager;
     this.emailComposer = new EmailComposer();
 
+    const emailSignature: string =
+      this.localStorage.getSetting("signature") ?? "";
+
+    const emailFrom: string = `"${this.localStorage.getSetting(
+      "name"
+    )}" <${this.localStorage.getSetting("email")}>`;
+
     this.state = {
       editorState: EditorState.createWithContent(
-        ContentState.createFromText(
-          this.localStorage.getSetting("signature") ?? ""
-        ),
+        /<\/?[a-z][\s\S]*>/i.test(emailSignature)
+          ? stateFromHTML(emailSignature)
+          : ContentState.createFromText(emailSignature),
         new CompositeDecorator([
           {
             strategy: this.findLinkEntities,
@@ -95,7 +102,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
           },
         ])
       ),
-      from: this.localStorage.getSetting("email"),
+      from: emailFrom,
       recipients: [{ id: 1, type: "To", value: "" }],
       attachments: [],
       content: "",
@@ -132,10 +139,6 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
     );
   };
 
-  componentWillUnmount() {
-    // perform clean up on the data when leaving the component
-  }
-
   componentDidMount() {
     const composePresets:
       | IComposePresets
@@ -144,7 +147,9 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
     if (composePresets) {
       this.setState({
         editorState: EditorState.createWithContent(
-          stateFromHTML(composePresets.email)
+          /<\/?[a-z][\s\S]*>/i.test(composePresets.email)
+            ? stateFromHTML(composePresets.email)
+            : ContentState.createFromText(composePresets.email)
         ),
         recipients: [{ id: 1, type: "To", value: composePresets.from }],
         subject: "RE: " + composePresets.subject ?? "(no subject)",

@@ -2,10 +2,35 @@ import { MimeTools } from "lib";
 
 describe("Testing the MimeTools class", () => {
   describe("Test parseMimeWords", () => {
-    test("With a valid quoted printable string content", () => {
-      const mockParseMimeWordsContent: string = "";
+    test("With valid quoted printable string content", () => {
+      const mockParseMimeWordsContent: string = "=?UTF-8?Q?test_quoted_printable?=";
 
-      const mockParseMimeWordsResponse: string = "";
+      const mockParseMimeWordsResponse: string = "test quoted printable";
+
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(
+        mockParseMimeWordsContent
+      );
+
+      expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
+    });
+
+    test("With valid bas64 string content", () => {
+      const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?="
+
+      const mockParseMimeWordsResponse: string = "test base64";
+
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(
+        mockParseMimeWordsContent
+      );
+
+      expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
+    });
+
+
+    test("With joinable content", () => {
+      const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCA=?==?UTF-8?B?YmFzZTY0?=";
+
+      const mockParseMimeWordsResponse: string = "test base64";
 
       const parseMimeWordsResponse = MimeTools.parseMimeWords(
         mockParseMimeWordsContent
@@ -17,9 +42,9 @@ describe("Testing the MimeTools class", () => {
 
   describe("Test base64toBlob", () => {
     test("With valid string content", () => {
-      const mockBase64toBlobsContent: string = "";
+      const mockBase64toBlobsContent: string = "dGVzdCBibG9i";
 
-      const mockBase64toBlobResponse: string = "";
+      const mockBase64toBlobResponse: Blob = new Blob();
 
       const base64toBlobResponse = MimeTools.base64toBlob(
         mockBase64toBlobsContent,
@@ -32,9 +57,9 @@ describe("Testing the MimeTools class", () => {
 
   describe("Test binaryStringToBlob", () => {
     test("With valid string content", () => {
-      const mockBinaryStringToBlobContent: string = "";
+      const mockBinaryStringToBlobContent: string = "test blob";
 
-      const mockBinaryStringToBlobResponse: string = "";
+      const mockBinaryStringToBlobResponse: Blob = new Blob();
 
       const base64toBlobResponse = MimeTools.binaryStringToBlob(
         mockBinaryStringToBlobContent,

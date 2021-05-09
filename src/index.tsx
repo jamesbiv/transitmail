@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Container, Navbar, Row, Col, Button, Tab } from "react-bootstrap";
 import {
@@ -23,17 +23,18 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
 import { IComponent, IMessageModalData } from "interfaces";
+
 import * as serviceWorker from "serviceWorker";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
 
-interface IIndexState {
-  activeKey: string;
-  sliderAction: boolean;
-  sliderInitalDisplay: boolean;
-  messageModalData: IMessageModalData;
-  showMessageModal: boolean;
+interface IDependencies {
+  imapHelper: ImapHelper;
+  imapSocket: ImapSocket;
+  smtpSocket: SmtpSocket;
+  localStorage: LocalStorage;
+  stateManager: StateManager;
 }
 
 interface ITouchState {
@@ -42,118 +43,101 @@ interface ITouchState {
   threshold: number;
 }
 
-class Index extends React.Component<{}, IIndexState> {
-  /**
-   * @var {object} dependencies
-   */
-  protected dependencies: {
-    imapHelper: ImapHelper;
-    imapSocket: ImapSocket;
-    smtpSocket: SmtpSocket;
-    localStorage: LocalStorage;
-    stateManager: StateManager;
+const dependencies: IDependencies = {
+  localStorage: new LocalStorage(),
+  imapHelper: new ImapHelper(),
+  imapSocket: new ImapSocket(),
+  smtpSocket: new SmtpSocket(),
+  stateManager: new StateManager(),
+};
+
+const Index: React.FC = () => {
+  const [activeKey, setActiveKey] = useState<string>(
+    window.location.hash.substring(1) || "inbox"
+  );
+
+  const [sliderAction, setSliderAction] = useState<boolean>(false);
+  const [sliderInitalDisplay, setSliderInitalDisplay] = useState<boolean>(
+    false
+  );
+
+  const [messageModalData, setMessageModalData] = useState<IMessageModalData>({
+    title: "",
+    content: "",
+    action: () => {},
+  });
+
+  const [showMessageModal, setShowMessageModal] = useState<boolean>(false);
+
+  const touchState: ITouchState = {
+    start: undefined,
+    end: undefined,
+    threshold: 150,
   };
 
-  /**
-   * @var {ITouchState} touchState
-   */
-  protected touchState: ITouchState;
+  dependencies.stateManager.indexState = {
+    sliderAction,
+    setActiveKey,
+    setSliderAction,
+    setMessageModalData,
+    setShowMessageModal,
+  };
 
-  constructor(props: {}) {
-    super(props);
+  dependencies.imapSocket.settings = {
+    host: dependencies.localStorage.getSetting("imapHost"),
+    port: dependencies.localStorage.getSetting("imapPort"),
+    username: dependencies.localStorage.getSetting("imapUsername"),
+    password: dependencies.localStorage.getSetting("imapPassword"),
+  };
 
-    this.dependencies = {
-      localStorage: new LocalStorage(),
-      imapHelper: new ImapHelper(),
-      imapSocket: new ImapSocket(),
-      smtpSocket: new SmtpSocket(),
-      stateManager: new StateManager(this),
-    };
+  dependencies.imapSocket.session.debug =
+    process.env.NODE_ENV === "development";
 
-    this.dependencies.imapSocket.settings = {
-      host: this.dependencies.localStorage.getSetting("imapHost"),
-      port: this.dependencies.localStorage.getSetting("imapPort"),
-      username: this.dependencies.localStorage.getSetting("imapUsername"),
-      password: this.dependencies.localStorage.getSetting("imapPassword"),
-    };
+  dependencies.smtpSocket.settings = {
+    host: dependencies.localStorage.getSetting("smtpHost"),
+    port: dependencies.localStorage.getSetting("smtpPort"),
+    username: dependencies.localStorage.getSetting("smtpUsername"),
+    password: dependencies.localStorage.getSetting("smtpPassword"),
+  };
 
-    this.dependencies.imapSocket.session.debug = true;
+  dependencies.smtpSocket.session.debug =
+    process.env.NODE_ENV === "development";
 
-    this.dependencies.smtpSocket.settings = {
-      host: this.dependencies.localStorage.getSetting("smtpHost"),
-      port: this.dependencies.localStorage.getSetting("smtpPort"),
-      username: this.dependencies.localStorage.getSetting("smtpUsername"),
-      password: this.dependencies.localStorage.getSetting("smtpPassword"),
-    };
-
-    this.dependencies.smtpSocket.session.debug = true;
-
-    this.state = {
-      activeKey: window.location.hash.substring(1) || "inbox",
-      sliderAction: false,
-      sliderInitalDisplay: false,
-      messageModalData: { title: "", content: "", action: () => {} },
-      showMessageModal: false,
-    };
-
-    this.touchState = {
-      start: undefined,
-      end: undefined,
-      threshold: 150,
-    };
-  }
-
-  componentDidMount() {
+  useEffect(() => {
     (document.getElementById("container-main") as HTMLElement).focus();
 
-    this.setState({
-      activeKey: window.location.hash.substring(1) || "inbox",
-    });
-  }
+    setActiveKey(window.location.hash.substring(1) || "inbox");
 
-  componentDidUpdate() {
     window.onpopstate = () => {
-      this.setState({
-        activeKey: window.location.hash.substring(1) || "inbox",
-      });
+      setActiveKey(window.location.hash.substring(1) || "inbox");
     };
-  }
+  }, []);
 
-  onTouchStartTrigger = (event: React.TouchEvent) => {
-    this.touchState.start = event.targetTouches[0].screenX;
+  const onTouchStartTrigger = (event: React.TouchEvent) => {
+    touchState.start = event.targetTouches[0].screenX;
   };
 
-  onTouchMoveTrigger = (event: React.TouchEvent) => {
-    this.touchState.end = event.targetTouches[0].screenX;
+  const onTouchMoveTrigger = (event: React.TouchEvent) => {
+    touchState.end = event.targetTouches[0].screenX;
   };
 
-  onTouchEndTrigger = () => {
-    if (!this.touchState.start || !this.touchState.end) {
+  const onTouchEndTrigger = () => {
+    if (!touchState.start || !touchState.end) {
       return;
     }
 
-    if (
-      this.touchState.start - this.touchState.end >
-      this.touchState.threshold
-    ) {
-      this.setState({
-        sliderAction: false,
-        sliderInitalDisplay: true,
-      });
+    if (touchState.start - touchState.end > touchState.threshold) {
+      setSliderAction(false);
+      setSliderInitalDisplay(true);
     }
 
-    if (
-      this.touchState.start - this.touchState.end <
-      this.touchState.threshold * -1
-    ) {
-      this.setState({
-        sliderAction: true,
-        sliderInitalDisplay: true,
-      });
+    if (touchState.start - touchState.end < touchState.threshold * -1) {
+      setSliderAction(true);
+      setSliderInitalDisplay(true);
     }
   };
 
-  components: IComponent[] = [
+  const components: IComponent[] = [
     { id: 1, element: Inbox, eventKey: "inbox" },
     { id: 2, element: Compose, eventKey: "compose" },
     { id: 3, element: Folders, eventKey: "folders" },
@@ -163,87 +147,74 @@ class Index extends React.Component<{}, IIndexState> {
     { id: 7, element: Logout, eventKey: "logout" },
   ];
 
-  render() {
-    return (
-      <React.StrictMode>
-        <Navbar bg="dark" variant="dark" className="fixed-top pt-2 pb-2">
-          <Navbar.Brand href="">
-            <FontAwesomeIcon icon={faAt} /> transit
-          </Navbar.Brand>
-          <Button
-            className="d-sm-block d-md-none ml-auto"
-            variant="light"
-            type="button"
-            onClick={() =>
-              this.setState({
-                sliderAction: !this.state.sliderAction,
-                sliderInitalDisplay: true,
-              })
-            }
-          >
-            <FontAwesomeIcon icon={faBars} />
-          </Button>
-        </Navbar>
-        <div
-          id="container-main"
-          tabIndex={0}
-          onTouchStart={this.onTouchStartTrigger}
-          onTouchEnd={this.onTouchEndTrigger}
-          onTouchMove={this.onTouchMoveTrigger}
+  return (
+    <React.StrictMode>
+      <Navbar bg="dark" variant="dark" className="fixed-top pt-2 pb-2">
+        <Navbar.Brand href="">
+          <FontAwesomeIcon icon={faAt} /> transit
+        </Navbar.Brand>
+        <Button
+          className="d-sm-block d-md-none ml-auto"
+          variant="light"
+          type="button"
+          onClick={() => {
+            setSliderAction(sliderAction);
+            setSliderInitalDisplay(true);
+          }}
         >
-          <Container fluid>
-            <Tab.Container activeKey={this.state.activeKey}>
-              <Row>
-                <Col
-                  className={`bg-light pt-4 sideMenu ${
-                    this.state.sliderAction ? "slide-in" : "slide-out"
-                  } ${
-                    !this.state.sliderInitalDisplay
-                      ? "d-none d-md-block"
-                      : "d-block"
-                  }`}
-                  sm={0}
-                  md={4}
-                  lg={3}
-                >
-                  <Menu dependencies={this.dependencies} />
-                </Col>
-                <Col
-                  className="pl-0 pr-0 pr-sm-3 pl-sm-3"
-                  sm={12}
-                  md={8}
-                  lg={9}
-                >
-                  <Tab.Content>
-                    <ErrorBoundary dependencies={this.dependencies}>
-                      {this.components.map((component: IComponent) => (
-                        <Tab.Pane
-                          key={component.id}
-                          mountOnEnter={true}
-                          unmountOnExit={true}
-                          eventKey={component.eventKey}
-                        >
-                          {React.createElement(component.element, {
-                            dependencies: this.dependencies,
-                          })}
-                        </Tab.Pane>
-                      ))}
-                    </ErrorBoundary>
-                  </Tab.Content>
-                </Col>
-              </Row>
-            </Tab.Container>
-          </Container>
-        </div>
-        <MessageModal
-          messageModalData={this.state.messageModalData}
-          messageModalShow={this.state.showMessageModal}
-          onHide={() => this.setState({ showMessageModal: false })}
-        />
-      </React.StrictMode>
-    );
-  }
-}
+          <FontAwesomeIcon icon={faBars} />
+        </Button>
+      </Navbar>
+      <div
+        id="container-main"
+        tabIndex={0}
+        onTouchStart={onTouchStartTrigger}
+        onTouchEnd={onTouchEndTrigger}
+        onTouchMove={onTouchMoveTrigger}
+      >
+        <Container fluid>
+          <Tab.Container activeKey={activeKey}>
+            <Row>
+              <Col
+                className={`bg-light pt-4 sideMenu ${
+                  sliderAction ? "slide-in" : "slide-out"
+                } ${!sliderInitalDisplay ? "d-none d-md-block" : "d-block"}`}
+                sm={0}
+                md={4}
+                lg={3}
+              >
+                <Menu dependencies={dependencies} />
+              </Col>
+              <Col className="pl-0 pr-0 pr-sm-3 pl-sm-3" sm={12} md={8} lg={9}>
+                <Tab.Content>
+                  <ErrorBoundary dependencies={dependencies}>
+                    {components.map((component: IComponent) => (
+                      <Tab.Pane
+                        key={component.id}
+                        mountOnEnter={true}
+                        unmountOnExit={true}
+                        eventKey={component.eventKey}
+                      >
+                        {React.createElement(component.element, {
+                          dependencies: dependencies,
+                        })}
+                      </Tab.Pane>
+                    ))}
+                  </ErrorBoundary>
+                </Tab.Content>
+              </Col>
+            </Row>
+          </Tab.Container>
+        </Container>
+      </div>
+      <MessageModal
+        messageModalData={messageModalData}
+        messageModalShow={showMessageModal}
+        onHide={() => setShowMessageModal(false)}
+      />
+    </React.StrictMode>
+  );
+};
 
 ReactDOM.render(<Index />, document.getElementById("root"));
 

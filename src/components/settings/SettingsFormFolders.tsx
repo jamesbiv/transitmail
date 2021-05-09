@@ -1,13 +1,35 @@
 import React, { useState } from "react";
-
 import { faAsterisk, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Accordion, Card, Col, Form, Row } from "react-bootstrap";
+import { ISettingsFolders } from "interfaces";
 
-interface ISettingsFormFoldersProps {}
+interface ISettingsFormFoldersProps {
+  folderSettings: ISettingsFolders;
+}
 
-export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = () => {
-  const [collapasableStatus, toggleCollapasableStatus] = useState(false);
+export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
+  folderSettings,
+}) => {
+  const [collapasableStatus, toggleCollapasableStatus] = useState<boolean>(
+    false
+  );
+  const [errorMessage, setErrorMessage] = useState<
+    Partial<ISettingsFolders> | undefined
+  >(undefined);
+
+  const setFolderSetting = (
+    folderType: keyof ISettingsFolders,
+    folderName: string
+  ) => {
+    if (!folderName.length) {
+      setErrorMessage({ [folderType]: `This must have a valid folder name` });
+
+      return;
+    }
+
+    folderSettings[folderType] = folderName;
+  };
 
   return (
     <Accordion>
@@ -37,8 +59,18 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = () => {
                       className="text-danger mb-1"
                     />
                   </Form.Label>
-                  <Form.Control type="text" placeholder="" />
-                  <Form.Control.Feedback type="invalid"></Form.Control.Feedback>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    isInvalid={!!errorMessage?.archiveFolder}
+                    defaultValue={folderSettings.archiveFolder}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setFolderSetting("archiveFolder", event.target.value)
+                    }
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errorMessage?.archiveFolder}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formFolderTrash">
                   <Form.Label>
@@ -49,8 +81,18 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = () => {
                       className="text-danger mb-1"
                     />
                   </Form.Label>
-                  <Form.Control type="text" placeholder="" />
-                  <Form.Control.Feedback type="invalid"></Form.Control.Feedback>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    isInvalid={!!errorMessage?.trashFolder}
+                    defaultValue={folderSettings.trashFolder}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setFolderSetting("trashFolder", event.target.value)
+                    }
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errorMessage?.trashFolder}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formFolderDrafts">
                   <Form.Label>
@@ -61,8 +103,18 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = () => {
                       className="text-danger mb-1"
                     />
                   </Form.Label>
-                  <Form.Control type="text" placeholder="" />
-                  <Form.Control.Feedback type="invalid"></Form.Control.Feedback>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    isInvalid={!!errorMessage?.draftsFolder}
+                    defaultValue={folderSettings.draftsFolder}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setFolderSetting("draftsFolder", event.target.value)
+                    }
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errorMessage?.draftsFolder}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col xs={12} sm={6}>
@@ -70,14 +122,23 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = () => {
                   <Form.Label>
                     Sent Items Folder{" "}
                     <FontAwesomeIcon
-                    
                       icon={faAsterisk}
                       size="xs"
                       className="text-danger mb-1"
                     />
                   </Form.Label>
-                  <Form.Control type="text" placeholder="" />
-                  <Form.Control.Feedback type="invalid"></Form.Control.Feedback>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    isInvalid={!!errorMessage?.sentItemsFolder}
+                    defaultValue={folderSettings.sentItemsFolder}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setFolderSetting("sentItemsFolder", event.target.value)
+                    }
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errorMessage?.sentItemsFolder}
+                  </Form.Control.Feedback>
                 </Form.Group>
                 <Form.Group controlId="formFolderSpam">
                   <Form.Label>
@@ -88,8 +149,18 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = () => {
                       className="text-danger mb-1"
                     />
                   </Form.Label>
-                  <Form.Control type="text" placeholder="" />
-                  <Form.Control.Feedback type="invalid"></Form.Control.Feedback>
+                  <Form.Control
+                    type="text"
+                    placeholder=""
+                    isInvalid={!!errorMessage?.spamFolder}
+                    defaultValue={folderSettings.spamFolder}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setFolderSetting("spamFolder", event.target.value)
+                    }
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errorMessage?.spamFolder}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>

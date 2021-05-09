@@ -4,6 +4,7 @@ import { EmailParser } from "classes";
 const mockEmailRaw: any = `Return-Path: sender@transitmail.org\r\n\
 Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n\
 To: receiver@transitmail.org\r\n\
+Reply-to: receiver@transitmail.org\r\n\
 Cc: \r\n\
 Subject: (no subject)\r\n\
 Message-ID: <60663F2A-000016D7@mailserver01.transitmail.org>\r\n\
@@ -27,6 +28,7 @@ const mockProcessEmailResponse: any = {
     "Return-Path: sender@transitmail.org\r\n" +
     "Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n" +
     "To: receiver@transitmail.org\r\n" +
+    "Reply-to: receiver@transitmail.org\r\n" +
     "Cc: \r\n" +
     "Subject: (no subject)\r\n" +
     "Message-ID: <60663F2A-000016D7@mailserver01.transitmail.org>\r\n" +
@@ -54,6 +56,7 @@ const mockProcessEmailResponse: any = {
     "Return-Path: sender@transitmail.org\r\n" +
     "Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n" +
     "To: receiver@transitmail.org\r\n" +
+    "Reply-to: receiver@transitmail.org\r\n" +
     "Cc: \r\n" +
     "Subject: (no subject)\r\n" +
     "Message-ID: <60663F2A-000016D7@mailserver01.transitmail.org>\r\n" +
@@ -81,6 +84,7 @@ const mockProcessEmailResponse: any = {
     "return-path": "sender@transitmail.org",
     date: "Thu, 01 Apr 2021 00:00:00 -0300",
     to: "receiver@transitmail.org",
+    "reply-to": "receiver@transitmail.org",
     cc: "",
     subject: "(no subject)",
     "message-id": "<60663F2A-000016D7@mailserver01.transitmail.org>",
@@ -99,6 +103,7 @@ const mockProcessEmailResponse: any = {
   subject: "(no subject)",
   from: '"Test Sender" <sender@transitmail.org>',
   mimeType: "multipart/alternative",
+  replyTo: "receiver@transitmail.org",
   charset: undefined,
   boundaryIds: ["transit--client--6ohw29r5"],
   boundaries: [
@@ -151,9 +156,19 @@ const mockProcessEmailResponse: any = {
 const emailParser = new EmailParser();
 
 describe("Testing the EmailParser class", () => {
+  test("Test getEmail", () => {
+    const getEmailResponse: any = emailParser.getEmail();
+
+    expect(getEmailResponse).toEqual({
+      contentRaw: "",
+      emailRaw: "",
+      headersRaw: "",
+    });
+  });
+
   test("Test processEmail", () => {
     const processEmailResponse: any = emailParser.processEmail(mockEmailRaw);
-    
+
     expect(processEmailResponse).toEqual(mockProcessEmailResponse);
   });
 });

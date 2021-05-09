@@ -1,6 +1,11 @@
 import { IComposeAttachment, IEmailAttachment } from "interfaces";
 import { MimeTools } from "lib";
 
+/**
+ * @name convertAttachments
+ * @param {IEmailAttachment[]} attachments
+ * @returns IComposeAttachment[]
+ */
 const convertAttachments = async (
   attachments: IEmailAttachment[] | undefined
 ): Promise<IComposeAttachment[] | undefined> => {

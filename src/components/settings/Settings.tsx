@@ -1,25 +1,22 @@
 import React, { FormEvent } from "react";
-import { ImapSocket, LocalStorage } from "classes";
-import { SettingsForm } from ".";
-import { Row, Col, Alert, Card, Form, Button } from "react-bootstrap";
+import { ImapHelper, ImapSocket, LocalStorage } from "classes";
+import { SettingsForm, SettingsValidation } from ".";
+import { Row, Col, Card, Form, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSave, faCog, faSync } from "@fortawesome/free-solid-svg-icons";
 import {
-  faTimes,
-  faCheck,
-  faExclamationTriangle,
-  faSave,
-  faCog,
-  faSync,
-} from "@fortawesome/free-solid-svg-icons";
-import {
+  EImapResponseStatus,
+  IFoldersEntry,
+  IImapResponse,
   ISettings,
   ISettingsErrors,
-  ISettingsSecondaryEmail,
+  ISettingsFolders,
 } from "interfaces";
 
 interface ISettingsProps {
   dependencies: {
     imapSocket: ImapSocket;
+    imapHelper: ImapHelper;
     localStorage: LocalStorage;
   };
 }
@@ -28,7 +25,6 @@ interface ISettingsState {
   message?: string;
   messageType?: string;
   errors?: ISettingsErrors;
-  showSecondaryEmailsModal: boolean;
 }
 
 export class Settings extends React.PureComponent<
@@ -39,6 +35,11 @@ export class Settings extends React.PureComponent<
    * @var {ImapSocket} imapSocket
    */
   protected imapSocket: ImapSocket;
+
+  /**
+   * @var {ImapHelper} imapHelper
+   */
+  protected imapHelper: ImapHelper;
 
   /**
    * @var {LocalStorage} localStorage
@@ -59,12 +60,22 @@ export class Settings extends React.PureComponent<
 
     this.imapSocket = props.dependencies.imapSocket;
     this.localStorage = props.dependencies.localStorage;
+    this.imapHelper = props.dependencies.imapHelper;
 
-    this.settings = Object.assign({}, this.localStorage.getSettings());
-
-    this.state = {
-      showSecondaryEmailsModal: false,
+    const settingsDefault: Partial<ISettings> = {
+      folderSettings: {
+        archiveFolder: process.env.REACT_APP_DEFAULT_ARCHIVE_FOLDER ?? "",
+        draftsFolder: process.env.REACT_APP_DEFAULT_DRAFTS_FOLDER ?? "",
+        sentItemsFolder: process.env.REACT_APP_DEFAULT_SENT_ITEMS_FOLDER ?? "",
+        spamFolder: process.env.REACT_APP_DEFAULT_SPAM_FOLDER ?? "",
+        trashFolder: process.env.REACT_APP_DEFAULT_TRASH_FOLDER ?? "",
+      },
     };
+
+    this.settings = Object.assign(
+      settingsDefault,
+      this.localStorage.getSettings()
+    );
   }
 
   public saveSettings() {
@@ -125,6 +136,8 @@ export class Settings extends React.PureComponent<
       return;
     }
 
+    this.createFolders(this.settings.folderSettings);
+
     this.setState({
       errors: undefined,
       message: "Settings saved successfully",
@@ -134,22 +147,37 @@ export class Settings extends React.PureComponent<
     this.localStorage.setSettings(this.settings);
   }
 
-  public toggleSecondaryEmailsModal = (
-    showSecondaryEmailsModal: boolean
-  ): void => {
-    this.setState({ showSecondaryEmailsModal });
+  public createFolders = async (
+    folderSettings: ISettingsFolders
+  ): Promise<void> => {
+    if (this.imapSocket.getReadyState() !== 1) {
+      this.imapSocket.imapConnect();
+    }
+
+    const listResponse = await this.imapSocket.imapRequest(`LIST "" "*"`);
+
+    const currentFolders: IFoldersEntry[] = this.imapHelper.formatListFoldersResponse(
+      listResponse.data
+    );
+
+    Object.keys(folderSettings).forEach(async (settingsFolder: string) => {
+      const folderPath: string = folderSettings[settingsFolder];
+
+      const folderFound: boolean = currentFolders.some(
+        (currentFolder: IFoldersEntry) => currentFolder.name === folderPath
+      );
+
+      if (!folderFound) {
+        const createFolderResponse: IImapResponse = await this.imapSocket.imapRequest(
+          `CREATE "${folderPath}"`
+        );
+
+        if (createFolderResponse.status !== EImapResponseStatus.OK) {
+          return;
+        }
+      }
+    });
   };
-
-  public addSecondaryEmail = (
-    secondaryEmail: ISettingsSecondaryEmail
-  ): void => {};
-
-  public updateSecondaryEmail = (
-    secondaryEmail: ISettingsSecondaryEmail,
-    secondaryEmailKey: number
-  ): void => {};
-
-  public deleteSecondaryEmail = (secondaryEmailKey: number): void => {};
 
   render() {
     return (
@@ -173,39 +201,13 @@ export class Settings extends React.PureComponent<
           noValidate={true}
         >
           <Card.Body>
-            <Alert
-              className={!this.state.message?.length ? "d-none" : "d-block"}
-              variant={
-                this.state.messageType === "info"
-                  ? "success"
-                  : this.state.messageType === "warning"
-                  ? "warning"
-                  : "danger"
-              }
-            >
-              <FontAwesomeIcon
-                icon={
-                  this.state.messageType === "info"
-                    ? faCheck
-                    : this.state.messageType === "warning"
-                    ? faExclamationTriangle
-                    : faTimes
-                }
-              />{" "}
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: this.state.message ?? "",
-                }}
-              />
-            </Alert>
+            <SettingsValidation
+              message={this.state?.message}
+              messageType={this.state?.messageType}
+            />
             <SettingsForm
               settings={this.settings}
-              errors={this.state.errors}
-              showSecondaryEmailsModal={this.state.showSecondaryEmailsModal}
-              toggleSecondaryEmailsModal={this.toggleSecondaryEmailsModal}
-              addSecondaryEmail={this.addSecondaryEmail}
-              updateSecondaryEmail={this.updateSecondaryEmail}
-              deleteSecondaryEmail={this.deleteSecondaryEmail}
+              errors={this.state?.errors}
             />
           </Card.Body>
           <Card.Footer>

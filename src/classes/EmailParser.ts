@@ -15,7 +15,6 @@ export class EmailParser {
 
   /**
    * @constructor
-   * @param param0
    */
   constructor() {
     this.email = {
@@ -314,16 +313,14 @@ export class EmailParser {
                 break;
             }
             break;
+        }
 
-          default:
-            if (contentRow.isAttachment) {
-              if (!email.attachments) {
-                email.attachments = [];
-              }
+        if (contentRow.isAttachment) {
+          if (!email.attachments) {
+            email.attachments = [];
+          }
 
-              email.attachments.push(contentRow as IEmailAttachment);
-            }
-            break;
+          email.attachments.push(contentRow as IEmailAttachment);
         }
       });
     });
@@ -336,20 +333,32 @@ export class EmailParser {
    */
   private extractContentFromBody(email: IEmail): void {
     if (email.mimeType === "text/html") {
-      if (email.encoding?.toLowerCase() === "quoted-printable") {
-        email.bodyHtml = MimeTools.decodeQuotedPrintable(email.contentRaw);
-      } else if (email.encoding?.toLowerCase() === "base64") {
-        email.bodyHtml = MimeTools.decodeBase64(email.contentRaw);
-      } else {
-        email.bodyHtml = email.contentRaw;
+      switch (email.encoding?.toLowerCase()) {
+        case "quoted-printable":
+          email.bodyHtml = MimeTools.decodeQuotedPrintable(email.contentRaw);
+          break;
+
+        case "base64":
+          email.bodyHtml = MimeTools.decodeBase64(email.contentRaw);
+          break;
+
+        default:
+          email.bodyHtml = email.contentRaw;
+          break;
       }
     } else {
-      if (email.encoding?.toLowerCase() === "quoted-printable") {
-        email.bodyText = MimeTools.decodeQuotedPrintable(email.contentRaw);
-      } else if (email.encoding?.toLowerCase() === "base64") {
-        email.bodyText = MimeTools.decodeBase64(email.contentRaw);
-      } else {
-        email.bodyText = email.contentRaw;
+      switch (email.encoding?.toLowerCase()) {
+        case "quoted-printable":
+          email.bodyText = MimeTools.decodeQuotedPrintable(email.contentRaw);
+          break;
+
+        case "base64":
+          email.bodyText = MimeTools.decodeBase64(email.contentRaw);
+          break;
+
+        default:
+          email.bodyText = email.contentRaw;
+          break;
       }
     }
   }
@@ -411,7 +420,7 @@ export class EmailParser {
       (contentRow: IEmailBoundaryContent, contentIndex: number) => {
         const contentRaw: string = boundary.contents[contentIndex].contentRaw;
 
-        const headers: IEmailHeaders = this.splitHeaders(contentRaw, true);
+        const headers: IEmailHeaders = this.splitHeaders(contentRaw);
         const content: string | undefined = headers.content;
 
         Object.keys(headers).forEach((headerKey: string) => {

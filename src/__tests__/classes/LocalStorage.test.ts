@@ -20,4 +20,30 @@ describe("Testing the LocalStorage class", () => {
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });
+
+  describe("Test setSettings and getSettings", () => {
+    test("Test a successful set and get senario", () => {
+      const settingsMock: any = {
+        name: "mockName",
+        email: "mockEmail",
+        signature: "mockSignature",
+        autoLogin: "mockAutoLogin",
+        imapHost: "mockImapHost",
+        imapPort: "mockImapPort",
+        imapUsername: "mockImapUsername",
+        imapPassword: "mockImapPassword",
+        smtpHost: "mockSmtpHost",
+        smtpPort: "mockSmtpPort",
+        smtpUsername: "mockSmtpUsername",
+        smtpPassword: "mockSmtpPassword",
+        secondaryEmails: [],
+        folderSettings: {},
+      };
+
+      localStorage.setSettings(settingsMock);
+
+      const getDataResponse: any = localStorage.getSettings();
+      expect(getDataResponse).toEqual(settingsMock);
+    });
+  });
 });

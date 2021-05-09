@@ -22,7 +22,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
     const content: string = attachment.content.trim();
 
     const blob: Blob =
-      attachment.encoding.toLowerCase() === "base64"
+      attachment.encoding?.toLowerCase() === "base64"
         ? MimeTools.base64toBlob(content, attachment.mimeType)
         : MimeTools.binaryStringToBlob(content, attachment.mimeType);
 
@@ -35,7 +35,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
     const content: string = attachment.content.trim();
 
     const blob: Blob =
-      attachment.encoding.toLowerCase() === "base64"
+      attachment.encoding?.toLowerCase() === "base64"
         ? MimeTools.base64toBlob(content, attachment.mimeType)
         : MimeTools.binaryStringToBlob(content, attachment.mimeType);
 

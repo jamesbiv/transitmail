@@ -12,7 +12,7 @@ export interface ISettings {
   smtpUsername: string;
   smtpPassword: string;
   secondaryEmails: ISettingsSecondaryEmail[];
-  folderSettings: ISettingsFolder;
+  folderSettings: ISettingsFolders;
 }
 
 export interface ISettingsSecondaryEmail {
@@ -21,9 +21,11 @@ export interface ISettingsSecondaryEmail {
   signature: string;
 }
 
-export interface ISettingsFolder {
+export interface ISettingsFolders {
+  [key: string]: string;
+  
   archiveFolder: string;
-  draftFolder: string;
+  draftsFolder: string;
   sentItemsFolder: string;
   spamFolder: string;
   trashFolder: string;

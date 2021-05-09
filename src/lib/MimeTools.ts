@@ -66,10 +66,8 @@ const decodeMimeWord = (content: string): string => {
       return decodeBase64(sanitisedEncodedContent);
 
     case "Q":
-      return decodeQuotedPrintable(sanitisedEncodedContent);
-
     default:
-      return sanitisedEncodedContent;
+      return decodeQuotedPrintable(sanitisedEncodedContent);
   }
 };
 
@@ -143,7 +141,7 @@ export const binaryStringToBlob = (
  * @param {string} content
  * @returns string
  */
- const quotedPrintableDecoder = (content: string): string => {
+const quotedPrintableDecoder = (content: string): string => {
   const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || [])
     .length;
   const bufferLength: number = content.length - encodedBytesCount * 2;
