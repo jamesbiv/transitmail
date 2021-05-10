@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { ListGroup } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,13 +9,7 @@ import {
   faSignOutAlt,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { StateManager } from "classes";
-
-interface IMenuProps {
-  dependencies: {
-    stateManager: StateManager;
-  };
-}
+import { DependenciesContext } from "context";
 
 interface IMenuItem {
   id: number;
@@ -24,7 +18,9 @@ interface IMenuItem {
   icon: IconDefinition;
 }
 
-const Menu: React.FC<IMenuProps> = ({ dependencies }) => {
+const Menu: React.FC = () => {
+  const { stateManager } = useContext(DependenciesContext);
+
   const menu: IMenuItem[] = [
     { id: 1, name: "Inbox", eventKey: "inbox", icon: faInbox },
     { id: 2, name: "Compose", eventKey: "compose", icon: faFeather },
@@ -42,9 +38,7 @@ const Menu: React.FC<IMenuProps> = ({ dependencies }) => {
           <ListGroup.Item
             action
             key={menuItem.id}
-            onClick={() =>
-              dependencies.stateManager.updateActiveKey(menuItem.eventKey)
-            }
+            onClick={() => stateManager.updateActiveKey(menuItem.eventKey)}
           >
             <FontAwesomeIcon icon={menuItem.icon} /> {menuItem.name}
           </ListGroup.Item>

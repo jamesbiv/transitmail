@@ -26,7 +26,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
   subject,
 }) => {
   return (
-    <div>
+    <React.Fragment>
       {recipients.map((recipient: IComposeRecipient, key: number) => (
         <Form.Group as={Row} key={key} controlId="formComposeTo">
           <Form.Label column xs={4} sm={2} className="pt-0">
@@ -101,9 +101,8 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                       recipients.push({
                         id: recipient.id + 1,
                         type: key >= 1 ? "Bcc" : "Cc",
-                        //value: recipient.value,
                       });
-                      
+
                       updateRecipients(recipients);
                     }}
                   >
@@ -133,6 +132,6 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
           />
         </Col>
       </Form.Group>
-    </div>
+    </React.Fragment>
   );
 };

@@ -1,17 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { ImapSocket, SmtpSocket } from "classes";
 import { Card } from "react-bootstrap";
+import { DependenciesContext } from "context";
 
-interface ILogoutProps {
-  dependencies: {
-    imapSocket: ImapSocket;
-    smtpSocket: SmtpSocket;
-  };
-}
+export const Logout: React.FC = () => {
+  const { imapSocket, smtpSocket } = useContext(DependenciesContext);
 
-export const Logout: React.FC<ILogoutProps> = ({ dependencies }) => {
   useEffect(() => {
     // discomnect from both imap and smtp (if needed)
   }, []);

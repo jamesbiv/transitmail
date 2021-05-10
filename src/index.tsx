@@ -1,13 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Container, Navbar, Row, Col, Button, Tab } from "react-bootstrap";
-import {
-  ImapHelper,
-  ImapSocket,
-  LocalStorage,
-  SmtpSocket,
-  StateManager,
-} from "classes";
 import {
   Folder,
   Folders,
@@ -20,54 +13,40 @@ import {
   MessageModal,
   Logout,
 } from "components";
+import { DependenciesContext } from "context";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
-import { IComponent, IMessageModalData } from "interfaces";
+import {
+  IComponent,
+  IMessageModalState,
+  ISliderState,
+  ITouchState,
+} from "interfaces";
 
 import * as serviceWorker from "serviceWorker";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
 
-interface IDependencies {
-  imapHelper: ImapHelper;
-  imapSocket: ImapSocket;
-  smtpSocket: SmtpSocket;
-  localStorage: LocalStorage;
-  stateManager: StateManager;
-}
-
-interface ITouchState {
-  start?: number;
-  end?: number;
-  threshold: number;
-}
-
-const dependencies: IDependencies = {
-  localStorage: new LocalStorage(),
-  imapHelper: new ImapHelper(),
-  imapSocket: new ImapSocket(),
-  smtpSocket: new SmtpSocket(),
-  stateManager: new StateManager(),
-};
-
 const Index: React.FC = () => {
   const [activeKey, setActiveKey] = useState<string>(
     window.location.hash.substring(1) || "inbox"
   );
 
-  const [sliderAction, setSliderAction] = useState<boolean>(false);
-  const [sliderInitalDisplay, setSliderInitalDisplay] = useState<boolean>(
-    false
-  );
+  const [sliderState, setSliderState] = useState<ISliderState>({
+    sliderAction: false,
+    sliderInitalDisplay: false,
+  });
 
-  const [messageModalData, setMessageModalData] = useState<IMessageModalData>({
+  const [
+    messageModalState,
+    setMessageModalState,
+  ] = useState<IMessageModalState>({
     title: "",
     content: "",
     action: () => {},
+    show: false,
   });
-
-  const [showMessageModal, setShowMessageModal] = useState<boolean>(false);
 
   const touchState: ITouchState = {
     start: undefined,
@@ -75,33 +54,19 @@ const Index: React.FC = () => {
     threshold: 150,
   };
 
-  dependencies.stateManager.indexState = {
-    sliderAction,
+  const { imapSocket, localStorage, smtpSocket, stateManager } = useContext(
+    DependenciesContext
+  );
+
+  stateManager.indexState = {
+    sliderState,
+    setSliderState,
     setActiveKey,
-    setSliderAction,
-    setMessageModalData,
-    setShowMessageModal,
+    setMessageModalState,
   };
 
-  dependencies.imapSocket.settings = {
-    host: dependencies.localStorage.getSetting("imapHost"),
-    port: dependencies.localStorage.getSetting("imapPort"),
-    username: dependencies.localStorage.getSetting("imapUsername"),
-    password: dependencies.localStorage.getSetting("imapPassword"),
-  };
-
-  dependencies.imapSocket.session.debug =
-    process.env.NODE_ENV === "development";
-
-  dependencies.smtpSocket.settings = {
-    host: dependencies.localStorage.getSetting("smtpHost"),
-    port: dependencies.localStorage.getSetting("smtpPort"),
-    username: dependencies.localStorage.getSetting("smtpUsername"),
-    password: dependencies.localStorage.getSetting("smtpPassword"),
-  };
-
-  dependencies.smtpSocket.session.debug =
-    process.env.NODE_ENV === "development";
+  imapSocket.settings = localStorage.getImapSettings();
+  smtpSocket.settings = localStorage.getSmtpSettings();
 
   useEffect(() => {
     (document.getElementById("container-main") as HTMLElement).focus();
@@ -127,13 +92,11 @@ const Index: React.FC = () => {
     }
 
     if (touchState.start - touchState.end > touchState.threshold) {
-      setSliderAction(false);
-      setSliderInitalDisplay(true);
+      setSliderState({ sliderAction: false, sliderInitalDisplay: true });
     }
 
     if (touchState.start - touchState.end < touchState.threshold * -1) {
-      setSliderAction(true);
-      setSliderInitalDisplay(true);
+      setSliderState({ sliderAction: true, sliderInitalDisplay: true });
     }
   };
 
@@ -157,10 +120,12 @@ const Index: React.FC = () => {
           className="d-sm-block d-md-none ml-auto"
           variant="light"
           type="button"
-          onClick={() => {
-            setSliderAction(sliderAction);
-            setSliderInitalDisplay(true);
-          }}
+          onClick={() =>
+            setSliderState({
+              sliderAction: !sliderState.sliderAction,
+              sliderInitalDisplay: true,
+            })
+          }
         >
           <FontAwesomeIcon icon={faBars} />
         </Button>
@@ -177,17 +142,21 @@ const Index: React.FC = () => {
             <Row>
               <Col
                 className={`bg-light pt-4 sideMenu ${
-                  sliderAction ? "slide-in" : "slide-out"
-                } ${!sliderInitalDisplay ? "d-none d-md-block" : "d-block"}`}
+                  sliderState.sliderAction ? "slide-in" : "slide-out"
+                } ${
+                  !sliderState.sliderInitalDisplay
+                    ? "d-none d-md-block"
+                    : "d-block"
+                }`}
                 sm={0}
                 md={4}
                 lg={3}
               >
-                <Menu dependencies={dependencies} />
+                <Menu />
               </Col>
               <Col className="pl-0 pr-0 pr-sm-3 pl-sm-3" sm={12} md={8} lg={9}>
                 <Tab.Content>
-                  <ErrorBoundary dependencies={dependencies}>
+                  <ErrorBoundary>
                     {components.map((component: IComponent) => (
                       <Tab.Pane
                         key={component.id}
@@ -195,9 +164,7 @@ const Index: React.FC = () => {
                         unmountOnExit={true}
                         eventKey={component.eventKey}
                       >
-                        {React.createElement(component.element, {
-                          dependencies: dependencies,
-                        })}
+                        {React.createElement(component.element)}
                       </Tab.Pane>
                     ))}
                   </ErrorBoundary>
@@ -208,9 +175,13 @@ const Index: React.FC = () => {
         </Container>
       </div>
       <MessageModal
-        messageModalData={messageModalData}
-        messageModalShow={showMessageModal}
-        onHide={() => setShowMessageModal(false)}
+        messageModalState={messageModalState}
+        onHide={() =>
+          setMessageModalState({
+            ...messageModalState,
+            show: false,
+          })
+        }
       />
     </React.StrictMode>
   );

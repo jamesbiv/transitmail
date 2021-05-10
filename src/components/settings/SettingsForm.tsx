@@ -5,6 +5,7 @@ import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
 import {
   ISettings,
   ISettingsErrors,
+  ISettingsSecondaryEmail,
 } from "interfaces";
 import { SettingsSecondaryEmails, SettingsFormFolders } from "./";
 
@@ -17,6 +18,12 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
   settings,
   errors,
 }) => {
+  const updateSecondaryEmails: (
+    secondaryEmails?: ISettingsSecondaryEmail[]
+  ) => void = (secondaryEmails?: ISettingsSecondaryEmail[]): void => {
+    settings.secondaryEmails = secondaryEmails ?? [] as ISettingsSecondaryEmail[];
+  };
+
   return (
     <React.Fragment>
       <Form.Group controlId="formDisplayName">
@@ -99,7 +106,10 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
           Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
         </Form.Text>
       </Form.Group>
-      <SettingsSecondaryEmails secondaryEmails={settings.secondaryEmails} />
+      <SettingsSecondaryEmails
+        secondaryEmails={settings.secondaryEmails}
+        updateSecondaryEmails={updateSecondaryEmails}
+      />
       <Container fluid className="p-0">
         <Row>
           <Col md={12} lg={6}>

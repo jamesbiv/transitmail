@@ -33,7 +33,7 @@ export class SmtpSocket {
 
     // Session variables
     this.session = {
-      debug: false, // Dump transaction data to console
+      debug: process.env.NODE_ENV === "development", // Dump transaction data to console
       retry: 3000, // Retry on network error 0 for no retry
 
       // Do not touch variables below

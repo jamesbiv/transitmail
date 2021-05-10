@@ -474,13 +474,13 @@ export class EmailParser {
                   ].mimeType = mimeType.toLowerCase();
 
                   if (contentData) {
-                    const charSet: string | undefined = this.getHeaderAttribute(
+                    const charset: string | undefined = this.getHeaderAttribute(
                       "charset",
                       contentData
                     );
 
-                    if (charSet) {
-                      boundary.contents[contentIndex].charset = charSet;
+                    if (charset) {
+                      boundary.contents[contentIndex].charset = charset;
                     }
 
                     const subBoundaryId:
@@ -537,34 +537,21 @@ export class EmailParser {
 
   /**
    * @name getHeaderAttribute
-   * @param {string} field
+   * @param {string} attribute
    * @param {string} data
    * @returns string | undefined
    */
-  private getHeaderAttribute(field: string, data: string): string | undefined {
-    if (data.indexOf(field) === -1) {
+  private getHeaderAttribute(
+    attribute: string,
+    data: string
+  ): string | undefined {
+    if (data.indexOf(attribute) === -1) {
       return undefined;
     }
 
-    const regex = new RegExp(field + "=['|\"]?(\\S+)");
-    const match: RegExpMatchArray | undefined = data.match(regex) ?? undefined;
+    const regex = new RegExp(attribute + "=['|\"]?(\\S+)", "i");
+    const [match, attributeValue]: RegExpMatchArray = data.match(regex) ?? [];
 
-    let value: string | undefined;
-
-    if (match && match.length > 1) {
-      let matchedValue: string = match[1];
-
-      ["'", '"'].forEach((char: string) => {
-        const trim = matchedValue.indexOf(char);
-
-        if (trim > -1) {
-          matchedValue = matchedValue.substring(0, trim);
-        }
-      });
-
-      value = matchedValue;
-    }
-
-    return value;
+    return attributeValue?.replace(/['|"]/g, "") || undefined;
   }
 }

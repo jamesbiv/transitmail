@@ -1,4 +1,5 @@
 import CryptoES from "crypto-es";
+import { IImapSettings, ISmtpSettings } from "interfaces";
 
 type TDataKeys = "activeUid" | "folderId" | "composeMode";
 
@@ -109,6 +110,32 @@ export class LocalStorage {
    */
   public getSettings(): Pick<ISettings, TSettingsKeys> {
     return this.settings;
+  }
+
+  /**
+   * @name getImapSettings
+   * @returns IImapSettings
+   */
+  public getImapSettings(): IImapSettings {
+    return {
+      host: this.settings.imapHost,
+      port: this.settings.imapPort,
+      username: this.settings.imapUsername,
+      password: this.settings.imapPassword,
+    };
+  }
+
+  /**
+   * @name getSmtpSettings
+   * @returns ISmtpSettings
+   */
+  public getSmtpSettings(): ISmtpSettings {
+    return {
+      host: this.settings.smtpHost,
+      port: this.settings.smtpPort,
+      username: this.settings.smtpUsername,
+      password: this.settings.smtpPassword,
+    };
   }
 
   /**

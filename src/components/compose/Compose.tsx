@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Card, Alert, Form, Button, Row, Col } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,11 +20,11 @@ import {
   RichUtils,
 } from "draft-js";
 import { stateFromHTML } from "draft-js-import-html";
-import { SmtpSocket, EmailComposer, LocalStorage, StateManager } from "classes";
 import {
   ComposeAttachments,
   ComposeRecipientDetails,
   ComposeEditorToolbar,
+  ComposeSecondaryEmail,
 } from ".";
 import {
   IComposeRecipient,
@@ -32,88 +32,41 @@ import {
   IComposedEmail,
   ISmtpResponse,
   IComposePresets,
+  ISettingsSecondaryEmail,
 } from "interfaces";
 import { ESmtpResponseStatus } from "interfaces";
+import { DependenciesContext } from "context";
+import { EmailComposer } from "classes";
 
-interface IComposeProps {
-  dependencies: {
-    smtpSocket: SmtpSocket;
-    localStorage: LocalStorage;
-    stateManager: StateManager;
-  };
-}
+export const Compose: React.FC = () => {
+  const { localStorage, stateManager, smtpSocket } = useContext(
+    DependenciesContext
+  );
 
-interface IComposeState {
-  editorState: EditorState;
-  from: string;
-  subject?: string;
-  recipients: IComposeRecipient[];
-  attachments: IComposeAttachment[];
-  content: string;
-  message?: string;
-  messageType?: string;
-}
+  const emailComposer = new EmailComposer();
 
-export class Compose extends React.Component<IComposeProps, IComposeState> {
-  /**
-   * @var {SmtpSocket} smtpSocket
-   */
-  protected smtpSocket: SmtpSocket;
+  const [from, setFrom] = useState<string>(
+    `"${localStorage.getSetting("name")}" <${localStorage.getSetting("email")}>`
+  );
 
-  /**
-   * @var {LocalStorage} localStorage
-   */
-  protected localStorage: LocalStorage;
+  const [subject, setSubject] = useState<string | undefined>(undefined);
 
-  /**
-   * @var {StateManager} stateManager
-   */
-  protected stateManager: StateManager;
+  const [recipients, setRecipients] = useState<IComposeRecipient[]>([
+    { id: 1, type: "To", value: "" },
+  ]);
+  const [attachments, setAttachments] = useState<IComposeAttachment[]>([]);
+  const [content, setContent] = useState<string>("");
+  const [message, setMessage] = useState<string | undefined>(undefined);
+  const [messageType, setMessageType] = useState<string | undefined>(undefined);
+  const [secondaryEmails, setSecondaryEmails] = useState<
+    ISettingsSecondaryEmail[]
+  >(localStorage.getSetting("secondaryEmails"));
 
-  /**
-   * @var {EmailComposer} emailComposer
-   */
-  protected emailComposer: EmailComposer;
-
-  constructor(props: IComposeProps) {
-    super(props);
-
-    this.smtpSocket = props.dependencies.smtpSocket;
-    this.localStorage = props.dependencies.localStorage;
-    this.stateManager = props.dependencies.stateManager;
-    this.emailComposer = new EmailComposer();
-
-    const emailSignature: string =
-      this.localStorage.getSetting("signature") ?? "";
-
-    const emailFrom: string = `"${this.localStorage.getSetting(
-      "name"
-    )}" <${this.localStorage.getSetting("email")}>`;
-
-    this.state = {
-      editorState: EditorState.createWithContent(
-        /<\/?[a-z][\s\S]*>/i.test(emailSignature)
-          ? stateFromHTML(emailSignature)
-          : ContentState.createFromText(emailSignature),
-        new CompositeDecorator([
-          {
-            strategy: this.findLinkEntities,
-            component: this.Link,
-          },
-        ])
-      ),
-      from: emailFrom,
-      recipients: [{ id: 1, type: "To", value: "" }],
-      attachments: [],
-      content: "",
-    };
-  }
-
-  findLinkEntities(
+  const findLinkEntities = (
     contentBlock: ContentBlock,
     callback: (start: number, end: number) => void,
     contentState: ContentState
-  ) {
+  ) => {
     contentBlock.findEntityRanges((entityRange: CharacterMetadata) => {
       const entityKey = entityRange.getEntity();
 
@@ -122,9 +75,9 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
         contentState.getEntity(entityKey).getType() === "LINK"
       );
     }, callback);
-  }
+  };
 
-  Link = (props: {
+  const Link = (props: {
     contentState: ContentState;
     entityKey: string;
     children: string;
@@ -139,39 +92,55 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
     );
   };
 
-  componentDidMount() {
+  const emailSignature: string = localStorage.getSetting("signature") ?? "";
+  const [editorState, setEditorState] = useState<EditorState>(
+    EditorState.createWithContent(
+      /<\/?[a-z][\s\S]*>/i.test(emailSignature)
+        ? stateFromHTML(emailSignature)
+        : ContentState.createFromText(emailSignature),
+      new CompositeDecorator([
+        {
+          strategy: findLinkEntities,
+          component: Link,
+        },
+      ])
+    )
+  );
+
+  useEffect(() => {
     const composePresets:
       | IComposePresets
-      | undefined = this.stateManager.getComposePresets();
+      | undefined = stateManager.getComposePresets();
 
     if (composePresets) {
-      this.setState({
-        editorState: EditorState.createWithContent(
+      setEditorState(
+        EditorState.createWithContent(
           /<\/?[a-z][\s\S]*>/i.test(composePresets.email)
             ? stateFromHTML(composePresets.email)
             : ContentState.createFromText(composePresets.email)
-        ),
-        recipients: [{ id: 1, type: "To", value: composePresets.from }],
-        subject: "RE: " + composePresets.subject ?? "(no subject)",
-        attachments: composePresets.attachments ?? [],
-      });
+        )
+      );
 
-      this.stateManager.setComposePresets();
+      setRecipients([{ id: 1, type: "To", value: composePresets.from }]);
+      setSubject("RE: " + composePresets.subject ?? "(no subject)");
+      setAttachments(composePresets.attachments ?? []);
+
+      stateManager.setComposePresets();
     }
-  }
+  }, []);
 
-  async sendEmail(): Promise<void> {
-    this.smtpSocket.smtpConnect();
+  const sendEmail = async (): Promise<void> => {
+    smtpSocket.smtpConnect();
 
-    const emailData: IComposedEmail = this.emailComposer.composeEmail({
-      editorState: this.state.editorState,
-      from: this.state.from,
-      subject: this.state.subject,
-      recipients: this.state.recipients,
-      attachments: this.state.attachments,
+    const emailData: IComposedEmail = emailComposer.composeEmail({
+      editorState: editorState,
+      from: from,
+      subject: subject,
+      recipients: recipients,
+      attachments: attachments,
     });
 
-    const mailResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+    const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `MAIL from: ${emailData.from}`,
       250
     );
@@ -180,7 +149,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const rcptResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+    const rcptResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `RCPT to: ${emailData.to}`,
       250
     );
@@ -189,7 +158,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const dataResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+    const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       "DATA",
       354
     );
@@ -198,7 +167,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const payloadResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+    const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `${emailData.payload}\r\n\r\n.`,
       250
     );
@@ -207,7 +176,7 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    const quitResponse: ISmtpResponse = await this.smtpSocket.smtpRequest(
+    const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `QUIT`,
       221
     );
@@ -216,30 +185,30 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       return;
     }
 
-    this.stateManager.showMessageModal({
+    stateManager.showMessageModal({
       title: "Your email has been sent",
       content: "Your email has been sent successfully!",
       action: () => {},
     });
-  }
+  };
 
-  handleKeyCommand(
+  const handleKeyCommand = (
     command: string,
     editorState: EditorState
-  ): DraftHandleValue {
+  ): DraftHandleValue => {
     const newEditorState: EditorState | undefined =
       RichUtils.handleKeyCommand(editorState, command) ?? undefined;
 
     if (newEditorState) {
-      // this.updateEditorState(newEditorState);
+      // updateEditorState(newEditorState);
 
       return "handled";
     }
 
     return "not-handled";
-  }
+  };
 
-  blockStyleFn(contentBlock: ContentBlock): string {
+  const blockStyleFn = (contentBlock: ContentBlock): string => {
     switch (contentBlock.getType()) {
       case "text-left":
         return "text-left";
@@ -256,128 +225,134 @@ export class Compose extends React.Component<IComposeProps, IComposeState> {
       default:
         return "";
     }
-  }
-
-  updateEditorState = (editorState: EditorState): void => {
-    this.setState({ editorState });
   };
 
-  updateRecipients = (recipients: IComposeRecipient[]): void => {
-    this.setState({ recipients });
+  const updateEditorState = (editorState: EditorState): void => {
+    setEditorState(editorState);
   };
 
-  updateSubject = (subject: string): void => {
-    this.setState({ subject });
+  const updateRecipients = (recipients: IComposeRecipient[]): void => {
+    setRecipients(recipients);
   };
 
-  updateAttachments = (attachments: IComposeAttachment[]): void => {
-    this.setState({ attachments });
+  const updateSubject = (subject: string): void => {
+    setSubject(subject);
   };
 
-  render() {
-    return (
-      <Card className="mt-0 mt-sm-3">
-        <Card.Header>
-          <Row>
-            <Col xs={6}>
-              <h4 className="p-0 m-0 text-nowrap middle">
-                <span className="align-middle">
-                  <FontAwesomeIcon icon={faFeather} /> Compose
-                </span>
-              </h4>
-            </Col>
-            <Col
-              className="d-none d-sm-block text-right text-sm-right text-nowrap"
-              xs={6}
-            >
-              <Button
-                onClick={() => this.sendEmail()}
-                className="mr-2"
-                variant="primary"
-                type="button"
-              >
-                <FontAwesomeIcon icon={faPaperPlane} /> Send
-              </Button>
-              <Button
-                size="sm"
-                variant="outline-dark"
-                type="button"
-                className="mr-2"
-              >
-                Save
-              </Button>
-              <Button size="sm" variant="danger" type="button">
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
-            </Col>
-          </Row>
-        </Card.Header>
-        <Form>
-          <Card.Body className="pt-3 pl-3 pr-3 pb-0">
-            <Alert
-              className={!this.state.message ? "d-none" : "d-block"}
-              variant={
-                this.state.messageType === "info"
-                  ? "success"
-                  : this.state.messageType === "warning"
-                  ? "warning"
-                  : "danger"
-              }
-            >
-              <FontAwesomeIcon
-                icon={
-                  this.state.messageType === "info"
-                    ? faCheck
-                    : this.state.messageType === "warning"
-                    ? faExclamationTriangle
-                    : faTimes
-                }
-              />{" "}
-              {this.state.message}
-            </Alert>
-            <ComposeRecipientDetails
-              updateRecipients={this.updateRecipients}
-              updateSubject={this.updateSubject}
-              recipients={this.state.recipients}
-              subject={this.state.subject}
-            />
-          </Card.Body>
-          <div className="border-top border-gray">
-            <ComposeEditorToolbar
-              updateEditorState={this.updateEditorState}
-              editorState={this.state.editorState}
-            />
-            <div className="mt-2 ml-2 mr-2 mb-2 p-3 border rounded inner-shaddow">
-              <Editor
-                customStyleMap={{
-                  link: {
-                    color: "#ff0000",
-                    textDecoration: "underline",
-                  },
-                }}
-                editorState={this.state.editorState}
-                handleKeyCommand={this.handleKeyCommand}
-                blockStyleFn={this.blockStyleFn}
-                onChange={this.updateEditorState}
-              />
-            </div>
-            <ComposeAttachments
-              updateAttachments={this.updateAttachments}
-              attachments={this.state.attachments}
-            />
-          </div>
-          <Card.Footer className="d-block d-sm-none">
+  const updateAttachments = (attachments: IComposeAttachment[]): void => {
+    setAttachments(attachments);
+  };
+
+  const updateSenderDetails = (secondaryEmailKey?: number): void => {};
+
+  return (
+    <Card className="mt-0 mt-sm-3">
+      <Card.Header>
+        <Row>
+          <Col xs={6}>
+            <h4 className="p-0 m-0 text-nowrap middle">
+              <span className="align-middle">
+                <FontAwesomeIcon icon={faFeather} /> Compose
+              </span>
+            </h4>
+          </Col>
+          <Col
+            className="d-none d-sm-block text-right text-sm-right text-nowrap"
+            xs={6}
+          >
             <Button
-              block
-              onClick={() => this.sendEmail()}
+              onClick={() => sendEmail()}
+              className="mr-2"
               variant="primary"
               type="button"
             >
               <FontAwesomeIcon icon={faPaperPlane} /> Send
             </Button>
-          </Card.Footer>
-        </Form>
-      </Card>
-    );
-  }
-}
+            <Button
+              size="sm"
+              variant="outline-dark"
+              type="button"
+              className="mr-2"
+            >
+              Save
+            </Button>
+            <Button size="sm" variant="danger" type="button">
+              <FontAwesomeIcon icon={faTrash} />
+            </Button>
+          </Col>
+        </Row>
+      </Card.Header>
+      <Form>
+        <Card.Body className="pt-3 pl-3 pr-3 pb-0">
+          <Alert
+            className={!message ? "d-none" : "d-block"}
+            variant={
+              messageType === "info"
+                ? "success"
+                : messageType === "warning"
+                ? "warning"
+                : "danger"
+            }
+          >
+            <FontAwesomeIcon
+              icon={
+                messageType === "info"
+                  ? faCheck
+                  : messageType === "warning"
+                  ? faExclamationTriangle
+                  : faTimes
+              }
+            />{" "}
+            {message}
+          </Alert>
+          {secondaryEmails && (
+            <ComposeSecondaryEmail
+              secondaryEmails={secondaryEmails}
+              updateSenderDetails={updateSenderDetails}
+            />
+          )}
+          <ComposeRecipientDetails
+            updateRecipients={updateRecipients}
+            updateSubject={updateSubject}
+            recipients={recipients}
+            subject={subject}
+          />
+        </Card.Body>
+        <div className="border-top border-gray">
+          <ComposeEditorToolbar
+            updateEditorState={updateEditorState}
+            editorState={editorState}
+          />
+          <div className="mt-2 ml-2 mr-2 mb-2 p-3 border rounded inner-shaddow">
+            <Editor
+              customStyleMap={{
+                link: {
+                  color: "#ff0000",
+                  textDecoration: "underline",
+                },
+              }}
+              editorState={editorState}
+              handleKeyCommand={handleKeyCommand}
+              blockStyleFn={blockStyleFn}
+              onChange={updateEditorState}
+            />
+          </div>
+          <ComposeAttachments
+            updateAttachments={updateAttachments}
+            attachments={attachments}
+          />
+        </div>
+        <Card.Footer className="d-block d-sm-none">
+          <Button
+            block
+            onClick={() => sendEmail()}
+            variant="primary"
+            type="button"
+          >
+            <FontAwesomeIcon icon={faPaperPlane} /> Send
+          </Button>
+        </Card.Footer>
+      </Form>
+    </Card>
+  );
+};

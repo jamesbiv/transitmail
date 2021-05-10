@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Card, ProgressBar, Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -7,7 +7,7 @@ import {
   faCheck,
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-import { ImapHelper, ImapSocket, LocalStorage, StateManager } from "classes";
+import { DependenciesContext } from "context";
 import { convertAttachments } from "lib";
 import {
   IEmail,
@@ -18,98 +18,50 @@ import {
 } from "interfaces";
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
 
-interface IViewProps {
-  dependencies: {
-    imapHelper: ImapHelper;
-    imapSocket: ImapSocket;
-    localStorage: LocalStorage;
-    stateManager: StateManager;
-  };
-}
-
-interface IViewState {
-  email?: IEmail;
-  emailFlags?: IEmailFlags;
-  progressBarNow: number;
-  message: string;
-  messageType: string;
-  showEmail: boolean;
-  actionUid?: number;
-  actionType: EViewActionType;
-  showActionModal: boolean;
-}
-
 interface IViewProgressBar {
   max: number;
   now: number;
 }
 
-export class View extends React.PureComponent<IViewProps, IViewState> {
-  /**
-   * @var {ImapHelper} imapHelper
-   */
-  protected imapHelper: ImapHelper;
+const progressBar: IViewProgressBar = { max: 0, now: 0 };
 
-  /**
-   * @var {ImapSocket} imapSocket
-   */
-  protected imapSocket: ImapSocket;
+export const View: React.FC = () => {
+  const { imapHelper, imapSocket, stateManager } = useContext(
+    DependenciesContext
+  );
 
-  /**
-   * @var {LocalStorage} localStorage
-   */
-  protected localStorage: LocalStorage;
+  const [email, setEmail] = useState<IEmail | undefined>(undefined);
+  const [emailFlags, setEmailFlags] = useState<IEmailFlags | undefined>(
+    undefined
+  );
+  const [progressBarNow, setProgressBarNow] = useState<number>(0);
+  const [message, setMessage] = useState<string>("");
+  const [messageType, setMessageType] = useState<string>("");
+  const [showEmail, setShowEmail] = useState<boolean>(false);
+  const [actionUid, setActionUid] = useState<number | undefined>(undefined);
+  const [actionType, setActionType] = useState<EViewActionType>(
+    EViewActionType.VIEW
+  );
+  const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
-  /**
-   * @var {StateManager} stateManager
-   */
-  protected stateManager: StateManager;
+  useEffect(() => {
+    (async () => {
+      if (imapSocket.getReadyState() !== 1) {
+        imapSocket.imapConnect();
+      }
 
-  /**
-   * @var {IViewProgressBar} progressBar
-   */
-  protected progressBar: IViewProgressBar;
+      await getEmail();
+    })();
+  }, []);
 
-  /**
-   * @constructor
-   * @param {IViewProps} props
-   */
-  constructor(props: IViewProps) {
-    super(props);
-
-    this.imapHelper = props.dependencies.imapHelper;
-    this.imapSocket = props.dependencies.imapSocket;
-    this.localStorage = props.dependencies.localStorage;
-    this.stateManager = props.dependencies.stateManager;
-
-    this.state = {
-      progressBarNow: 0,
-      message: "",
-      messageType: "",
-      showEmail: false,
-      actionType: EViewActionType.VIEW,
-      showActionModal: false,
-    };
-
-    this.progressBar = { max: 0, now: 0 };
-  }
-
-  componentDidMount() {
-    if (this.imapSocket.getReadyState() !== 1) {
-      this.imapSocket.imapConnect();
-    }
-
-    this.getEmail();
-  }
-
-  getEmail = async () => {
-    const folderId: string | undefined = this.stateManager.getFolderId();
+  const getEmail = async () => {
+    const folderId: string | undefined = stateManager.getFolderId();
 
     if (!folderId) {
-      this.stateManager.updateActiveKey("inbox");
+      stateManager.updateActiveKey("inbox");
     }
 
-    const selectResponse: IImapResponse = await this.imapSocket.imapRequest(
+    const selectResponse: IImapResponse = await imapSocket.imapRequest(
       `SELECT "${folderId}"`
     );
 
@@ -117,8 +69,8 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
       return;
     }
 
-    const fetchFlagsResponse: IImapResponse = await this.imapSocket.imapRequest(
-      `UID FETCH ${this.stateManager.getActiveUid()} (RFC822.SIZE FLAGS)`
+    const fetchFlagsResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID FETCH ${stateManager.getActiveUid()} (RFC822.SIZE FLAGS)`
     );
 
     if (fetchFlagsResponse.status !== EImapResponseStatus.OK) {
@@ -127,7 +79,7 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
 
     const emailFlags:
       | IEmailFlags
-      | undefined = this.imapHelper.formatFetchEmailFlagsResponse(
+      | undefined = imapHelper.formatFetchEmailFlagsResponse(
       fetchFlagsResponse.data
     );
 
@@ -135,195 +87,186 @@ export class View extends React.PureComponent<IViewProps, IViewState> {
       return;
     }
 
-    this.setState({ emailFlags });
+    setEmailFlags(emailFlags);
 
-    this.progressBar.max = emailFlags.size;
-    this.checkProgressBar();
+    progressBar.max = emailFlags.size;
 
-    const fetchEmailResponse: IImapResponse = await this.imapSocket.imapRequest(
-      `UID FETCH ${this.stateManager.getActiveUid()} RFC822`
+    checkProgressBar();
+
+    const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID FETCH ${stateManager.getActiveUid()} RFC822`
     );
 
     if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
       return;
     }
 
-    const email: IEmail = this.imapHelper.formatFetchEmailResponse(
+    const email: IEmail = imapHelper.formatFetchEmailResponse(
       fetchEmailResponse.data
     );
 
-    this.setState({ email });
+    setEmail(email);
   };
 
-  checkProgressBar = () => {
+  const checkProgressBar = () => {
     const setTimeoutMaxMs: number = 300000; // 5mins
     let setTimeoutFallback: number = 0;
 
-    this.progressBar.now = this.imapSocket.getStreamAmount();
+    progressBar.now = imapSocket.getStreamAmount();
 
     const progressBarNow: number = Math.ceil(
-      (this.progressBar.now / this.progressBar.max) * 100
+      (progressBar.now / progressBar.max) * 100
     );
 
-    this.setState({
-      progressBarNow: progressBarNow > 100 ? 100 : progressBarNow,
-    });
+    setProgressBarNow(progressBarNow > 100 ? 100 : progressBarNow);
 
     const progressBarThreshold: number =
-      this.progressBar.max - (this.progressBar.max * 5) / 100;
+      progressBar.max - (progressBar.max * 5) / 100;
 
     if (
-      progressBarThreshold > this.progressBar.now &&
+      progressBarThreshold > progressBar.now &&
       setTimeoutFallback < setTimeoutMaxMs
     ) {
       setTimeout(() => {
         setTimeoutFallback += 10;
 
-        this.checkProgressBar();
+        checkProgressBar();
       }, 10);
     } else {
       setTimeout(() => {
-        this.setState({
-          showEmail: true,
-        });
+        setShowEmail(true);
       }, 1000);
     }
   };
 
-  replyToEmail = async (all: boolean = false) => {
-    const email: IEmail | undefined = this.state.email;
-
+  const replyToEmail = async (all: boolean = false) => {
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
         | undefined = await convertAttachments(email.attachments);
 
-      this.stateManager.setComposePresets({
+      stateManager.setComposePresets({
         from: email?.from,
         subject: email?.subject,
         email: email?.bodyHtml ?? email?.bodyText ?? "",
         attachments: convertedAttachments,
       });
 
-      this.stateManager.updateActiveKey("compose");
+      stateManager.updateActiveKey("compose");
     }
   };
 
-  forwardEmail = async () => {
-    const email: IEmail | undefined = this.state.email;
-
+  const forwardEmail = async () => {
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
         | undefined = await convertAttachments(email.attachments);
 
-      this.stateManager.setComposePresets({
+      stateManager.setComposePresets({
         subject: email.subject,
         email: email.bodyHtml ?? email.bodyText ?? "",
         attachments: convertedAttachments,
       });
 
-      this.stateManager.updateActiveKey("compose");
+      stateManager.updateActiveKey("compose");
     }
   };
 
-  toggleActionModal = (actionType: EViewActionType): void => {
-    const actionUid: number | undefined = this.stateManager.getActiveUid();
+  const toggleActionModal = (actionType: EViewActionType): void => {
+    const actionUid: number | undefined = stateManager.getActiveUid();
 
-    this.setState({ actionUid, actionType, showActionModal: true });
+    setActionUid(actionUid);
+    setActionType(actionType);
+    setShowActionModal(true);
   };
 
-  render() {
-    return !this.state.showEmail ? (
-      <Card className="mt-0 mt-sm-3">
+  return !showEmail ? (
+    <Card className="mt-0 mt-sm-3">
+      <Card.Body>
+        <React.Fragment>
+          <ProgressBar className="mb-2" now={progressBarNow} />
+        </React.Fragment>
+      </Card.Body>
+    </Card>
+  ) : (
+    <React.Fragment>
+      <Card className="mt-0 mt-sm-3 mb-3">
+        <Card.Header>
+          <h4 className="p-0 m-0 text-truncate">
+            <FontAwesomeIcon icon={faEnvelopeOpen} />{" "}
+            {email?.subject?.length ? email.subject : "(no subject)"}
+          </h4>
+        </Card.Header>
+        <Card.Header>
+          <ViewHeader
+            toggleActionModal={toggleActionModal}
+            replyToEmail={replyToEmail}
+            forwardEmail={forwardEmail}
+            email={email!}
+          />
+        </Card.Header>
+        <Card.Body
+          className={`border-bottom pt-2 pb-2 pl-3 pr-3 ${
+            !email?.attachments?.length ? "d-none" : "d-block"
+          }`}
+        >
+          <ViewAttachments attachments={email!.attachments} />
+        </Card.Body>
         <Card.Body>
-          <React.Fragment>
-            <ProgressBar className="mb-2" now={this.state.progressBarNow} />
-          </React.Fragment>
+          <Alert
+            className={!message.length ? "d-none" : "d-block"}
+            variant={
+              messageType === "info"
+                ? "success"
+                : messageType === "warning"
+                ? "warning"
+                : "danger"
+            }
+          >
+            <FontAwesomeIcon
+              icon={
+                messageType === "info"
+                  ? faCheck
+                  : messageType === "warning"
+                  ? faExclamationTriangle
+                  : faTimes
+              }
+            />{" "}
+            {message}
+          </Alert>
+          {email?.bodyHtml ? (
+            <iframe
+              id="emailBody"
+              title="emailBody"
+              className="email-body"
+              frameBorder="0"
+              onLoad={() => {
+                const emailBodyFrame: HTMLIFrameElement = document.getElementById(
+                  "emailBody"
+                ) as HTMLIFrameElement;
+
+                emailBodyFrame.style.height =
+                  emailBodyFrame.contentWindow!.document.documentElement
+                    .scrollHeight + "px";
+              }}
+              srcDoc={email.bodyHtml}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <pre>{email?.bodyText}</pre>
+          )}
         </Card.Body>
       </Card>
-    ) : (
-      <React.Fragment>
-        <Card className="mt-0 mt-sm-3 mb-3">
-          <Card.Header>
-            <h4 className="p-0 m-0 text-truncate">
-              <FontAwesomeIcon icon={faEnvelopeOpen} />{" "}
-              {this.state.email?.subject?.length
-                ? this.state.email.subject
-                : "(no subject)"}
-            </h4>
-          </Card.Header>
-          <Card.Header>
-            <ViewHeader
-              toggleActionModal={this.toggleActionModal}
-              replyToEmail={this.replyToEmail}
-              forwardEmail={this.forwardEmail}
-              email={this.state.email!}
-            />
-          </Card.Header>
-          <Card.Body
-            className={`border-bottom pt-2 pb-2 pl-3 pr-3 ${
-              !this.state.email?.attachments?.length ? "d-none" : "d-block"
-            }`}
-          >
-            <ViewAttachments attachments={this.state.email!.attachments} />
-          </Card.Body>
-          <Card.Body>
-            <Alert
-              className={!this.state.message.length ? "d-none" : "d-block"}
-              variant={
-                this.state.messageType === "info"
-                  ? "success"
-                  : this.state.messageType === "warning"
-                  ? "warning"
-                  : "danger"
-              }
-            >
-              <FontAwesomeIcon
-                icon={
-                  this.state.messageType === "info"
-                    ? faCheck
-                    : this.state.messageType === "warning"
-                    ? faExclamationTriangle
-                    : faTimes
-                }
-              />{" "}
-              {this.state.message}
-            </Alert>
-            {this.state.email?.bodyHtml ? (
-              <iframe
-                id="emailBody"
-                title="emailBody"
-                className="email-body"
-                frameBorder="0"
-                onLoad={() => {
-                  const emailBodyFrame: HTMLIFrameElement = document.getElementById(
-                    "emailBody"
-                  ) as HTMLIFrameElement;
-
-                  emailBodyFrame.style.height =
-                    emailBodyFrame.contentWindow!.document.documentElement
-                      .scrollHeight + "px";
-                }}
-                srcDoc={this.state.email.bodyHtml}
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <pre>{this.state.email?.bodyText}</pre>
-            )}
-          </Card.Body>
-        </Card>
-        <ViewActions
-          actionUid={this.state.actionUid}
-          actionType={this.state.actionType}
-          email={this.state.email!}
-          emailFlags={this.state.emailFlags!}
-          showActionModal={this.state.showActionModal}
-          imapHelper={this.imapHelper}
-          imapSocket={this.imapSocket}
-          onHide={() => this.setState({ showActionModal: false })}
-        />
-      </React.Fragment>
-    );
-  }
-}
+      <ViewActions
+        actionUid={actionUid}
+        actionType={actionType}
+        email={email!}
+        emailFlags={emailFlags!}
+        showActionModal={showActionModal}
+        imapHelper={imapHelper}
+        imapSocket={imapSocket}
+        onHide={() => setShowActionModal(false)}
+      />
+    </React.Fragment>
+  );
+};

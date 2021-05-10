@@ -1,5 +1,4 @@
-import React from "react";
-import { ImapHelper, ImapSocket, LocalStorage, StateManager } from "classes";
+import React, { useContext, useEffect, useState } from "react";
 import { IFoldersEntry } from "interfaces";
 import { FoldersEntry, FoldersEntryActions, EFolderEntryActionType } from ".";
 import { Card, Col, Accordion, Spinner, Button, Row } from "react-bootstrap";
@@ -9,172 +8,133 @@ import {
   faPlus,
   faSync,
 } from "@fortawesome/free-solid-svg-icons";
+import { DependenciesContext } from "context";
 
-interface IFoldersProps {
-  dependencies: {
-    imapHelper: ImapHelper;
-    imapSocket: ImapSocket;
-    localStorage: LocalStorage;
-    stateManager: StateManager;
-  };
-}
+export const Folders: React.FC = () => {
+  const { imapHelper, imapSocket, stateManager } = useContext(
+    DependenciesContext
+  );
 
-interface IFoldersState {
-  folders: IFoldersEntry[];
-  activeFolderId?: string;
-  actionFolderId?: string;
-  actionType: EFolderEntryActionType;
-  showActionModal: boolean;
-}
+  const [folders, setFolders] = useState<IFoldersEntry[] | undefined>(
+    undefined
+  );
 
-export class Folders extends React.PureComponent<IFoldersProps, IFoldersState> {
-  /**
-   * @var {ImapSocket} imapSocket
-   */
-  protected imapSocket: ImapSocket;
+  const [activeFolderId, setActiveFolderId] = useState<string | undefined>(
+    undefined
+  );
 
-  /**
-   * @var {ImapHelper} imapHelper
-   */
-  protected imapHelper: ImapHelper;
+  const [actionFolderId, setActionFolderId] = useState<string | undefined>(
+    undefined
+  );
 
-  /**
-   * @var {LocalStorage} localStorage
-   */
-  protected localStorage: LocalStorage;
+  const [actionType, setActionType] = useState<EFolderEntryActionType>(
+    EFolderEntryActionType.ADD
+  );
 
-  /**
-   * @var {StateManager} stateManager
-   */
-  protected stateManager: StateManager;
+  const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
-  constructor(props: IFoldersProps) {
-    super(props);
+  useEffect(() => {
+    (async () => {
+      if (imapSocket.getReadyState() !== 1) {
+        imapSocket.imapConnect();
+      }
 
-    this.imapSocket = props.dependencies.imapSocket;
-    this.imapHelper = props.dependencies.imapHelper;
-    this.localStorage = props.dependencies.localStorage;
-    this.stateManager = props.dependencies.stateManager;
+      await updateFolders();
+    })();
+  }, []);
 
-    this.state = {
-      folders: [],
-      actionType: EFolderEntryActionType.ADD,
-      showActionModal: false,
-    };
+  const updateFolders = async (): Promise<void> => {
+    const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
-    this.getFolders = this.getFolders.bind(this);
-  }
-
-  componentDidMount() {
-    if (this.imapSocket.getReadyState() !== 1) {
-      this.imapSocket.imapConnect();
-    }
-
-    this.getFolders();
-  }
-
-  async getFolders(): Promise<void> {
-    const listResponse = await this.imapSocket.imapRequest(`LIST "" "*"`);
-
-    const folders: IFoldersEntry[] = this.imapHelper.formatListFoldersResponse(
+    const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
       listResponse.data
     );
 
-    this.setState({ folders });
-  }
-
-  updateFolders(): void {
-    this.setState({ folders: [] });
-    this.getFolders();
-  }
-
-  updateActiveKeyFolderId = (activeKey: string, folderId: string): void => {
-    this.stateManager.setFolderId(folderId);
-    this.stateManager.updateActiveKey(activeKey);
+    setFolders(folders);
   };
 
-  toggleActionModal = (
+  const updateActiveKeyFolderId = (
+    activeKey: string,
+    folderId: string
+  ): void => {
+    stateManager.setFolderId(folderId);
+    stateManager.updateActiveKey(activeKey);
+  };
+
+  const toggleActionModal = (
     actionType: EFolderEntryActionType,
     actionFolderId?: string
   ): void => {
-    this.setState({ actionFolderId, actionType, showActionModal: true });
+    setActionFolderId(actionFolderId);
+    setActionType(actionType), setShowActionModal(true);
   };
 
-  render() {
-    return (
-      <React.Fragment>
-        <Card className="mt-0 mt-sm-3 mb-3">
-          <Card.Header>
-            <Row>
-              <Col xs={12} sm={6}>
-                <h4 className="p-0 m-0 text-nowrap">
-                  <FontAwesomeIcon icon={faFolderOpen} /> Folders
-                  <Button
-                    className="ml-2 float-right float-sm-none"
-                    onClick={() => this.updateFolders()}
-                    size="sm"
-                    variant="primary"
-                    type="button"
-                  >
-                    <FontAwesomeIcon
-                      icon={faSync}
-                      spin={!this.state.folders.length}
-                    />
-                  </Button>
-                </h4>
-              </Col>
-              <Col
-                className="text-right text-sm-right text-nowrap mt-3 mt-sm-0"
-                xs={12}
-                sm={6}
-              >
+  return (
+    <React.Fragment>
+      <Card className="mt-0 mt-sm-3 mb-3">
+        <Card.Header>
+          <Row>
+            <Col xs={12} sm={6}>
+              <h4 className="p-0 m-0 text-nowrap">
+                <FontAwesomeIcon icon={faFolderOpen} /> Folders
                 <Button
+                  className="ml-2 float-right float-sm-none"
+                  onClick={() => updateFolders()}
                   size="sm"
-                  variant="outline-dark"
+                  variant="primary"
                   type="button"
-                  onClick={() =>
-                    this.toggleActionModal(EFolderEntryActionType.ADD)
-                  }
                 >
-                  <FontAwesomeIcon icon={faPlus} /> Add Folder
+                  <FontAwesomeIcon icon={faSync} spin={!folders?.length} />
                 </Button>
-              </Col>
-            </Row>
-          </Card.Header>
-          <Spinner
-            className={`mt-3 mb-3 ml-auto mr-auto ${
-              this.state.folders.length ? "d-none" : ""
-            }`}
-            animation="grow"
-            variant="dark"
-          />
-          <Accordion
-            onSelect={(id: string | null) =>
-              this.setState({ activeFolderId: id ?? undefined })
-            }
-            className={!this.state.folders.length ? "d-none" : ""}
-          >
-            {this.state.folders.map((folderEntry: IFoldersEntry) => (
-              <FoldersEntry
-                folderEntry={folderEntry}
-                key={folderEntry.id}
-                activeFolderId={this.state.activeFolderId}
-                toggleActionModal={this.toggleActionModal}
-                updateActiveKeyFolderId={this.updateActiveKeyFolderId}
-              />
-            ))}
-          </Accordion>
-        </Card>
-        <FoldersEntryActions
-          folderId={this.state.actionFolderId}
-          folders={this.state.folders}
-          actionType={this.state.actionType}
-          showActionModal={this.state.showActionModal}
-          imapSocket={this.imapSocket}
-          getFolders={this.getFolders}
-          onHide={() => this.setState({ showActionModal: false })}
+              </h4>
+            </Col>
+            <Col
+              className="text-right text-sm-right text-nowrap mt-3 mt-sm-0"
+              xs={12}
+              sm={6}
+            >
+              <Button
+                size="sm"
+                variant="outline-dark"
+                type="button"
+                onClick={() => toggleActionModal(EFolderEntryActionType.ADD)}
+              >
+                <FontAwesomeIcon icon={faPlus} /> Add Folder
+              </Button>
+            </Col>
+          </Row>
+        </Card.Header>
+        <Spinner
+          className={`mt-3 mb-3 ml-auto mr-auto ${
+            folders?.length ? "d-none" : ""
+          }`}
+          animation="grow"
+          variant="dark"
         />
-      </React.Fragment>
-    );
-  }
-}
+        <Accordion
+          onSelect={(id: string | null) => setActiveFolderId(id ?? undefined)}
+          className={!folders?.length ? "d-none" : ""}
+        >
+          {folders?.map((folderEntry: IFoldersEntry) => (
+            <FoldersEntry
+              folderEntry={folderEntry}
+              key={folderEntry.id}
+              activeFolderId={activeFolderId}
+              toggleActionModal={toggleActionModal}
+              updateActiveKeyFolderId={updateActiveKeyFolderId}
+            />
+          ))}
+        </Accordion>
+      </Card>
+      <FoldersEntryActions
+        folderId={actionFolderId}
+        folders={folders}
+        actionType={actionType}
+        showActionModal={showActionModal}
+        imapSocket={imapSocket}
+        getFolders={updateFolders}
+        onHide={() => setShowActionModal(false)}
+      />
+    </React.Fragment>
+  );
+};

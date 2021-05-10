@@ -2,36 +2,34 @@ import React from "react";
 import { Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
-import { IMessageModalData } from "interfaces";
+import { IMessageModalState } from "interfaces";
 
 interface IMessageModalProps {
-  messageModalShow: boolean;
-  messageModalData?: IMessageModalData;
+  messageModalState: IMessageModalState;
   onHide: () => void;
 }
 
 export const MessageModal: React.FC<IMessageModalProps> = ({
-  messageModalShow,
-  messageModalData,
+  messageModalState,
   onHide,
 }) => {
   return (
     <Modal
-      show={messageModalShow}
+      show={messageModalState.show}
       centered={true}
       aria-labelledby="contained-modal-title-vcenter"
     >
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={faExclamationTriangle} />{" "}
-          {messageModalData?.title}
+          {messageModalState.title}
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body>{messageModalData?.content}</Modal.Body>
+      <Modal.Body>{messageModalState.content}</Modal.Body>
       <Modal.Footer>
         <Button
           onClick={() => {
-            messageModalData?.action();
+            messageModalState.action();
             onHide();
           }}
         >

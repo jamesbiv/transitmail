@@ -8,37 +8,35 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 interface ISettingsValidationProps {
-  message?: string;
-  messageType?: string;
+  validation?: { message: string; type: string };
 }
 
 export const SettingsValidation: React.FC<ISettingsValidationProps> = ({
-  message,
-  messageType,
+  validation,
 }) => {
   return (
     <Alert
-      className={!message?.length ? "d-none" : "d-block"}
+      className={!validation ? "d-none" : "d-block"}
       variant={
-        messageType === "info"
+        validation?.type === "info"
           ? "success"
-          : messageType === "warning"
+          : validation?.type === "warning"
           ? "warning"
           : "danger"
       }
     >
       <FontAwesomeIcon
         icon={
-          messageType === "info"
+          validation?.type === "info"
             ? faCheck
-            : messageType === "warning"
+            : validation?.type === "warning"
             ? faExclamationTriangle
             : faTimes
         }
       />{" "}
       <span
         dangerouslySetInnerHTML={{
-          __html: message ?? "",
+          __html: validation?.message ?? "",
         }}
       />
     </Alert>

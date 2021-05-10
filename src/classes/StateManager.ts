@@ -1,4 +1,9 @@
-import { IComposePresets, IFolderEmail, IMessageModalData } from "interfaces";
+import {
+  IComposePresets,
+  IFolderEmail,
+  IMessageModalState,
+  ISliderState,
+} from "interfaces";
 
 interface IFolderEmails {
   emails?: IFolderEmail[];
@@ -6,11 +11,10 @@ interface IFolderEmails {
 }
 
 type TIndexState = {
-  sliderAction: boolean;
+  sliderState: ISliderState;
+  setSliderState: React.Dispatch<ISliderState>;
   setActiveKey: React.Dispatch<string>;
-  setSliderAction: React.Dispatch<boolean>;
-  setMessageModalData: React.Dispatch<IMessageModalData>;
-  setShowMessageModal: React.Dispatch<boolean>;
+  setMessageModalState: React.Dispatch<IMessageModalState>;
 };
 
 export class StateManager {
@@ -51,8 +55,13 @@ export class StateManager {
 
     this.indexState.setActiveKey(activeKey);
 
-    if (this.indexState.sliderAction) {
-      this.indexState.setSliderAction(false);
+    const sliderState: ISliderState = this.indexState.sliderState;
+
+    if (sliderState) {
+      this.indexState.setSliderState({
+        sliderAction: false,
+        sliderInitalDisplay: false,
+      });
     }
   }
 
@@ -124,12 +133,11 @@ export class StateManager {
 
   /**
    * @name showMessageModal
-   * @param {string} messageModalData
+   * @param {IMessageModalState} messageModalState
    * @returns void
    */
-  public showMessageModal(messageModalData: IMessageModalData): void {
-    this.indexState.setMessageModalData(messageModalData);
-    this.indexState.setShowMessageModal(true);
+  public showMessageModal(messageModalState: IMessageModalState): void {
+    this.indexState.setMessageModalState({ ...messageModalState, show: true });
   }
 
   /**
