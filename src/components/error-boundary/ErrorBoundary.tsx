@@ -1,7 +1,7 @@
 import React, { ErrorInfo } from "react";
 import { StateManager } from "classes";
+import { DependenciesContext } from "contexts";
 import Spinner from "react-bootstrap/Spinner";
-import { DependenciesContext, IDependencies } from "context";
 
 interface IErrorBoundaryProps {}
 
@@ -14,20 +14,18 @@ export class ErrorBoundary extends React.PureComponent<
   IErrorBoundaryState
 > {
   /**
-   * @var {} contextType
+   * @var {DependenciesContext} contextType
    */
   static contextType = DependenciesContext;
 
   /**
    * @var {StateManager} stateManager
    */
-  protected stateManager: StateManager = {} as StateManager;
+  protected stateManager!: StateManager;
 
   constructor(props: IErrorBoundaryProps) {
     super(props);
-    //this.stateManager = this.context.stateManager;
-    console.log(this.context);
- 
+
     this.state = { hasError: false };
   }
 
@@ -36,6 +34,8 @@ export class ErrorBoundary extends React.PureComponent<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.stateManager = this.context.stateManager;
+
     if (error.message.includes("WebSocket")) {
       const MessageModalState = {
         title: "Invalid connection settings",

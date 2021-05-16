@@ -22,13 +22,13 @@ import {
 import { ComposeEditorLinkOverlay } from ".";
 
 interface IComposeEditorToolbarProps {
-  updateEditorState: (arg0: EditorState) => void;
   editorState: EditorState;
+  setEditorState: React.Dispatch<EditorState>;
 }
 
 export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
-  updateEditorState,
   editorState,
+  setEditorState
 }) => {
   const linkButtonTarget: React.RefObject<HTMLButtonElement> = React.useRef<HTMLButtonElement>(
     null
@@ -37,11 +37,11 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
   const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {
-    updateEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
+    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
   };
 
   const toggleBlockType: (blockType: string) => void = (blockType) => {
-    updateEditorState(RichUtils.toggleBlockType(editorState, blockType));
+    setEditorState(RichUtils.toggleBlockType(editorState, blockType));
   };
 
   const checkBlockType: (blockType: string) => boolean = (blockType) => {
@@ -62,11 +62,11 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   };
 
   const undoClick: () => void = () => {
-    updateEditorState(EditorState.undo(editorState));
+    setEditorState(EditorState.undo(editorState));
   };
 
   const redoClick: () => void = () => {
-    updateEditorState(EditorState.redo(editorState));
+    setEditorState(EditorState.redo(editorState));
   };
 
   return (
@@ -213,7 +213,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           showLinkOverlay={showLinkOverlay}
           toggleLinkOverlay={toggleLinkOverlay}
           overlayTarget={linkButtonTarget}
-          updateEditorState={updateEditorState}
+          setEditorState={setEditorState}
           editorState={editorState}
         />
       </ButtonGroup>

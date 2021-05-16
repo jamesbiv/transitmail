@@ -13,7 +13,7 @@ import {
   MessageModal,
   Logout,
 } from "components";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
 import {

@@ -14,13 +14,13 @@ import { IComposeAttachment } from "interfaces";
 import { MimeTools } from "lib";
 
 interface IComposeAttachmentProps {
-  updateAttachments: (attachments: IComposeAttachment[]) => void;
   attachments: IComposeAttachment[];
+  setAttachments: React.Dispatch<IComposeAttachment[]>;
 }
 
 export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
-  updateAttachments,
   attachments,
+  setAttachments,
 }) => {
   const loadAttachments: (
     event: React.ChangeEvent<HTMLInputElement>
@@ -43,7 +43,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
         });
 
         if (files?.length === count) {
-          updateAttachments(attachments);
+          setAttachments([...attachments]);
         }
       };
 
@@ -68,12 +68,12 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
     }
   };
 
-  const removeAttachment: (id: number) => void = (id) => {
-    attachments = attachments.filter((attachment: IComposeAttachment) => {
-      return attachment.id !== id;
-    });
+  const removeAttachment: (attachmentId: number) => void = (attachmentId) => {
+    const updatedAttachments: IComposeAttachment[] = attachments.filter(
+      (attachment: IComposeAttachment) => attachment.id !== attachmentId
+    );
 
-    updateAttachments(attachments);
+    setAttachments(updatedAttachments);
   };
 
   const AttachmentInput: () => JSX.Element = () => (

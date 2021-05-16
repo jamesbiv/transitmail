@@ -7,7 +7,7 @@ import {
   faCheck,
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 import { convertAttachments } from "lib";
 import {
   IEmail,
@@ -34,10 +34,14 @@ export const View: React.FC = () => {
   const [emailFlags, setEmailFlags] = useState<IEmailFlags | undefined>(
     undefined
   );
+
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
+
   const [message, setMessage] = useState<string>("");
   const [messageType, setMessageType] = useState<string>("");
+
   const [showEmail, setShowEmail] = useState<boolean>(false);
+
   const [actionUid, setActionUid] = useState<number | undefined>(undefined);
   const [actionType, setActionType] = useState<EViewActionType>(
     EViewActionType.VIEW
@@ -54,7 +58,7 @@ export const View: React.FC = () => {
     })();
   }, []);
 
-  const getEmail = async () => {
+  const getEmail = async (): Promise<void> => {
     const folderId: string | undefined = stateManager.getFolderId();
 
     if (!folderId) {
@@ -108,7 +112,7 @@ export const View: React.FC = () => {
     setEmail(email);
   };
 
-  const checkProgressBar = () => {
+  const checkProgressBar = (): void => {
     const setTimeoutMaxMs: number = 300000; // 5mins
     let setTimeoutFallback: number = 0;
 
@@ -139,7 +143,7 @@ export const View: React.FC = () => {
     }
   };
 
-  const replyToEmail = async (all: boolean = false) => {
+  const replyToEmail = async (all: boolean = false): Promise<void> => {
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
@@ -156,7 +160,7 @@ export const View: React.FC = () => {
     }
   };
 
-  const forwardEmail = async () => {
+  const forwardEmail = async (): Promise<void> => {
     if (email) {
       const convertedAttachments:
         | IComposeAttachment[]
@@ -263,8 +267,6 @@ export const View: React.FC = () => {
         email={email!}
         emailFlags={emailFlags!}
         showActionModal={showActionModal}
-        imapHelper={imapHelper}
-        imapSocket={imapSocket}
         onHide={() => setShowActionModal(false)}
       />
     </React.Fragment>

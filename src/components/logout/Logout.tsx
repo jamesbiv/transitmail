@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { ImapSocket, SmtpSocket } from "classes";
 import { Card } from "react-bootstrap";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 
 export const Logout: React.FC = () => {
   const { imapSocket, smtpSocket } = useContext(DependenciesContext);

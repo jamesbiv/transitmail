@@ -19,6 +19,7 @@ export * from "./IImapResponse";
 export * from "./IImapResponseData";
 export * from "./IImapSession";
 export * from "./IImapSettings";
+export * from "./IInfiniteScrollHandler";
 export * from "./IMessageModalState";
 export * from "./ISettings";
 export * from "./ISettingsErrors";

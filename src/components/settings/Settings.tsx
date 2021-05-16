@@ -11,7 +11,7 @@ import {
   ISettingsErrors,
   ISettingsFolders,
 } from "interfaces";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 
 export const Settings: React.FC = () => {
   const { imapHelper, imapSocket, localStorage } = useContext(
@@ -37,7 +37,7 @@ export const Settings: React.FC = () => {
 
   const settings = Object.assign(settingsDefault, localStorage.getSettings());
 
-  const saveSettings = () => {
+  const saveSettings = (): void => {
     const emailRegex: RegExp = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     const validationErrors: ISettingsErrors = {};

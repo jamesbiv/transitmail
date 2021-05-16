@@ -10,28 +10,25 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IFolderEmail, IFolderLongPress } from "interfaces";
 
-interface IFolderEmailEntryProps {
-  email: IFolderEmail;
-  toggleSelection: (uid: number) => void;
+interface IFolderEmailActions {
   viewEmail: (uid: number) => void;
   replyToEmail: (uid: number) => void;
   forwardEmail: (uid: number) => void;
   deleteEmail: (uid: number) => void;
+}
+
+interface IFolderEmailEntryProps {
+  email: IFolderEmail;
+  toggleSelection: (uid: number) => void;
+  folderEmailActions: IFolderEmailActions;
   folderLongPress: IFolderLongPress;
-  handleLongPress: (uid: number) => void;
-  handleLongRelease: () => void;
 }
 
 export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
   email,
   toggleSelection,
-  viewEmail,
-  replyToEmail,
-  forwardEmail,
-  deleteEmail,
+  folderEmailActions,
   folderLongPress,
-  handleLongPress,
-  handleLongRelease,
 }) => {
   return (
     <Row
@@ -65,11 +62,11 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         md={2}
         lg={2}
         className="text-truncate pl-3 pl-sm-0"
-        onTouchStart={() => handleLongPress(email.uid)}
-        onTouchEnd={() => handleLongRelease()}
+        onTouchStart={() => folderLongPress.handleLongPress(email.uid)}
+        onTouchEnd={() => folderLongPress.handleLongRelease()}
         onClick={() => {
           if (!folderLongPress.isReturned) {
-            viewEmail(email.uid);
+            folderEmailActions.viewEmail(email.uid);
           } else {
             folderLongPress.isReturned = false;
           }
@@ -85,11 +82,11 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         md={2}
         lg={2}
         className="text-truncate pl-3 pl-sm-0"
-        onTouchStart={() => handleLongPress(email.uid)}
-        onTouchEnd={() => handleLongRelease()}
+        onTouchStart={() => folderLongPress.handleLongPress(email.uid)}
+        onTouchEnd={() => folderLongPress.handleLongRelease()}
         onClick={() => {
           if (!folderLongPress.isReturned) {
-            viewEmail(email.uid);
+            folderEmailActions.viewEmail(email.uid);
           } else {
             folderLongPress.isReturned = false;
           }
@@ -107,16 +104,28 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           size="sm"
           aria-label=""
         >
-          <Button variant="primary" onClick={() => viewEmail(email.uid)}>
+          <Button
+            variant="primary"
+            onClick={() => folderEmailActions.viewEmail(email.uid)}
+          >
             <FontAwesomeIcon icon={faEnvelopeOpen} />
           </Button>
-          <Button variant="success" onClick={() => replyToEmail(email.uid)}>
+          <Button
+            variant="success"
+            onClick={() => folderEmailActions.replyToEmail(email.uid)}
+          >
             <FontAwesomeIcon icon={faReply} />
           </Button>
-          <Button variant="success" onClick={() => forwardEmail(email.uid)}>
+          <Button
+            variant="success"
+            onClick={() => folderEmailActions.forwardEmail(email.uid)}
+          >
             <FontAwesomeIcon icon={faShare} />
           </Button>
-          <Button variant="danger" onClick={() => deleteEmail(email.uid)}>
+          <Button
+            variant="danger"
+            onClick={() => folderEmailActions.deleteEmail(email.uid)}
+          >
             <FontAwesomeIcon icon={faTrash} />
           </Button>
         </ButtonGroup>
@@ -133,11 +142,11 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         sm={0}
         md={0}
         lg={0}
-        onTouchStart={() => handleLongPress(email.uid)}
-        onTouchEnd={() => handleLongRelease()}
+        onTouchStart={() => folderLongPress.handleLongPress(email.uid)}
+        onTouchEnd={() => folderLongPress.handleLongRelease()}
         onClick={() => {
           if (!folderLongPress.isReturned) {
-            viewEmail(email.uid);
+            folderEmailActions.viewEmail(email.uid);
           } else {
             folderLongPress.isReturned = false;
           }

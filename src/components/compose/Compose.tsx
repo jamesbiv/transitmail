@@ -35,7 +35,7 @@ import {
   ISettingsSecondaryEmail,
 } from "interfaces";
 import { ESmtpResponseStatus } from "interfaces";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 import { EmailComposer } from "classes";
 
 export const Compose: React.FC = () => {
@@ -54,10 +54,14 @@ export const Compose: React.FC = () => {
   const [recipients, setRecipients] = useState<IComposeRecipient[]>([
     { id: 1, type: "To", value: "" },
   ]);
+
   const [attachments, setAttachments] = useState<IComposeAttachment[]>([]);
+
   const [content, setContent] = useState<string>("");
+
   const [message, setMessage] = useState<string | undefined>(undefined);
   const [messageType, setMessageType] = useState<string | undefined>(undefined);
+
   const [secondaryEmails, setSecondaryEmails] = useState<
     ISettingsSecondaryEmail[]
   >(localStorage.getSetting("secondaryEmails"));
@@ -227,22 +231,6 @@ export const Compose: React.FC = () => {
     }
   };
 
-  const updateEditorState = (editorState: EditorState): void => {
-    setEditorState(editorState);
-  };
-
-  const updateRecipients = (recipients: IComposeRecipient[]): void => {
-    setRecipients(recipients);
-  };
-
-  const updateSubject = (subject: string): void => {
-    setSubject(subject);
-  };
-
-  const updateAttachments = (attachments: IComposeAttachment[]): void => {
-    setAttachments(attachments);
-  };
-
   const updateSenderDetails = (secondaryEmailKey?: number): void => {};
 
   return (
@@ -312,16 +300,16 @@ export const Compose: React.FC = () => {
             />
           )}
           <ComposeRecipientDetails
-            updateRecipients={updateRecipients}
-            updateSubject={updateSubject}
             recipients={recipients}
             subject={subject}
+            setRecipients={setRecipients}
+            setSubject={setSubject}
           />
         </Card.Body>
         <div className="border-top border-gray">
           <ComposeEditorToolbar
-            updateEditorState={updateEditorState}
             editorState={editorState}
+            setEditorState={setEditorState}
           />
           <div className="mt-2 ml-2 mr-2 mb-2 p-3 border rounded inner-shaddow">
             <Editor
@@ -334,12 +322,12 @@ export const Compose: React.FC = () => {
               editorState={editorState}
               handleKeyCommand={handleKeyCommand}
               blockStyleFn={blockStyleFn}
-              onChange={updateEditorState}
+              onChange={setEditorState}
             />
           </div>
           <ComposeAttachments
-            updateAttachments={updateAttachments}
             attachments={attachments}
+            setAttachments={setAttachments}
           />
         </div>
         <Card.Footer className="d-block d-sm-none">

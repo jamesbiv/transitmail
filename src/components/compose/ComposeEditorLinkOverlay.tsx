@@ -8,8 +8,8 @@ interface IComposeEditorLinkOverlayProps {
   editorState: EditorState;
   showLinkOverlay: boolean;
   overlayTarget: React.RefObject<HTMLButtonElement>;
-  toggleLinkOverlay: React.Dispatch<React.SetStateAction<boolean>>;
-  updateEditorState: (arg0: EditorState) => void;
+  toggleLinkOverlay: React.Dispatch<boolean>;
+  setEditorState: React.Dispatch<EditorState>;
 }
 
 export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> = ({
@@ -17,7 +17,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
   showLinkOverlay,
   overlayTarget,
   toggleLinkOverlay,
-  updateEditorState,
+  setEditorState,
 }) => {
   const updateLink: (url: string) => void = (url) => {
     const contentState: ContentState = editorState.getCurrentContent();
@@ -31,7 +31,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
       currentContent: contentStateWithEntity,
     });
 
-    updateEditorState(
+    setEditorState(
       RichUtils.toggleLink(
         newEditorState,
         newEditorState.getSelection(),
@@ -44,7 +44,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
     const selection: SelectionState = editorState.getSelection();
 
     if (!selection.isCollapsed()) {
-      updateEditorState(RichUtils.toggleLink(editorState, selection, null));
+      setEditorState(RichUtils.toggleLink(editorState, selection, null));
     }
   };
 

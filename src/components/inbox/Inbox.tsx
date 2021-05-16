@@ -1,4 +1,4 @@
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 import React, { useContext } from "react";
 import { Folder } from "../folder";
 

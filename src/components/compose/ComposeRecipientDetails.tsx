@@ -15,20 +15,69 @@ import { IComposeRecipient } from "interfaces";
 interface IComposeRecipientDetailsProps {
   recipients: IComposeRecipient[];
   subject?: string;
-  updateRecipients: (recipients: IComposeRecipient[]) => void;
-  updateSubject: (subject: string) => void;
+  setRecipients: React.Dispatch<IComposeRecipient[]>;
+  setSubject: React.Dispatch<string | undefined>;
 }
 
 export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = ({
-  updateRecipients,
-  updateSubject,
   recipients,
   subject,
+  setRecipients,
+  setSubject,
 }) => {
+  const updateRecipientType = (type: string, recipientKey: number): void => {
+    const updatedRecipients: IComposeRecipient[] = [...recipients];
+
+    if (updatedRecipients[recipientKey]) {
+      updatedRecipients[recipientKey].type = type;
+
+      setRecipients(updatedRecipients);
+    }
+  };
+
+  const updateRecipientValue = (value: string, recipientKey: number): void => {
+    const updatedRecipients: IComposeRecipient[] = [...recipients];
+
+    if (updatedRecipients[recipientKey]) {
+      updatedRecipients[recipientKey].value = value;
+
+      setRecipients(updatedRecipients);
+    }
+  };
+
+  const addRecipient = (): void => {
+    const updatedRecipients: IComposeRecipient[] = [...recipients];
+    const updatedRecipientsLength: number = updatedRecipients.length;
+
+    const lastRecipientId: number =
+      updatedRecipients[updatedRecipientsLength - 1].id;
+
+    updatedRecipients.push({
+      id: lastRecipientId + 1,
+      type: updatedRecipientsLength >= 1 ? "Bcc" : "Cc",
+      value: "",
+    });
+
+    setRecipients(updatedRecipients);
+  };
+
+  const deleteRecipient = (deleteRecipientKey: number): void => {
+    const updatedRecipients: IComposeRecipient[] = recipients.filter(
+      (recipient: IComposeRecipient, recipientKey: number) =>
+        recipientKey !== deleteRecipientKey
+    );
+
+    if (updatedRecipients.length === 1) {
+      updatedRecipients[0].type = "To";
+    }
+
+    setRecipients(updatedRecipients);
+  };
+
   return (
     <React.Fragment>
-      {recipients.map((recipient: IComposeRecipient, key: number) => (
-        <Form.Group as={Row} key={key} controlId="formComposeTo">
+      {recipients.map((recipient: IComposeRecipient, recipientKey: number) => (
+        <Form.Group as={Row} key={recipientKey} controlId="formComposeTo">
           <Form.Label column xs={4} sm={2} className="pt-0">
             <DropdownButton
               size="sm"
@@ -36,16 +85,14 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
               id={recipient.id.toString()}
               title={recipient.type}
             >
-              {["To", "Cc", "Bcc"].map((item: string) => (
+              {["To", "Cc", "Bcc"].map((recipientType: string) => (
                 <Dropdown.Item
-                  key={item}
-                  onClick={() => {
-                    recipients[key].type = item;
-
-                    updateRecipients(recipients);
-                  }}
+                  key={recipientType}
+                  onClick={() =>
+                    updateRecipientType(recipientType, recipientKey)
+                  }
                 >
-                  {item}
+                  {recipientType}
                 </Dropdown.Item>
               ))}
             </DropdownButton>
@@ -57,11 +104,9 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                 type="text"
                 placeholder="Enter email address"
                 defaultValue={recipient.value}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                  recipients[key].value = event.target.value;
-
-                  updateRecipients(recipients);
-                }}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  updateRecipientValue(event.target.value, recipientKey)
+                }
               />
               <InputGroup.Append>
                 {recipients.length > 1 && (
@@ -71,40 +116,19 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                     variant="outline-danger"
                     className="border"
                     type="button"
-                    onClick={() => {
-                      // maybe change to splice
-                      recipients = recipients.filter(
-                        (
-                          recipientEntry: IComposeRecipient,
-                          recipientKey: number
-                        ) => recipientKey !== key
-                      );
-
-                      if (recipients.length === 1) {
-                        recipients[0].type = "To";
-                      }
-
-                      updateRecipients(recipients);
-                    }}
+                    onClick={() => deleteRecipient(recipientKey)}
                   >
                     <FontAwesomeIcon icon={faTrash} />{" "}
                   </Button>
                 )}
-                {((key === 0 && recipients.length === 1) ||
-                  key === recipients.length - 1) && (
+                {((recipientKey === 0 && recipients.length === 1) ||
+                  recipientKey === recipients.length - 1) && (
                   <Button
                     size="sm"
                     className="border"
                     variant="light"
                     type="button"
-                    onClick={() => {
-                      recipients.push({
-                        id: recipient.id + 1,
-                        type: key >= 1 ? "Bcc" : "Cc",
-                      });
-
-                      updateRecipients(recipients);
-                    }}
+                    onClick={() => addRecipient()}
                   >
                     <FontAwesomeIcon icon={faPlus} />{" "}
                     <span className="d-none d-sm-inline-block">Add</span>
@@ -127,7 +151,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
             defaultValue={subject}
             placeholder="Enter email subject"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              updateSubject(event.target.value)
+              setSubject(event.target.value)
             }
           />
         </Col>

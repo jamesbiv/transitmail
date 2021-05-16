@@ -8,7 +8,7 @@ import {
   faPlus,
   faSync,
 } from "@fortawesome/free-solid-svg-icons";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 
 export const Folders: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(

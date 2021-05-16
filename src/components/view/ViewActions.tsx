@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Alert, Form, Modal, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,7 +10,7 @@ import {
   faCode,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { ImapSocket, ImapHelper } from "classes";
+import { ImapSocket } from "classes";
 import {
   EImapResponseStatus,
   IEmail,
@@ -20,15 +20,14 @@ import {
   IFoldersSubEntry,
   IImapResponse,
 } from "interfaces";
+import { DependenciesContext } from "contexts";
 
 interface IViewActionsProps {
   actionUid?: number;
   actionType: EViewActionType;
+  showActionModal: boolean;
   email: IEmail;
   emailFlags: IEmailFlags;
-  showActionModal: boolean;
-  imapHelper: ImapHelper;
-  imapSocket: ImapSocket;
   onHide: () => void;
 }
 
@@ -57,10 +56,10 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
   email,
   emailFlags,
   showActionModal,
-  imapHelper,
-  imapSocket,
   onHide,
 }) => {
+  const { imapHelper, imapSocket } = useContext(DependenciesContext);
+
   const [submit, changeSubmit] = useState(false);
   const [folders, updateFolders] = useState<IFoldersEntry[]>([]);
 
@@ -174,7 +173,7 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<
     string | undefined
-  >();
+  >(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -241,7 +240,7 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<
     string | undefined
-  >();
+  >(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -398,10 +397,7 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
               label={flags[flagIndex].name}
               defaultChecked={flags[flagIndex].enabled}
               onChange={() => {
-                flags[flagIndex].enabled = flags[flagIndex].enabled
-                  ? false
-                  : true;
-
+                flags[flagIndex].enabled = !flags[flagIndex].enabled;
                 flags[flagIndex].flagChanged = true;
 
                 updateFlags(flags);

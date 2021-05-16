@@ -8,13 +8,13 @@ import {
 import { IFolderEmail } from "interfaces";
 
 interface IFolderTableHeaderProps {
-  emails: IFolderEmail[];
+  folderEmails: IFolderEmail[];
   toggleSelection: (uid: number, forceToogle?: boolean) => void;
   updateVisibleEmails: (definedLength?: number) => void;
 }
 
 export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
-  emails,
+  folderEmails,
   toggleSelection,
   updateVisibleEmails,
 }) => {
@@ -23,11 +23,11 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
     direction = "asc"
   ) => {
     if (direction === "asc") {
-      emails.sort((a: IFolderEmail, b: IFolderEmail) =>
+      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) =>
         a[field] > b[field] ? 1 : -1
       );
     } else {
-      emails.sort((a: IFolderEmail, b: IFolderEmail) =>
+      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) =>
         a[field] < b[field] ? 1 : -1
       );
     }
@@ -107,11 +107,11 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
         />
       </Col>
       <Col
-        className="d-none d-sm-block ml-auto text-right"
         xs={3}
         sm={3}
         md={3}
         lg={2}
+        className="d-none d-sm-block ml-auto text-right"
       >
         Actions
       </Col>

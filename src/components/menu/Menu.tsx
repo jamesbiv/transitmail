@@ -9,7 +9,7 @@ import {
   faSignOutAlt,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { DependenciesContext } from "context";
+import { DependenciesContext } from "contexts";
 
 interface IMenuItem {
   id: number;
