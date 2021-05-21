@@ -3,3 +3,4 @@ export { SettingsForm } from "./SettingsForm";
 export { SettingsFormFolders } from "./SettingsFormFolders";
 export { SettingsSecondaryEmails } from "./SettingsSecondaryEmails";
 export { SettingsValidation } from "./SettingsValidation";
+export { validationConditions } from "./SettingsValidationConditions";

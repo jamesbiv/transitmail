@@ -127,14 +127,14 @@ export class InfiniteScroll {
   }
 
   /**
-   * @param {(arg0: number, arg1: number) => void} scrollHandler
+   * @param {IInfiniteScrollInitiateHandlers} args
    */
-  public initiateHandlers({
-    scrollElementId,
-    topElementId,
-    bottomElementId,
-    scrollHandler,
-  }: any) {
+  public initiateHandlers(
+    scrollElementId: string,
+    topElementId: string,
+    bottomElementId: string,
+    scrollHandler: (args: IInfinateScrollHandler) => void
+  ): void {
     this.scrollElementId = scrollElementId;
     this.topElementId = topElementId;
     this.bottomElementId = bottomElementId;

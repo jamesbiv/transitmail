@@ -3,11 +3,13 @@ import { Form, Col } from "react-bootstrap";
 import { ISettingsSecondaryEmail } from "interfaces";
 
 interface IComposeSecondaryEmailProps {
+  defaultSender: string;
   secondaryEmails?: ISettingsSecondaryEmail[];
-  updateSenderDetails: (secondaryEmailKey?: number) => void;
+  updateSenderDetails: (secondaryEmailKey: number) => void;
 }
 
 export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
+  defaultSender,
   secondaryEmails,
   updateSenderDetails,
 }) => {
@@ -18,9 +20,15 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
           <Form.Label>From:</Form.Label>
         </Col>
         <Col xs={8} sm={10}>
-          <Form.Control size="sm" as="select">
+          <Form.Control
+            size="sm"
+            as="select"
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+              updateSenderDetails(Number(event.target.value) ?? undefined)
+            }
+          >
             <option value={undefined}>
-              Default Sender - Test user &lt;user@user.com&gt;
+              Default Sender - {defaultSender}
             </option>
             {secondaryEmails?.map(
               (

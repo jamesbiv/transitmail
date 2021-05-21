@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Card,
@@ -91,7 +91,9 @@ export const SettingsSecondaryEmails: React.FC<ISettingsSecondaryEmailsProps> = 
       secondaryEmails.splice(emailKey, 1);
     }
 
-    updateSecondaryEmails(secondaryEmails);
+    updateSecondaryEmails(
+      secondaryEmails?.length ? secondaryEmails : undefined
+    );
 
     setSecondaryEmailKey(emailKey);
   };

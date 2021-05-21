@@ -2,47 +2,64 @@ import React, { useState } from "react";
 import { faAsterisk, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Accordion, Card, Col, Form, Row } from "react-bootstrap";
-import { ISettingsFolders } from "interfaces";
+import { ISettingsFolders, ISettingsValidationCondition } from "interfaces";
+import { validationConditions } from ".";
 
 interface ISettingsFormFoldersProps {
   folderSettings: ISettingsFolders;
+  displayFormFolders: boolean;
+  setDisplayFormFolders: React.Dispatch<boolean>;
 }
 
 export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
   folderSettings,
+  displayFormFolders,
+  setDisplayFormFolders,
 }) => {
-  const [collapasableStatus, toggleCollapasableStatus] = useState<boolean>(
-    false
-  );
   const [errorMessage, setErrorMessage] = useState<
     Partial<ISettingsFolders> | undefined
   >(undefined);
 
   const setFolderSetting = (
-    folderType: keyof ISettingsFolders,
-    folderName: string
+    folderName: keyof ISettingsFolders,
+    folderValue: string
   ) => {
-    if (!folderName.length) {
-      setErrorMessage({ [folderType]: `This must have a valid folder name` });
+    const settingsCondition = validationConditions.find(
+      (validationCondition: ISettingsValidationCondition) =>
+        validationCondition.field === "folderSettings" &&
+        validationCondition.subField === folderName
+    );
 
+    if (!settingsCondition) {
       return;
     }
 
-    folderSettings[folderType] = folderName;
+    const updatedErrorMessage:
+      | Partial<ISettingsFolders>
+      | undefined = settingsCondition.constraint(folderValue)
+      ? { ...errorMessage, [folderName]: undefined }
+      : {
+          ...errorMessage,
+          [folderName]: settingsCondition.message,
+        };
+
+    setErrorMessage(updatedErrorMessage);
+
+    folderSettings[folderName] = folderValue;
   };
 
   return (
-    <Accordion>
+    <Accordion activeKey={displayFormFolders ? "0" : undefined}>
       <Card className="mt-3">
         <Accordion.Toggle
           as={Card.Header}
           eventKey="0"
           className="pointer"
-          onClick={() => toggleCollapasableStatus(!collapasableStatus)}
+          onClick={() => setDisplayFormFolders(!displayFormFolders)}
         >
           <FontAwesomeIcon
             className="mr-2"
-            icon={collapasableStatus ? faMinus : faPlus}
+            icon={displayFormFolders ? faMinus : faPlus}
           />
           Folder Settings
         </Accordion.Toggle>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Container, Row, Col, Form } from "react-bootstrap";
+import { Row, Col, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faLongArrowAltUp,
@@ -9,12 +9,14 @@ import { IFolderEmail } from "interfaces";
 
 interface IFolderTableHeaderProps {
   folderEmails: IFolderEmail[];
+  toggleSelectionAll: boolean;
   toggleSelection: (uid: number, forceToogle?: boolean) => void;
   updateVisibleEmails: (definedLength?: number) => void;
 }
 
 export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
   folderEmails,
+  toggleSelectionAll,
   toggleSelection,
   updateVisibleEmails,
 }) => {
@@ -48,6 +50,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
           type="checkbox"
           id=""
           label=""
+          checked={toggleSelectionAll}
           onChange={(event: React.SyntheticEvent) => {
             event.stopPropagation();
 

@@ -1,5 +1,5 @@
 export interface ISettingsErrors {
-  [key: string]: string | undefined;
+  [key: string]: string | ISettingsFoldersErrors | undefined;
 
   name?: string;
   email?: string;
@@ -13,4 +13,15 @@ export interface ISettingsErrors {
   smtpPort?: string;
   smtpUsername?: string;
   smtpPassword?: string;
+  folderSettings?: ISettingsFoldersErrors;
+}
+
+export interface ISettingsFoldersErrors {
+  [key: string]: string | undefined;
+
+  archiveFolder?: string;
+  draftsFolder?: string;
+  sentItemsFolder?: string;
+  spamFolder?: string;
+  trashFolder?: string;
 }

@@ -8,14 +8,7 @@ import {
   faShare,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { IFolderEmail, IFolderLongPress } from "interfaces";
-
-interface IFolderEmailActions {
-  viewEmail: (uid: number) => void;
-  replyToEmail: (uid: number) => void;
-  forwardEmail: (uid: number) => void;
-  deleteEmail: (uid: number) => void;
-}
+import { IFolderEmail, IFolderEmailActions, IFolderLongPress } from "interfaces";
 
 interface IFolderEmailEntryProps {
   email: IFolderEmail;

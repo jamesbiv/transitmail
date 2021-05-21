@@ -2,6 +2,7 @@ import React from "react";
 import { InfiniteScroll } from "classes";
 import {
   IFolderEmail,
+  IFolderEmailActions,
   IFolderLongPress,
   IFolderPlaceholder,
   IFolderScrollSpinner,
@@ -14,12 +15,13 @@ import {
   FolderTableHeader,
   FolderTableOptions,
 } from ".";
+import { EFolderEmailActionType } from ".";
 
 interface IFolderScrollContainerProps {
-  folderEmails: IFolderEmail[] | undefined;
+  folderEmails?: IFolderEmail[];
+  folderEmailActions: IFolderEmailActions;
   setDisplayCardHeader: React.Dispatch<boolean>;
-  toggleActionModal: any;
-  folderEmailActions: any;
+  toggleActionModal: (actionType: EFolderEmailActionType) => void;
 }
 
 interface IFolderScrollContainerState {
@@ -66,7 +68,9 @@ export class FolderScrollContainer extends React.PureComponent<
     };
 
     this.infiniteScroll = new InfiniteScroll();
+
     this.toggleSelectionAll = false;
+
     this.folderLongPress = {
       timer: 0,
       isReturned: false,
@@ -97,21 +101,13 @@ export class FolderScrollContainer extends React.PureComponent<
     };
   }
 
-  // Find a nicer way to do this, using a bool from props
-  public componentDidUpdate = async (prevProps: any) => {
-    if (this.props.folderEmails !== prevProps.folderEmails) {
-      this.infiniteScroll.setTotalEntries(this.props.folderEmails?.length ?? 0);
-      this.updateVisibleEmails();
-    }
-  };
-
   public componentDidMount = async () => {
-    this.infiniteScroll.initiateHandlers({
-      scrollElementId: "container-main",
-      topElementId: "topObserver",
-      bottomElementId: "bottomObserver",
-      scrollHandler: this.scrollHandler,
-    });
+    this.infiniteScroll.initiateHandlers(
+      "container-main",
+      "topObserver",
+      "bottomObserver",
+      this.scrollHandler
+    );
 
     if (this.props.folderEmails?.length) {
       this.infiniteScroll.setTotalEntries(this.props.folderEmails.length);
@@ -122,26 +118,31 @@ export class FolderScrollContainer extends React.PureComponent<
     }
   };
 
-  public componentWillUnmount() {
+  public componentWillUnmount = () => {
     this.infiniteScroll.stopHandleScroll();
     this.infiniteScroll.stopObservertions();
-  }
+  };
+
+  public componentDidUpdate = async (
+    prevProps: IFolderScrollContainerProps
+  ) => {
+    if (this.props.folderEmails !== prevProps.folderEmails) {
+      this.infiniteScroll.setTotalEntries(this.props.folderEmails?.length ?? 0);
+
+      this.updateVisibleEmails()
+    }
+  };
 
   public updateVisibleEmails = (definedLength?: number): void => {
-    if (this.props.folderEmails) {
-      const currentSlice = this.infiniteScroll.getCurrentSlice();
-      const currentSliceLength: number | undefined = definedLength
-        ? definedLength
-        : currentSlice.maxIndex - currentSlice.minIndex;
+    const currentSlice = this.infiniteScroll.getCurrentSlice();
 
-      if (currentSlice && currentSliceLength) {
-        this.setState({
-          visibleEmails: this.props.folderEmails?.slice(
-            currentSlice.minIndex,
-            currentSliceLength
-          ),
-        });
-      }
+    if (currentSlice) {
+      this.setState({
+        visibleEmails: this.props.folderEmails?.slice(
+          currentSlice.minIndex,
+          currentSlice.maxIndex
+        ),
+      });
     }
   };
 
@@ -156,9 +157,8 @@ export class FolderScrollContainer extends React.PureComponent<
 
   public toggleSelection = (emailUid: number, forceToogle?: boolean): void => {
     if (emailUid === -1) {
-      this.toggleSelectionAll = forceToogle
-        ? forceToogle
-        : !this.toggleSelectionAll;
+      this.toggleSelectionAll =
+        forceToogle !== undefined ? forceToogle : !this.toggleSelectionAll;
     }
 
     this.props.folderEmails?.forEach(
@@ -179,6 +179,8 @@ export class FolderScrollContainer extends React.PureComponent<
         }
       }
     );
+
+    this.updateVisibleEmails();
 
     this.toggleTableOptionsDisplay();
   };
@@ -222,6 +224,7 @@ export class FolderScrollContainer extends React.PureComponent<
         {this.state.displayTableHeader && (
           <FolderTableHeader
             folderEmails={this.props.folderEmails ?? []}
+            toggleSelectionAll={this.toggleSelectionAll}
             toggleSelection={this.toggleSelection}
             updateVisibleEmails={this.updateVisibleEmails}
           />

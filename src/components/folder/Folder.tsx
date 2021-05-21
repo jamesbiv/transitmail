@@ -6,7 +6,6 @@ import {
   IComposeAttachment,
   IEmail,
   IFolderEmail,
-  IFolderLongPress,
   IImapResponse,
 } from "interfaces";
 import { Card, Spinner } from "react-bootstrap";
@@ -25,11 +24,13 @@ interface IFolderEmailActionState {
   showActionModal: boolean;
 }
 
-let folderEmails: IFolderEmail[] | undefined;
-
 export const Folder: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(
     DependenciesContext
+  );
+
+  const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(
+    undefined
   );
 
   const [displayCardHeader, setDisplayCardHeader] = useState<boolean>(true);
@@ -52,12 +53,13 @@ export const Folder: React.FC = () => {
 
       setFolderSpinner(true);
 
-      folderEmails =
+      const currentFolder: IFolderEmail[] | undefined =
         stateManager.getCurrentFolder()?.emails || (await getLatestEmails());
 
+      setFolderEmails(currentFolder);
       setFolderSpinner(false);
 
-      stateManager.updateCurrentFolder(folderEmails);
+      stateManager.updateCurrentFolder(currentFolder);
     })();
   }, []);
 
@@ -75,13 +77,14 @@ export const Folder: React.FC = () => {
     const currentEmails: IFolderEmail[] =
       stateManager.getCurrentFolder()?.emails ?? [];
 
-    folderEmails = latestEmails
+    const allCurrentEmails: IFolderEmail[] = latestEmails
       ? [...latestEmails, ...currentEmails]
       : currentEmails;
 
     setFolderSpinner(false);
 
-    stateManager.updateCurrentFolder(folderEmails);
+    setFolderEmails(allCurrentEmails);
+    stateManager.updateCurrentFolder(allCurrentEmails);
   };
 
   const getLatestEmails = async (
@@ -122,7 +125,7 @@ export const Folder: React.FC = () => {
     const currentEmails: IFolderEmail[] =
       stateManager.getCurrentFolder()?.emails ?? [];
 
-    folderEmails = !searchQuery.length
+    const filteredEmails: IFolderEmail[] = !searchQuery.length
       ? currentEmails
       : currentEmails.filter((email: IFolderEmail) => {
           let queryFound: boolean = false;
@@ -137,6 +140,8 @@ export const Folder: React.FC = () => {
 
           return queryFound;
         });
+
+    setFolderEmails(filteredEmails);
   };
 
   const viewEmail = (emailUid: number): void => {
@@ -160,18 +165,18 @@ export const Folder: React.FC = () => {
       return;
     }
 
-    const email: IEmail = imapHelper.formatFetchEmailResponse(
+    const formattedEmail: IEmail = imapHelper.formatFetchEmailResponse(
       fetchEmailResponse.data
     );
 
     const convertedAttachments:
       | IComposeAttachment[]
-      | undefined = await convertAttachments(email.attachments);
+      | undefined = await convertAttachments(formattedEmail.attachments);
 
     stateManager.setComposePresets({
-      subject: email.subject,
-      from: email.from,
-      email: email.bodyHtml ?? email.bodyText ?? "",
+      subject: formattedEmail.subject,
+      from: formattedEmail.from,
+      email: formattedEmail.bodyHtml ?? formattedEmail.bodyText ?? "",
       attachments: convertedAttachments,
     });
 
@@ -187,24 +192,24 @@ export const Folder: React.FC = () => {
       return;
     }
 
-    const email: IEmail = imapHelper.formatFetchEmailResponse(
+    const formattedEmail: IEmail = imapHelper.formatFetchEmailResponse(
       fetchEmailResponse.data
     );
 
     const convertedAttachments:
       | IComposeAttachment[]
-      | undefined = await convertAttachments(email.attachments);
+      | undefined = await convertAttachments(formattedEmail.attachments);
 
     stateManager.setComposePresets({
-      subject: email.subject,
-      email: email.bodyHtml ?? email.bodyText ?? "",
+      subject: formattedEmail.subject,
+      email: formattedEmail.bodyHtml ?? formattedEmail.bodyText ?? "",
       attachments: convertedAttachments,
     });
 
     stateManager.updateActiveKey("compose");
   };
 
-  const removeUids = (emailUids: number[]): void => {
+  const removeUids = (emailUids: number[]): void =>
     emailUids.forEach((emailUid: number) => {
       folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
         if (folderEmail.uid === emailUid) {
@@ -212,7 +217,6 @@ export const Folder: React.FC = () => {
         }
       });
     });
-  };
 
   const toggleActionModal = (actionType: EFolderEmailActionType): void => {
     const actionUids: number[] | undefined = folderEmails?.reduce(

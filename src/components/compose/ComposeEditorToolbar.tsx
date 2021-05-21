@@ -24,11 +24,15 @@ import { ComposeEditorLinkOverlay } from ".";
 interface IComposeEditorToolbarProps {
   editorState: EditorState;
   setEditorState: React.Dispatch<EditorState>;
+  saveEmail: () => void;
+  deleteEmail: () => void;
 }
 
 export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   editorState,
-  setEditorState
+  setEditorState,
+  saveEmail,
+  deleteEmail,
 }) => {
   const linkButtonTarget: React.RefObject<HTMLButtonElement> = React.useRef<HTMLButtonElement>(
     null
@@ -246,7 +250,15 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         className="mr-2 mt-2 d-block d-sm-none"
         aria-label=""
       >
-        <Button variant="outline-dark" type="button">
+        <Button
+          variant="outline-dark"
+          type="button"
+          onMouseDown={(event: React.SyntheticEvent) => {
+            event.preventDefault();
+
+            saveEmail();
+          }}
+        >
           <FontAwesomeIcon icon={faSave} />
         </Button>
       </ButtonGroup>
@@ -255,7 +267,15 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         className="mr-2 mt-2 d-block d-sm-none"
         aria-label=""
       >
-        <Button variant="danger" type="button">
+        <Button
+          variant="danger"
+          type="button"
+          onMouseDown={(event: React.SyntheticEvent) => {
+            event.preventDefault();
+
+            deleteEmail();
+          }}
+        >
           <FontAwesomeIcon icon={faTrash} />
         </Button>
       </ButtonGroup>

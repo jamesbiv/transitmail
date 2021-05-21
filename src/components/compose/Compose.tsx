@@ -38,16 +38,18 @@ import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { EmailComposer } from "classes";
 
+const emailComposer = new EmailComposer();
+
 export const Compose: React.FC = () => {
   const { localStorage, stateManager, smtpSocket } = useContext(
     DependenciesContext
   );
 
-  const emailComposer = new EmailComposer();
+  const defaultSender: string = `"${localStorage.getSetting(
+    "name"
+  )}" <${localStorage.getSetting("email")}>`;
 
-  const [from, setFrom] = useState<string>(
-    `"${localStorage.getSetting("name")}" <${localStorage.getSetting("email")}>`
-  );
+  const [from, setFrom] = useState<string>(defaultSender);
 
   const [subject, setSubject] = useState<string | undefined>(undefined);
 
@@ -57,14 +59,14 @@ export const Compose: React.FC = () => {
 
   const [attachments, setAttachments] = useState<IComposeAttachment[]>([]);
 
-  const [content, setContent] = useState<string>("");
-
   const [message, setMessage] = useState<string | undefined>(undefined);
   const [messageType, setMessageType] = useState<string | undefined>(undefined);
 
-  const [secondaryEmails, setSecondaryEmails] = useState<
-    ISettingsSecondaryEmail[]
-  >(localStorage.getSetting("secondaryEmails"));
+  const emailSignature: string = localStorage.getSetting("signature") ?? "";
+
+  const secondaryEmails: ISettingsSecondaryEmail[] = localStorage.getSetting(
+    "secondaryEmails"
+  );
 
   const findLinkEntities = (
     contentBlock: ContentBlock,
@@ -96,7 +98,6 @@ export const Compose: React.FC = () => {
     );
   };
 
-  const emailSignature: string = localStorage.getSetting("signature") ?? "";
   const [editorState, setEditorState] = useState<EditorState>(
     EditorState.createWithContent(
       /<\/?[a-z][\s\S]*>/i.test(emailSignature)
@@ -133,7 +134,43 @@ export const Compose: React.FC = () => {
     }
   }, []);
 
+  let lockSendEmail: boolean = false;
+
   const sendEmail = async (): Promise<void> => {
+    if (lockSendEmail) {
+      stateManager.showMessageModal({
+        title: "Unable to send email",
+        content: "An email is already currently being processed",
+        action: () => {},
+      });
+
+      return;
+    }
+
+    lockSendEmail = true;
+
+    const emailResponse: ISmtpResponse = await sendEmailRequest();
+
+    if (emailResponse.status === ESmtpResponseStatus.Success) {
+      stateManager.showMessageModal({
+        title: "Your email has been sent",
+        content: "Your email has been sent successfully!",
+        action: () => {},
+      });
+    } else {
+      stateManager.showMessageModal({
+        title: "Unable to send email",
+        content: emailResponse.data[0].join(),
+        action: () => {},
+      });
+    }
+
+    lockSendEmail = false;
+
+    return;
+  };
+
+  const sendEmailRequest = async (): Promise<ISmtpResponse> => {
     smtpSocket.smtpConnect();
 
     const emailData: IComposedEmail = emailComposer.composeEmail({
@@ -150,7 +187,7 @@ export const Compose: React.FC = () => {
     );
 
     if (mailResponse.status !== ESmtpResponseStatus.Success) {
-      return;
+      return mailResponse;
     }
 
     const rcptResponse: ISmtpResponse = await smtpSocket.smtpRequest(
@@ -159,7 +196,7 @@ export const Compose: React.FC = () => {
     );
 
     if (rcptResponse.status !== ESmtpResponseStatus.Success) {
-      return;
+      return rcptResponse;
     }
 
     const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest(
@@ -168,7 +205,7 @@ export const Compose: React.FC = () => {
     );
 
     if (dataResponse.status !== ESmtpResponseStatus.Success) {
-      return;
+      return dataResponse;
     }
 
     const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
@@ -177,7 +214,7 @@ export const Compose: React.FC = () => {
     );
 
     if (payloadResponse.status !== ESmtpResponseStatus.Success) {
-      return;
+      return payloadResponse;
     }
 
     const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(
@@ -185,15 +222,7 @@ export const Compose: React.FC = () => {
       221
     );
 
-    if (quitResponse.status !== ESmtpResponseStatus.Success) {
-      return;
-    }
-
-    stateManager.showMessageModal({
-      title: "Your email has been sent",
-      content: "Your email has been sent successfully!",
-      action: () => {},
-    });
+    return quitResponse;
   };
 
   const handleKeyCommand = (
@@ -231,7 +260,31 @@ export const Compose: React.FC = () => {
     }
   };
 
-  const updateSenderDetails = (secondaryEmailKey?: number): void => {};
+  const updateSenderDetails = (secondaryEmailKey?: number): void => {
+    const secondaryEmail = secondaryEmailKey
+      ? secondaryEmails[secondaryEmailKey]
+      : undefined;
+
+    const updatedDetails: string = secondaryEmail
+      ? `"${secondaryEmail.name}" <${secondaryEmail.email}>`
+      : `"${localStorage.getSetting("name")}" <${localStorage.getSetting(
+          "email"
+        )}>`;
+
+    setFrom(updatedDetails);
+  };
+
+  const saveEmail: () => void = () => {
+    alert(`create functionality`);
+  };
+
+  const deleteEmail: () => void = () => {
+    setEditorState(EditorState.createEmpty());
+
+    setRecipients([]);
+    setSubject(undefined);
+    setAttachments([]);
+  };
 
   return (
     <Card className="mt-0 mt-sm-3">
@@ -261,10 +314,16 @@ export const Compose: React.FC = () => {
               variant="outline-dark"
               type="button"
               className="mr-2"
+              onClick={() => saveEmail()}
             >
               Save
             </Button>
-            <Button size="sm" variant="danger" type="button">
+            <Button
+              size="sm"
+              variant="danger"
+              type="button"
+              onClick={() => deleteEmail()}
+            >
               <FontAwesomeIcon icon={faTrash} />
             </Button>
           </Col>
@@ -295,6 +354,7 @@ export const Compose: React.FC = () => {
           </Alert>
           {secondaryEmails && (
             <ComposeSecondaryEmail
+              defaultSender={defaultSender}
               secondaryEmails={secondaryEmails}
               updateSenderDetails={updateSenderDetails}
             />
@@ -310,6 +370,8 @@ export const Compose: React.FC = () => {
           <ComposeEditorToolbar
             editorState={editorState}
             setEditorState={setEditorState}
+            saveEmail={saveEmail}
+            deleteEmail={deleteEmail}
           />
           <div className="mt-2 ml-2 mr-2 mb-2 p-3 border rounded inner-shaddow">
             <Editor
