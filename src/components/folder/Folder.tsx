@@ -1,10 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { DependenciesContext } from "contexts";
-import { convertAttachments } from "lib";
 import {
+  EComposePresetType,
   EImapResponseStatus,
-  IComposeAttachment,
-  IEmail,
   IFolderEmail,
   IImapResponse,
 } from "interfaces";
@@ -25,25 +23,21 @@ interface IFolderEmailActionState {
 }
 
 export const Folder: React.FC = () => {
-  const { imapHelper, imapSocket, stateManager } = useContext(
-    DependenciesContext
-  );
+  const { imapHelper, imapSocket, stateManager } =
+    useContext(DependenciesContext);
 
-  const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(
-    undefined
-  );
+  const [folderEmails, setFolderEmails] =
+    useState<IFolderEmail[] | undefined>(undefined);
 
   const [displayCardHeader, setDisplayCardHeader] = useState<boolean>(true);
   const [folderSpinner, setFolderSpinner] = useState<boolean>(true);
 
-  const [
-    folderEmailActionState,
-    setFolderEmailActionState,
-  ] = useState<IFolderEmailActionState>({
-    actionUids: undefined,
-    actionType: EFolderEmailActionType.COPY,
-    showActionModal: false,
-  });
+  const [folderEmailActionState, setFolderEmailActionState] =
+    useState<IFolderEmailActionState>({
+      actionUids: undefined,
+      actionType: EFolderEmailActionType.COPY,
+      showActionModal: false,
+    });
 
   useEffect(() => {
     (async () => {
@@ -110,9 +104,8 @@ export const Folder: React.FC = () => {
       return undefined;
     }
 
-    const latestEmails: IFolderEmail[] = imapHelper.formatFetchFolderEmailsResponse(
-      fetchResponse.data
-    );
+    const latestEmails: IFolderEmail[] =
+      imapHelper.formatFetchFolderEmailsResponse(fetchResponse.data);
 
     latestEmails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
 
@@ -157,53 +150,18 @@ export const Folder: React.FC = () => {
     });
 
   const replyToEmail = async (emailUid: number): Promise<void> => {
-    const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID FETCH ${emailUid} RFC822`
-    );
-
-    if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
-      return;
-    }
-
-    const formattedEmail: IEmail = imapHelper.formatFetchEmailResponse(
-      fetchEmailResponse.data
-    );
-
-    const convertedAttachments:
-      | IComposeAttachment[]
-      | undefined = await convertAttachments(formattedEmail.attachments);
-
     stateManager.setComposePresets({
-      subject: formattedEmail.subject,
-      from: formattedEmail.from,
-      email: formattedEmail.bodyHtml ?? formattedEmail.bodyText ?? "",
-      attachments: convertedAttachments,
+      type: EComposePresetType.Reply,
+      uid: emailUid,
     });
 
     stateManager.updateActiveKey("compose");
   };
 
   const forwardEmail = async (emailUid: number): Promise<void> => {
-    const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID FETCH ${emailUid} RFC822`
-    );
-
-    if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
-      return;
-    }
-
-    const formattedEmail: IEmail = imapHelper.formatFetchEmailResponse(
-      fetchEmailResponse.data
-    );
-
-    const convertedAttachments:
-      | IComposeAttachment[]
-      | undefined = await convertAttachments(formattedEmail.attachments);
-
     stateManager.setComposePresets({
-      subject: formattedEmail.subject,
-      email: formattedEmail.bodyHtml ?? formattedEmail.bodyText ?? "",
-      attachments: convertedAttachments,
+      type: EComposePresetType.Forward,
+      uid: emailUid,
     });
 
     stateManager.updateActiveKey("compose");
@@ -250,7 +208,7 @@ export const Folder: React.FC = () => {
         )}
         {!folderEmails ? (
           <Spinner
-            className="mt-3 mb-3 ml-auto mr-auto"
+            className="mt-3 mb-3 ms-auto me-auto"
             animation="grow"
             variant="dark"
           />

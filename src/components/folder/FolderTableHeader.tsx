@@ -44,7 +44,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
         sm={0}
         md={1}
         lg={1}
-        className="d-none d-sm-block mr-3 folder-checkbox"
+        className="d-none d-sm-block me-3 folder-checkbox"
       >
         <Form.Check
           type="checkbox"
@@ -58,7 +58,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
           }}
         />
       </Col>
-      <Col xs={4} sm={2} md={2} lg={2} className="pl-3 pl-sm-0 text-nowrap">
+      <Col xs={4} sm={2} md={2} lg={2} className="ps-3 ps-sm-0 text-nowrap">
         Date{" "}
         <FontAwesomeIcon
           onClick={() => sortFolder("epoch", "asc")}
@@ -73,7 +73,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
           className="text-secondary pointer"
         />
       </Col>
-      <Col xs={5} sm={2} md={2} lg={2} className="pl-3 pl-sm-0 text-nowrap">
+      <Col xs={5} sm={2} md={2} lg={2} className="ps-3 ps-sm-0 text-nowrap">
         From{" "}
         <FontAwesomeIcon
           onClick={() => sortFolder("from", "asc")}
@@ -114,7 +114,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
         sm={3}
         md={3}
         lg={2}
-        className="d-none d-sm-block ml-auto text-right"
+        className="d-none d-sm-block ms-auto text-end"
       >
         Actions
       </Col>

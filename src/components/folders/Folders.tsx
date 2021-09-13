@@ -11,21 +11,17 @@ import {
 import { DependenciesContext } from "contexts";
 
 export const Folders: React.FC = () => {
-  const { imapHelper, imapSocket, stateManager } = useContext(
-    DependenciesContext
-  );
+  const { imapHelper, imapSocket, stateManager } =
+    useContext(DependenciesContext);
 
-  const [folders, setFolders] = useState<IFoldersEntry[] | undefined>(
-    undefined
-  );
+  const [folders, setFolders] =
+    useState<IFoldersEntry[] | undefined>(undefined);
 
-  const [activeFolderId, setActiveFolderId] = useState<string | undefined>(
-    undefined
-  );
+  const [activeFolderId, setActiveFolderId] =
+    useState<string | undefined>(undefined);
 
-  const [actionFolderId, setActionFolderId] = useState<string | undefined>(
-    undefined
-  );
+  const [actionFolderId, setActionFolderId] =
+    useState<string | undefined>(undefined);
 
   const [actionType, setActionType] = useState<EFolderEntryActionType>(
     EFolderEntryActionType.ADD
@@ -78,7 +74,7 @@ export const Folders: React.FC = () => {
               <h4 className="p-0 m-0 text-nowrap">
                 <FontAwesomeIcon icon={faFolderOpen} /> Folders
                 <Button
-                  className="ml-2 float-right float-sm-none"
+                  className="ms-2 float-end float-sm-none"
                   onClick={() => updateFolders()}
                   size="sm"
                   variant="primary"
@@ -89,7 +85,7 @@ export const Folders: React.FC = () => {
               </h4>
             </Col>
             <Col
-              className="text-right text-sm-right text-nowrap mt-3 mt-sm-0"
+              className="text-end text-sm-end text-nowrap mt-3 mt-sm-0"
               xs={12}
               sm={6}
             >
@@ -105,7 +101,7 @@ export const Folders: React.FC = () => {
           </Row>
         </Card.Header>
         <Spinner
-          className={`mt-3 mb-3 ml-auto mr-auto ${
+          className={`mt-3 mb-3 ms-auto me-auto ${
             folders?.length ? "d-none" : ""
           }`}
           animation="grow"

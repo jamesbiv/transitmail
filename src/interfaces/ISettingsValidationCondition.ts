@@ -1,6 +1,6 @@
 export interface ISettingsValidationCondition {
-    field: string;
-    subField?: string;
-    constraint: (value: any) => boolean;
-    message: string;
-  }
+  field: string;
+  subField?: string;
+  constraint: (value: any) => boolean;
+  message: string;
+}

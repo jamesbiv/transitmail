@@ -108,9 +108,8 @@ export class StateManager {
       return undefined;
     }
 
-    const folderEmails: IFolderEmails | undefined = this.folderEmails?.[
-      this.folderId
-    ];
+    const folderEmails: IFolderEmails | undefined =
+      this.folderEmails?.[this.folderId];
 
     return folderEmails
       ? {

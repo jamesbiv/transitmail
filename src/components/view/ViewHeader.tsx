@@ -30,7 +30,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
 }) => {
   return (
     <React.Fragment>
-      <div className="ml-2 float-right text-right">
+      <div className="ms-2 float-end text-end">
         <div className="mb-2 d-none d-sm-block">
           <Button
             variant="primary"
@@ -44,7 +44,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
             size="sm"
             type="button"
             onClick={() => replyToEmail(true)}
-            className="ml-1"
+            className="ms-1"
           >
             <FontAwesomeIcon icon={faReplyAll} />
           </Button>
@@ -53,7 +53,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
             size="sm"
             type="button"
             onClick={() => forwardEmail()}
-            className="ml-1"
+            className="ms-1"
           >
             <FontAwesomeIcon icon={faShare} />{" "}
             <span className="d-none d-sm-inline-block">Forward</span>
@@ -63,7 +63,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
             size="sm"
             type="button"
             onClick={() => toggleActionModal(EViewActionType.DELETE)}
-            className="ml-1"
+            className="ms-1"
           >
             <FontAwesomeIcon icon={faTrash} />
           </Button>
@@ -118,7 +118,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
           size="sm"
           type="button"
           onClick={() => replyToEmail(true)}
-          className="ml-1"
+          className="ms-1"
         >
           <FontAwesomeIcon icon={faReplyAll} />
         </Button>
@@ -127,7 +127,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
           size="sm"
           type="button"
           onClick={() => forwardEmail()}
-          className="ml-1"
+          className="ms-1"
         >
           <FontAwesomeIcon icon={faShare} />{" "}
           <span className="d-none d-sm-inline-block">Forward</span>
@@ -137,7 +137,7 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
           size="sm"
           type="button"
           onClick={() => toggleActionModal(EViewActionType.DELETE)}
-          className="ml-1"
+          className="ms-1"
         >
           <FontAwesomeIcon icon={faTrash} />
         </Button>

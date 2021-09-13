@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.PureComponent<
           <Spinner
             animation="grow"
             variant="dark"
-            className="mt-5 ml-auto mr-auto"
+            className="mt-5 ms-auto me-auto"
           />
         </div>
       );

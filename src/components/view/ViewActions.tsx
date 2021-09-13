@@ -171,9 +171,8 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [destinationFolder, setDestinationFolder] = useState<
-    string | undefined
-  >(undefined);
+  const [destinationFolder, setDestinationFolder] =
+    useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -238,9 +237,8 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [destinationFolder, setDestinationFolder] = useState<
-    string | undefined
-  >(undefined);
+  const [destinationFolder, setDestinationFolder] =
+    useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {

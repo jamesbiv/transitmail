@@ -8,7 +8,11 @@ import {
   faShare,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
-import { IFolderEmail, IFolderEmailActions, IFolderLongPress } from "interfaces";
+import {
+  IFolderEmail,
+  IFolderEmailActions,
+  IFolderLongPress,
+} from "interfaces";
 
 interface IFolderEmailEntryProps {
   email: IFolderEmail;
@@ -39,7 +43,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         sm={0}
         md={1}
         lg={1}
-        className="d-none d-sm-block mr-3 folder-checkbox"
+        className="d-none d-sm-block me-3 folder-checkbox"
       >
         <Form.Check
           type="checkbox"
@@ -54,7 +58,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         sm={2}
         md={2}
         lg={2}
-        className="text-truncate pl-3 pl-sm-0"
+        className="text-truncate ps-3 ps-sm-0"
         onTouchStart={() => folderLongPress.handleLongPress(email.uid)}
         onTouchEnd={() => folderLongPress.handleLongRelease()}
         onClick={() => {
@@ -74,7 +78,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         sm={2}
         md={2}
         lg={2}
-        className="text-truncate pl-3 pl-sm-0"
+        className="text-truncate ps-3 ps-sm-0"
         onTouchStart={() => folderLongPress.handleLongPress(email.uid)}
         onTouchEnd={() => folderLongPress.handleLongRelease()}
         onClick={() => {
@@ -93,7 +97,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
       </Col>
       <Col className="text-truncate">
         <ButtonGroup
-          className="float-right pl-0 pl-sm-3 btn-group-vertical-xs"
+          className="float-end ps-0 ps-sm-3 btn-group-vertical-xs"
           size="sm"
           aria-label=""
         >
@@ -124,7 +128,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         </ButtonGroup>
         <p className="d-none d-sm-inline">
           {email.hasAttachment && (
-            <FontAwesomeIcon className="mr-2" icon={faPaperclip} />
+            <FontAwesomeIcon className="me-2" icon={faPaperclip} />
           )}
           {email.subject || "(no subject)"}
         </p>
@@ -148,7 +152,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         <b>Subject</b>
         <br />
         {email.hasAttachment && (
-          <FontAwesomeIcon className="mr-2" icon={faPaperclip} />
+          <FontAwesomeIcon className="me-2" icon={faPaperclip} />
         )}
         {email.subject || "(no subject)"}
       </Col>

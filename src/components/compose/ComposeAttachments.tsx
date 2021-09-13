@@ -22,34 +22,33 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
   attachments,
   setAttachments,
 }) => {
-  const loadAttachments: (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => void = (event) => {
-    const fileList: FileList | undefined = event.target.files ?? undefined;
-    const files: File[] = Array.from(fileList ?? []);
+  const loadAttachments: (event: React.ChangeEvent<HTMLInputElement>) => void =
+    (event) => {
+      const fileList: FileList | undefined = event.target.files ?? undefined;
+      const files: File[] = Array.from(fileList ?? []);
 
-    let count: number = 0;
+      let count: number = 0;
 
-    files.forEach((file: File) => {
-      const reader: FileReader = new FileReader();
+      files.forEach((file: File) => {
+        const reader: FileReader = new FileReader();
 
-      reader.onload = () => {
-        attachments.push({
-          id: count++,
-          filename: file.name,
-          size: file.size,
-          mimeType: file.type,
-          data: reader.result,
-        });
+        reader.onload = () => {
+          attachments.push({
+            id: count++,
+            filename: file.name,
+            size: file.size,
+            mimeType: file.type,
+            data: reader.result,
+          });
 
-        if (files?.length === count) {
-          setAttachments([...attachments]);
-        }
-      };
+          if (files?.length === count) {
+            setAttachments([...attachments]);
+          }
+        };
 
-      reader.readAsBinaryString(file);
-    });
-  };
+        reader.readAsBinaryString(file);
+      });
+    };
 
   const viewAttachment: (id: number) => void = (id) => {
     const attachment = attachments.find(
@@ -93,16 +92,16 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
     <React.Fragment>
       <AttachmentInput />
       {attachments.length > 0 && (
-        <div className="mt-2 mb-2 pl-2 pt-2 border-top overflow-hidden">
+        <div className="mt-2 mb-2 ps-2 pt-2 border-top overflow-hidden">
           <h6>Attachments</h6>
 
           {attachments.map((attachment: IComposeAttachment) => (
             <div
               key={attachment.id}
-              className="attachments float-left border rounded d-inline small bg-light pl-2 pr-2 pt-1 pb-1 mr-2 mb-2 text-truncate"
+              className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
             >
               <Button
-                className="float-right p-0 ml-2"
+                className="float-end p-0 ms-2"
                 variant="light"
                 size="sm"
                 onClick={() => removeAttachment(attachment.id)}
@@ -110,7 +109,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
                 <FontAwesomeIcon icon={faTimes} />
               </Button>
               <Button
-                className="float-right p-0 ml-2"
+                className="float-end p-0 ms-2"
                 variant="light"
                 size="sm"
                 onClick={() => viewAttachment(attachment.id)}
@@ -118,7 +117,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
                 <FontAwesomeIcon icon={faEye} />
               </Button>
               <FontAwesomeIcon
-                className="mr-1"
+                className="me-1"
                 icon={(() => {
                   switch (attachment.mimeType) {
                     case "image/jpeg":
@@ -130,7 +129,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
                     case "application/msword":
                       return faFileWord;
 
-                    case "application/vnd.ms-excel":
+                    case "application/vnd.me-excel":
                       return faFileExcel;
 
                     default:

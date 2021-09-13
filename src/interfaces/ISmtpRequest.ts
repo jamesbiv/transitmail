@@ -1,4 +1,4 @@
-import { ISmtpResponseData } from "."
+import { ISmtpResponseData } from ".";
 
 export interface ISmtpRequest {
   code?: number;

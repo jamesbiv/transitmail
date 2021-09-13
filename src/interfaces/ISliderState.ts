@@ -1,4 +1,4 @@
 export interface ISliderState {
-    sliderAction: boolean;
-    sliderInitalDisplay: boolean;
-  }
+  sliderAction: boolean;
+  sliderInitalDisplay: boolean;
+}

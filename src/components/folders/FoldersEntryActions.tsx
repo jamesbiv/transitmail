@@ -214,9 +214,8 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   successfulSubmit,
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
-  const [destinationSubFolder, setDestinationSubFolder] = useState<
-    string | undefined
-  >();
+  const [destinationSubFolder, setDestinationSubFolder] =
+    useState<string | undefined>();
 
   useEffect(() => {
     if (submit) {
@@ -312,9 +311,8 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [destinationFolder, setDestinationFolder] = useState<
-    string | undefined
-  >();
+  const [destinationFolder, setDestinationFolder] =
+    useState<string | undefined>();
 
   useEffect(() => {
     if (submit) {

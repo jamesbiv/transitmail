@@ -50,16 +50,16 @@ export class SmtpSocket {
 
   /**
    * @name smtpConnect
+   * @param {boolean} authorise
    * @param {TSmtpCallback} success
    * @param {TSmtpCallback} error
-   * @param {TSmtpCallback} authorise
    * @returns void
    */
   public smtpConnect(
+    authorise: boolean = true,
     success?: TSmtpCallback,
-    error?: TSmtpCallback,
-    authorise: boolean = true
-  ): void {
+    error?: TSmtpCallback
+  ): boolean {
     this.session.socket = new WebSocket(
       `wss://${this.settings.host}:${this.settings.port}`,
       "binary"
@@ -67,70 +67,78 @@ export class SmtpSocket {
 
     this.session.socket.binaryType = this.session.binaryType;
 
+    if (!(this.session.socket instanceof WebSocket)) {
+      return false;
+    }
+
     this.session.lock = true;
 
-    if (this.session.socket instanceof WebSocket) {
-      this.session.socket.onopen = (event: Event) => {
-        /* Websocket onopen */
-        if (this.session.debug) {
-          console.log("[SMTP] Client Connected");
-        }
+    this.session.socket.onopen = (event: Event) => {
+      if (this.session.debug) {
+        console.log("[SMTP] Client Connected");
+      }
 
-        /* to handle the initial response from the server */
-        this.session.request.push({
-          code: 250,
-          request: "",
-          success: () => {},
-          failure: () => {},
-        });
+      this.session.request.push({
+        code: 250,
+        request: "",
+        success: () => {},
+        failure: () => {},
+      });
 
-        this.session.lock = false;
+      this.session.lock = false;
 
-        // Callback goes here
-        if (authorise) {
-          this.smtpAuthorise();
-        } else {
-          success && success(event);
-        }
-      };
+      if (authorise) {
+        this.smtpAuthorise();
+      } else {
+        success && success(event);
+      }
+    };
 
-      /* Websocket recieving */
-      this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
-        if (message.data instanceof Blob) {
-          const reader: FileReader = new FileReader();
+    this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
+      if (message.data instanceof Blob) {
+        const reader: FileReader = new FileReader();
 
-          reader.onload = () => {
-            const result: string = reader.result as string;
+        reader.onload = () => {
+          const result: string = reader.result as string;
 
-            this.smtpResponseHandler(result);
-          };
+          this.smtpResponseHandler(result);
+        };
 
-          reader.readAsText(message.data);
-        }
-      };
+        reader.readAsText(message.data);
+      }
+    };
 
-      /* Websocket onerror */
-      this.session.socket.onerror = (event: Event) => {
-        if (this.session.debug) {
-          console.error("[SMTP] Connection error", event);
-        }
+    this.session.socket.onerror = (event: Event) => {
+      if (this.session.debug) {
+        console.error("[SMTP] Connection error", event);
+      }
 
-        if (this.session.retry > 0) {
-          setTimeout(() => {
-            this.smtpConnect(success, error, authorise);
-          }, this.session.retry);
-        }
+      if (this.session.retry > 0) {
+        setTimeout(() => {
+          this.smtpConnect(authorise, success, error);
+        }, this.session.retry);
+      }
 
-        error && error(event);
-      };
+      error && error(event);
+    };
 
-      /* Websocket onclose */
-      this.session.socket.onclose = (event: Event) => {
-        if (this.session.debug) {
-          console.log("[SMTP] Connection closed", event);
-        }
-      };
-    }
+    this.session.socket.onclose = (event: Event) => {
+      if (this.session.debug) {
+        console.log("[SMTP] Connection closed", event);
+      }
+    };
+
+    return false;
+  }
+
+  /**
+   * @name smtpConnect
+   * @returns boolean
+   */
+  public smtpClose(): boolean {
+    this.session.socket?.close();
+
+    return true;
   }
 
   /**
@@ -203,7 +211,22 @@ export class SmtpSocket {
       failure: failure,
     });
 
-    this.session.socket!.send(blob);
+    const readyStateCallack = () =>
+      setTimeout(() => {
+        const currentReadyState: number | undefined = this.getReadyState();
+
+        if (
+          this.session.socket &&
+          currentReadyState &&
+          currentReadyState === 1
+        ) {
+          this.session.socket.send(blob);
+        } else {
+          readyStateCallack();
+        }
+      }, 10);
+
+    readyStateCallack();
   }
 
   /**
@@ -251,16 +274,16 @@ export class SmtpSocket {
 
   /**
    * @name smtpAuthorise
-   * @returns Promise<boolean>
+   * @returns Promise<ISmtpResponse>
    */
-  public async smtpAuthorise(): Promise<boolean> {
+  public async smtpAuthorise(): Promise<ISmtpResponse> {
     const ehloResponse: ISmtpResponse = await this.smtpRequest(
       `EHLO ${this.settings.host}`,
       220
     );
 
     if (ehloResponse.status !== ESmtpResponseStatus.Success) {
-      return false;
+      return ehloResponse;
     }
 
     const authResponse: ISmtpResponse = await this.smtpRequest(
@@ -269,7 +292,7 @@ export class SmtpSocket {
     );
 
     if (authResponse.status !== ESmtpResponseStatus.Success) {
-      return false;
+      return authResponse;
     }
 
     const userResponse: ISmtpResponse = await this.smtpRequest(
@@ -278,7 +301,7 @@ export class SmtpSocket {
     );
 
     if (userResponse.status !== ESmtpResponseStatus.Success) {
-      return false;
+      return userResponse;
     }
 
     const passResponse: ISmtpResponse = await this.smtpRequest(
@@ -286,34 +309,22 @@ export class SmtpSocket {
       235
     );
 
-    if (passResponse.status !== ESmtpResponseStatus.Success) {
-      return false;
-    }
-
-    return true;
+    return passResponse;
   }
 
   /**
    * @name getReadyState
    * @returns number | false
    */
-  public getReadyState(): number | false {
-    if (!this.session.socket) {
-      return false;
-    }
-
-    return this.session.socket.readyState;
+  public getReadyState(): number | undefined {
+    return this.session.socket?.readyState;
   }
 
   /**
    * @name getStreamAmount
    * @returns number
    */
-  public getBufferedAmount(): number | false {
-    if (!this.session.socket) {
-      return false;
-    }
-
-    return this.session.socket.bufferedAmount;
-  }
+  public getBufferedAmount = (): number | undefined => {
+    return this.session.socket?.bufferedAmount;
+  };
 }

@@ -24,7 +24,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
   return (
     <Collapse in={displayTableOptions}>
       <Row className="border-bottom pt-2 pb-2 folder-sticky-top bg-white">
-        <Col className="pl-1 pl-md-3 pr-0">
+        <Col className="ps-1 ps-md-3 pe-0">
           <span className="d-none d-md-inline-block">
             <em>Selection options</em>
           </span>
@@ -32,7 +32,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
             size="sm"
             variant="primary"
             type="button"
-            className="ml-2"
+            className="ms-2"
             onClick={() => toggleActionModal(EFolderEmailActionType.COPY)}
           >
             <FontAwesomeIcon icon={faCopy} /> Copy
@@ -41,7 +41,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
             size="sm"
             variant="primary"
             type="button"
-            className="ml-2"
+            className="ms-2"
             onClick={() => toggleActionModal(EFolderEmailActionType.MOVE)}
           >
             <FontAwesomeIcon icon={faSuitcase} /> Move
@@ -50,7 +50,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
             size="sm"
             variant="secondary"
             type="button"
-            className="ml-2"
+            className="ms-2"
             onClick={() => toggleActionModal(EFolderEmailActionType.FLAG)}
           >
             <FontAwesomeIcon icon={faFlag} />{" "}
@@ -60,7 +60,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
             size="sm"
             variant="danger"
             type="button"
-            className="ml-2"
+            className="ms-2"
             onClick={() => toggleActionModal(EFolderEmailActionType.DELETE)}
           >
             <FontAwesomeIcon icon={faTrash} />{" "}
@@ -70,7 +70,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
             size="sm"
             variant="outline-dark"
             type="button"
-            className="ml-2"
+            className="ms-2"
             onClick={() => toggleSelection(-1, false)}
           >
             <FontAwesomeIcon icon={faTimes} />{" "}

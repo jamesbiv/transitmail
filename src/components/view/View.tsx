@@ -8,13 +8,12 @@ import {
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
-import { convertAttachments } from "lib";
 import {
   IEmail,
   EImapResponseStatus,
-  IComposeAttachment,
   IImapResponse,
   IEmailFlags,
+  EComposePresetType,
 } from "interfaces";
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
 
@@ -26,14 +25,12 @@ interface IViewProgressBar {
 const progressBar: IViewProgressBar = { max: 0, now: 0 };
 
 export const View: React.FC = () => {
-  const { imapHelper, imapSocket, stateManager } = useContext(
-    DependenciesContext
-  );
+  const { imapHelper, imapSocket, stateManager } =
+    useContext(DependenciesContext);
 
   const [email, setEmail] = useState<IEmail | undefined>(undefined);
-  const [emailFlags, setEmailFlags] = useState<IEmailFlags | undefined>(
-    undefined
-  );
+  const [emailFlags, setEmailFlags] =
+    useState<IEmailFlags | undefined>(undefined);
 
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
@@ -81,11 +78,8 @@ export const View: React.FC = () => {
       return;
     }
 
-    const emailFlags:
-      | IEmailFlags
-      | undefined = imapHelper.formatFetchEmailFlagsResponse(
-      fetchFlagsResponse.data
-    );
+    const emailFlags: IEmailFlags | undefined =
+      imapHelper.formatFetchEmailFlagsResponse(fetchFlagsResponse.data);
 
     if (!emailFlags) {
       return;
@@ -144,36 +138,29 @@ export const View: React.FC = () => {
   };
 
   const replyToEmail = async (all: boolean = false): Promise<void> => {
-    if (email) {
-      const convertedAttachments:
-        | IComposeAttachment[]
-        | undefined = await convertAttachments(email.attachments);
-
-      stateManager.setComposePresets({
-        from: email?.from,
-        subject: email?.subject,
-        email: email?.bodyHtml ?? email?.bodyText ?? "",
-        attachments: convertedAttachments,
-      });
-
-      stateManager.updateActiveKey("compose");
+    if (!email) {
+      return;
     }
+
+    stateManager.setComposePresets({
+      type: all ? EComposePresetType.ReplyAll : EComposePresetType.Reply,
+      email,
+    });
+
+    stateManager.updateActiveKey("compose");
   };
 
   const forwardEmail = async (): Promise<void> => {
-    if (email) {
-      const convertedAttachments:
-        | IComposeAttachment[]
-        | undefined = await convertAttachments(email.attachments);
-
-      stateManager.setComposePresets({
-        subject: email.subject,
-        email: email.bodyHtml ?? email.bodyText ?? "",
-        attachments: convertedAttachments,
-      });
-
-      stateManager.updateActiveKey("compose");
+    if (!email) {
+      return;
     }
+
+    stateManager.setComposePresets({
+      type: EComposePresetType.Forward,
+      email,
+    });
+
+    stateManager.updateActiveKey("compose");
   };
 
   const toggleActionModal = (actionType: EViewActionType): void => {
@@ -210,7 +197,7 @@ export const View: React.FC = () => {
           />
         </Card.Header>
         <Card.Body
-          className={`border-bottom pt-2 pb-2 pl-3 pr-3 ${
+          className={`border-bottom pt-2 pb-2 ps-3 pe-3 ${
             !email?.attachments?.length ? "d-none" : "d-block"
           }`}
         >
@@ -245,9 +232,8 @@ export const View: React.FC = () => {
               className="email-body"
               frameBorder="0"
               onLoad={() => {
-                const emailBodyFrame: HTMLIFrameElement = document.getElementById(
-                  "emailBody"
-                ) as HTMLIFrameElement;
+                const emailBodyFrame: HTMLIFrameElement =
+                  document.getElementById("emailBody") as HTMLIFrameElement;
 
                 emailBodyFrame.style.height =
                   emailBodyFrame.contentWindow!.document.documentElement

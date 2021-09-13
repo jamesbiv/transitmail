@@ -11,7 +11,7 @@ import {
 import { EFolderEntryActionType } from ".";
 
 interface IFoldersEntryOptionsProps {
-  folderId: string,
+  folderId: string;
   toggleActionModal: (
     actionType: EFolderEntryActionType,
     actionFolderId?: string
@@ -24,7 +24,7 @@ export const FoldersEntryOptions: React.FC<IFoldersEntryOptionsProps> = ({
 }) => {
   return (
     <Dropdown
-      className="d-inline-block ml-2"
+      className="d-inline-block ms-2"
       onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
     >
       <Dropdown.Toggle size="sm" variant="outline-dark" id="dropdown-folder">

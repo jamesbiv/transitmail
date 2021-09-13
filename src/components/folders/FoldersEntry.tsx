@@ -40,7 +40,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           />{" "}
           {folderEntry.name}
         </Col>
-        <Col xs={6} className="text-right text-nowrap pr-1">
+        <Col xs={6} className="text-end text-nowrap pe-1">
           <FoldersEntryOptions
             folderId={folderEntry.ref}
             toggleActionModal={toggleActionModal}
@@ -50,7 +50,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             size="sm"
             variant="primary"
             type="button"
-            className="ml-2"
+            className="ms-2"
           >
             <FontAwesomeIcon icon={faFolderOpen} />{" "}
             <span className="d-none d-sm-inline-block">Open</span>
@@ -60,7 +60,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
     </ListGroup.Item>
   ) : (
     <React.Fragment key={folderEntry.id}>
-      <Accordion.Toggle
+      <Accordion.Button
         as={ListGroup.Item}
         eventKey={folderEntry.id.toString()}
         className="pointer"
@@ -68,7 +68,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
         <Row>
           <Col xs={6} className="text-truncate">
             <FontAwesomeIcon
-              className="mr-2"
+              className="me-2"
               icon={
                 activeFolderId && Number(activeFolderId) === folderEntry.id
                   ? faMinus
@@ -77,7 +77,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             />
             <FontAwesomeIcon icon={faFolderPlus} /> {folderEntry.name}
           </Col>
-          <Col xs={6} className="text-right text-nowrap pr-1">
+          <Col xs={6} className="text-end text-nowrap pe-1">
             <FoldersEntryOptions
               folderId={folderEntry.ref}
               toggleActionModal={toggleActionModal}
@@ -87,14 +87,14 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
               size="sm"
               variant="primary"
               type="button"
-              className="ml-2"
+              className="ms-2"
             >
               <FontAwesomeIcon icon={faFolderOpen} />{" "}
               <span className="d-none d-sm-inline-block">Open</span>
             </Button>
           </Col>
         </Row>
-      </Accordion.Toggle>
+      </Accordion.Button>
       <Accordion.Collapse eventKey={folderEntry.id.toString()}>
         <ListGroup variant="flush">
           {folderEntry.folders.map((folderSubEntry: IFoldersSubEntry) => (
@@ -106,7 +106,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                   `${folderEntry.ref}/${folderSubEntry.ref}`
                 )
               }
-              className="pl-sm-5 pointer"
+              className="ps-sm-5 pointer"
             >
               <Row>
                 <Col xs={6} className="text-truncate">
@@ -115,7 +115,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                   />{" "}
                   {folderSubEntry.name}
                 </Col>
-                <Col xs={6} className="text-right text-nowrap pr-1">
+                <Col xs={6} className="text-end text-nowrap pe-1">
                   <FoldersEntryOptions
                     folderId={`${folderEntry.ref}/${folderSubEntry.ref}`}
                     toggleActionModal={toggleActionModal}
@@ -130,7 +130,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                     size="sm"
                     variant="primary"
                     type="button"
-                    className="ml-2"
+                    className="ms-2"
                   >
                     <FontAwesomeIcon icon={faFolderOpen} />{" "}
                     <span className="d-none d-sm-inline-block">Open</span>

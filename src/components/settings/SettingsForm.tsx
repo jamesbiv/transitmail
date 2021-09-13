@@ -22,9 +22,8 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
   displayFormFolders,
   setDisplayFormFolders,
 }) => {
-  const [errorMessage, setErrorMessage] = useState<
-    Partial<ISettings> | undefined
-  >(undefined);
+  const [errorMessage, setErrorMessage] =
+    useState<Partial<ISettings> | undefined>(undefined);
 
   const setSettingValue = (
     settingName: keyof ISettings,
@@ -39,14 +38,13 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
       return;
     }
 
-    const updatedErrorMessage:
-      | Partial<ISettings>
-      | undefined = settingsCondition.constraint(settingValue)
-      ? { ...errorMessage, [settingName]: undefined }
-      : {
-          ...errorMessage,
-          [settingName]: settingsCondition.message,
-        };
+    const updatedErrorMessage: Partial<ISettings> | undefined =
+      settingsCondition.constraint(settingValue)
+        ? { ...errorMessage, [settingName]: undefined }
+        : {
+            ...errorMessage,
+            [settingName]: settingsCondition.message,
+          };
 
     setErrorMessage(updatedErrorMessage);
 

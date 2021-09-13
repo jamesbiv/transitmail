@@ -38,15 +38,13 @@ const Index: React.FC = () => {
     sliderInitalDisplay: false,
   });
 
-  const [
-    messageModalState,
-    setMessageModalState,
-  ] = useState<IMessageModalState>({
-    title: "",
-    content: "",
-    action: () => {},
-    show: false,
-  });
+  const [messageModalState, setMessageModalState] =
+    useState<IMessageModalState>({
+      title: "",
+      content: "",
+      action: () => {},
+      show: false,
+    });
 
   const touchState: ITouchState = {
     start: undefined,
@@ -54,9 +52,8 @@ const Index: React.FC = () => {
     threshold: 150,
   };
 
-  const { imapSocket, localStorage, smtpSocket, stateManager } = useContext(
-    DependenciesContext
-  );
+  const { imapSocket, localStorage, smtpSocket, stateManager } =
+    useContext(DependenciesContext);
 
   stateManager.indexState = {
     sliderState,
@@ -112,12 +109,16 @@ const Index: React.FC = () => {
 
   return (
     <React.StrictMode>
-      <Navbar bg="dark" variant="dark" className="fixed-top pt-2 pb-2">
+      <Navbar
+        bg="dark"
+        variant="dark"
+        className="fixed-top pt-2 pb-2 ps-3 pe-3"
+      >
         <Navbar.Brand href="">
           <FontAwesomeIcon icon={faAt} /> transit
         </Navbar.Brand>
         <Button
-          className="d-sm-block d-md-none ml-auto"
+          className="d-sm-block d-md-none ms-auto"
           variant="light"
           type="button"
           onClick={() =>
@@ -154,7 +155,7 @@ const Index: React.FC = () => {
               >
                 <Menu />
               </Col>
-              <Col className="pl-0 pr-0 pr-sm-3 pl-sm-3" sm={12} md={8} lg={9}>
+              <Col className="ps-0 pe-0 pe-sm-3 ps-sm-3" sm={12} md={8} lg={9}>
                 <Tab.Content>
                   <ErrorBoundary>
                     {components.map((component: IComponent) => (

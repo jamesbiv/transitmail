@@ -1,6 +1,7 @@
 import { ISettingsValidationCondition } from "interfaces";
 
-const emailRegex: RegExp = /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const emailRegex: RegExp =
+  /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 export const validationConditions: ISettingsValidationCondition[] = [
   {
@@ -10,7 +11,10 @@ export const validationConditions: ISettingsValidationCondition[] = [
   },
   {
     field: "email",
-    constraint: (value: string) => !!value?.length && emailRegex.test(value),
+    constraint: (value: string) =>
+      !!value?.length &&
+      (value.toLocaleLowerCase().includes("localhost") ||
+        emailRegex.test(value)),
     message: "Please specify a valid email address",
   },
   {

@@ -4,3 +4,4 @@ export interface IFolderEmailActions {
     forwardEmail: (uid: number) => void;
     deleteEmail: (uid: number) => void;
   }
+  

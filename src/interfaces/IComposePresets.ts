@@ -1,8 +1,13 @@
-import { IComposeAttachment } from ".";
+import { IEmail } from "./IEmail";
+
+export enum EComposePresetType {
+  Reply,
+  ReplyAll,
+  Forward,
+}
 
 export interface IComposePresets {
-  email: string;
-  subject?: string;
-  from?: string;
-  attachments?: IComposeAttachment[];
+  email?: IEmail;
+  type: EComposePresetType;
+  uid?: number;
 }

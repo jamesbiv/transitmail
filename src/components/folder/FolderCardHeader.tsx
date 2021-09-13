@@ -23,7 +23,7 @@ export const FolderCardHeader: React.FC<FolderCardHeaderProps> = ({
           <h4 className="p-0 m-0 text-nowrap text-truncate">
             <FontAwesomeIcon icon={faInbox} /> {folderName}
             <Button
-              className="ml-2 float-right float-sm-none"
+              className="ms-2 float-end float-sm-none"
               onClick={() => checkEmail()}
               size="sm"
               variant="primary"

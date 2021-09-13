@@ -16,9 +16,8 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
   displayFormFolders,
   setDisplayFormFolders,
 }) => {
-  const [errorMessage, setErrorMessage] = useState<
-    Partial<ISettingsFolders> | undefined
-  >(undefined);
+  const [errorMessage, setErrorMessage] =
+    useState<Partial<ISettingsFolders> | undefined>(undefined);
 
   const setFolderSetting = (
     folderName: keyof ISettingsFolders,
@@ -34,14 +33,13 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
       return;
     }
 
-    const updatedErrorMessage:
-      | Partial<ISettingsFolders>
-      | undefined = settingsCondition.constraint(folderValue)
-      ? { ...errorMessage, [folderName]: undefined }
-      : {
-          ...errorMessage,
-          [folderName]: settingsCondition.message,
-        };
+    const updatedErrorMessage: Partial<ISettingsFolders> | undefined =
+      settingsCondition.constraint(folderValue)
+        ? { ...errorMessage, [folderName]: undefined }
+        : {
+            ...errorMessage,
+            [folderName]: settingsCondition.message,
+          };
 
     setErrorMessage(updatedErrorMessage);
 
@@ -51,18 +49,18 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
   return (
     <Accordion activeKey={displayFormFolders ? "0" : undefined}>
       <Card className="mt-3">
-        <Accordion.Toggle
+        <Accordion.Button
           as={Card.Header}
           eventKey="0"
           className="pointer"
           onClick={() => setDisplayFormFolders(!displayFormFolders)}
         >
           <FontAwesomeIcon
-            className="mr-2"
+            className="me-2"
             icon={displayFormFolders ? faMinus : faPlus}
           />
           Folder Settings
-        </Accordion.Toggle>
+        </Accordion.Button>
         <Accordion.Collapse eventKey="0">
           <Card.Body>
             <Row>

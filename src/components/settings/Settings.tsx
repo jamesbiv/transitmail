@@ -5,11 +5,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faCog, faSync } from "@fortawesome/free-solid-svg-icons";
 import {
   EImapResponseStatus,
+  ESmtpResponseStatus,
   IFoldersEntry,
   IImapResponse,
   ISettings,
   ISettingsErrors,
   ISettingsFolders,
+  ISmtpResponse,
 } from "interfaces";
 import { DependenciesContext } from "contexts";
 
@@ -19,13 +21,8 @@ interface ISettingsValidation {
 }
 
 export const Settings: React.FC = () => {
-  const {
-    imapHelper,
-    imapSocket,
-    smtpSocket,
-    localStorage,
-    stateManager,
-  } = useContext(DependenciesContext);
+  const { imapHelper, imapSocket, smtpSocket, localStorage, stateManager } =
+    useContext(DependenciesContext);
 
   const settingsDefault: Partial<ISettings> = {
     folderSettings: {
@@ -44,17 +41,15 @@ export const Settings: React.FC = () => {
 
   const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
 
-  const [validation, setValidation] = useState<ISettingsValidation | undefined>(
-    undefined
-  );
+  const [validation, setValidation] =
+    useState<ISettingsValidation | undefined>(undefined);
 
   const saveSettings = async (): Promise<void> => {
     const validationErrors: ISettingsErrors = processValidationConditions();
 
     if (Object.keys(validationErrors).length) {
-      const errorMessages: string = processValidationErrorMessages(
-        validationErrors
-      );
+      const errorMessages: string =
+        processValidationErrorMessages(validationErrors);
 
       if (settings.folderSettings) {
         setDisplayFormFolders(true);
@@ -138,12 +133,33 @@ export const Settings: React.FC = () => {
     )}</ul>`;
   };
 
-  const verifySettings = (): void => {
-    const imapVerfied: boolean = true;
-    const smtpVerfied: boolean = true;
+  const verifySettings = async (): Promise<void> => {
+    imapSocket.imapClose();
+    imapSocket.imapConnect(false);
 
-    imapSocket;
-    smtpSocket;
+    smtpSocket.smtpClose();
+    smtpSocket.smtpConnect(false);
+
+    let imapVerfied: boolean = false;
+    let smtpVerfied: boolean = true;
+
+    const imapAuthroiseResponse: IImapResponse =
+      await imapSocket.imapAuthorise();
+
+    if (imapAuthroiseResponse.status === EImapResponseStatus.OK) {
+      imapVerfied = true;
+    }
+
+    imapSocket.imapClose();
+
+    const smtpAuthroiseResponse: ISmtpResponse =
+      await smtpSocket.smtpAuthorise();
+
+    if (smtpAuthroiseResponse.status === ESmtpResponseStatus.Success) {
+      smtpVerfied = true;
+    }
+
+    smtpSocket.smtpClose();
 
     if (imapVerfied && smtpVerfied) {
       stateManager.showMessageModal({
@@ -153,7 +169,7 @@ export const Settings: React.FC = () => {
       });
     } else {
       stateManager.showMessageModal({
-        title: "Unabled to verify your settings",
+        title: "Unable to verify your settings",
         content:
           "Unable to verifiy your email settings, please check your credientals and try again",
         action: () => {},
@@ -170,9 +186,8 @@ export const Settings: React.FC = () => {
 
     const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
-    const currentFolders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
-      listResponse.data
-    );
+    const currentFolders: IFoldersEntry[] =
+      imapHelper.formatListFoldersResponse(listResponse.data);
 
     Object.keys(folderSettings).forEach(async (settingsFolder: string) => {
       const folderPath: string = folderSettings[settingsFolder];
@@ -182,9 +197,8 @@ export const Settings: React.FC = () => {
       );
 
       if (!folderFound) {
-        const createFolderResponse: IImapResponse = await imapSocket.imapRequest(
-          `CREATE "${folderPath}"`
-        );
+        const createFolderResponse: IImapResponse =
+          await imapSocket.imapRequest(`CREATE "${folderPath}"`);
 
         if (createFolderResponse.status !== EImapResponseStatus.OK) {
           return;
@@ -226,16 +240,15 @@ export const Settings: React.FC = () => {
         <Card.Footer>
           <Row>
             <Col>
-              <Button variant="primary" type="submit" block>
+              <Button variant="primary" type="submit">
                 <FontAwesomeIcon icon={faSave} /> Save
               </Button>
             </Col>
             <Col>
               <Button
-                className="mr-2"
+                className="me-2"
                 type="button"
                 variant="secondary"
-                block
                 onClick={() => verifySettings()}
               >
                 <FontAwesomeIcon icon={faSync} /> Verify{" "}

@@ -1,9 +1,9 @@
 import React from "react";
-import { Form, Col } from "react-bootstrap";
-import { ISettingsSecondaryEmail } from "interfaces";
+import { Form, Col, Row } from "react-bootstrap";
+import { IComposeSender, ISettingsSecondaryEmail } from "interfaces";
 
 interface IComposeSecondaryEmailProps {
-  defaultSender: string;
+  defaultSender: IComposeSender;
   secondaryEmails?: ISettingsSecondaryEmail[];
   updateSenderDetails: (secondaryEmailKey: number) => void;
 }
@@ -15,7 +15,7 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
 }) => {
   return (
     <Form.Group controlId="exampleForm.ControlSelect1">
-      <Form.Row>
+      <Row>
         <Col xs={4} sm={2}>
           <Form.Label>From:</Form.Label>
         </Col>
@@ -28,7 +28,8 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
             }
           >
             <option value={undefined}>
-              Default Sender - {defaultSender}
+              Default Sender - {defaultSender.displayName}
+              &lt;{defaultSender.email}&gt;
             </option>
             {secondaryEmails?.map(
               (
@@ -42,7 +43,7 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
             )}
           </Form.Control>
         </Col>
-      </Form.Row>
+      </Row>
     </Form.Group>
   );
 };

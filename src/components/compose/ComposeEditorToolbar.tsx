@@ -34,9 +34,8 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   saveEmail,
   deleteEmail,
 }) => {
-  const linkButtonTarget: React.RefObject<HTMLButtonElement> = React.useRef<HTMLButtonElement>(
-    null
-  );
+  const linkButtonTarget: React.RefObject<HTMLButtonElement> =
+    React.useRef<HTMLButtonElement>(null);
 
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
@@ -74,8 +73,8 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   };
 
   return (
-    <ButtonToolbar aria-label="" className="pl-2">
-      <ButtonGroup size="sm" className="mr-2 mt-2" aria-label="">
+    <ButtonToolbar aria-label="" className="ps-2">
+      <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
@@ -113,16 +112,16 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faUnderline} />
         </Button>
       </ButtonGroup>
-      <ButtonGroup size="sm" className="mr-2 mt-2" aria-label="">
+      <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-left");
+            toggleBlockType("text-start");
           }}
-          className={checkBlockType("text-left") ? "active" : ""}
+          className={checkBlockType("text-start") ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignLeft} />
         </Button>
@@ -144,9 +143,9 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           onMouseDown={(event: React.SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-right");
+            toggleBlockType("text-end");
           }}
-          className={checkBlockType("text-right") ? "active" : ""}
+          className={checkBlockType("text-end") ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignRight} />
         </Button>
@@ -163,7 +162,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faIndent} />
         </Button>
       </ButtonGroup>
-      <ButtonGroup size="sm" className="mr-2 mt-2" aria-label="">
+      <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
@@ -189,7 +188,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faListOl} />
         </Button>
       </ButtonGroup>
-      <ButtonGroup size="sm" className="mr-2 mt-2" aria-label="">
+      <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
@@ -221,7 +220,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           editorState={editorState}
         />
       </ButtonGroup>
-      <ButtonGroup size="sm" className="mr-2 mt-2" aria-label="">
+      <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
@@ -247,7 +246,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
       </ButtonGroup>
       <ButtonGroup
         size="sm"
-        className="mr-2 mt-2 d-block d-sm-none"
+        className="me-2 mt-2 d-block d-sm-none"
         aria-label=""
       >
         <Button
@@ -264,7 +263,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
       </ButtonGroup>
       <ButtonGroup
         size="sm"
-        className="mr-2 mt-2 d-block d-sm-none"
+        className="me-2 mt-2 d-block d-sm-none"
         aria-label=""
       >
         <Button

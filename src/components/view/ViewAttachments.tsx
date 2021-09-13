@@ -53,13 +53,12 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
     document.body.removeChild(anchorElement);
   };
 
-  const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(
-    null
-  );
+  const [attachmentEventKey, setAttachmentEventKey] =
+    useState<null | string>(null);
 
   return (
     <Accordion onSelect={(eventKey) => setAttachmentEventKey(eventKey)}>
-      <Accordion.Toggle
+      <Accordion.Button
         className="text-dark font-weight-bold text-decoration-none p-0 m-0"
         as={Button}
         variant="link"
@@ -69,7 +68,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
           icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare}
         />{" "}
         Attachments
-      </Accordion.Toggle>
+      </Accordion.Button>
       <Accordion.Collapse eventKey="0" className="p-0 m-0 mt-2">
         <>
           {attachments ? (
@@ -77,13 +76,13 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
               (attachment: IEmailAttachment, attachmentKey: number) => (
                 <div
                   key={attachmentKey}
-                  className="attachments float-left border rounded d-inline small bg-light pl-2 pr-2 pt-1 pb-1 mr-2 mb-2 text-truncate"
+                  className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
                 >
                   <Button
                     variant="light"
                     size="sm"
                     style={{ zIndex: 20000 }}
-                    className="float-right p-0 ml-2"
+                    className="float-end p-0 ms-2"
                     onClick={() => downloadAttachment(attachment)}
                   >
                     <FontAwesomeIcon icon={faDownload} />
@@ -92,13 +91,13 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
                     variant="light"
                     size="sm"
                     style={{ zIndex: 20000 }}
-                    className="float-right p-0 ml-2"
+                    className="float-end p-0 ms-2"
                     onClick={() => viewAttachment(attachment)}
                   >
                     <FontAwesomeIcon icon={faEye} />
                   </Button>
                   <FontAwesomeIcon
-                    className="mr-1"
+                    className="me-1"
                     icon={(() => {
                       switch (attachment.mimeType) {
                         default:

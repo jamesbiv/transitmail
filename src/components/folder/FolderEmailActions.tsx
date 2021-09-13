@@ -148,9 +148,8 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [destinationFolder, setDestinationFolder] = useState<
-    string | undefined
-  >(undefined);
+  const [destinationFolder, setDestinationFolder] =
+    useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -217,9 +216,8 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [destinationFolder, setDestinationFolder] = useState<
-    string | undefined
-  >(undefined);
+  const [destinationFolder, setDestinationFolder] =
+    useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {

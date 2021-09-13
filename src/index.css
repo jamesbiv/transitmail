@@ -160,20 +160,20 @@ pre {
   }
 
   .btn-group-vertical-xs > .btn {
-    margin-left: -1px;
+    margin-start: -1px;
     width: 100%;
   }
 
   .btn-group-vertical-xs > .btn:first-child {
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-    border-top-right-radius: 0.21em !important;
+    border-bottom-end-radius: 0;
+    border-bottom-start-radius: 0;
+    border-top-end-radius: 0.21em !important;
   }
 
   .btn-group-vertical-xs > .btn:last-child {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-bottom-left-radius: 0.21em;
+    border-top-start-radius: 0;
+    border-top-end-radius: 0;
+    border-bottom-start-radius: 0.21em;
   }
 
   .btn-group-vertical-xs > .btn {

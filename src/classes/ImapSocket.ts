@@ -50,16 +50,16 @@ export class ImapSocket {
 
   /**
    * @name imapConnect
+   * @param {boolean} authorise
    * @param {TImapCallback} success
    * @param {TImapCallback} error
-   * @param {boolean} authorise
    * @returns void
    */
   public imapConnect(
+    authorise: boolean = true,
     success?: TImapCallback,
-    error?: TImapCallback,
-    authorise: boolean = true
-  ): void {
+    error?: TImapCallback
+  ): boolean {
     this.session.socket = new WebSocket(
       `wss://${this.settings.host}:${this.settings.port}`,
       "binary"
@@ -67,76 +67,82 @@ export class ImapSocket {
 
     this.session.socket.binaryType = this.session.binaryType;
 
-    this.session.lock = true;
-
-    if (this.session.socket instanceof WebSocket) {
-      /* Websocket onopen */
-      this.session.socket.onopen = (event: Event) => {
-        if (this.session.debug) {
-          console.log("[IMAP] Client Connected");
-        }
-
-        /* To handle the initial response from the server */
-        this.session.request.push({
-          id: "",
-          request: "",
-          ok: () => {},
-          no: () => {},
-          bad: () => {},
-        });
-
-        this.session.lock = false;
-
-        if (authorise) {
-          this.imapAuthorise();
-        } else {
-          success && success(event);
-        }
-      };
-
-      /* Websocket recieving */
-      this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
-        if (message.data instanceof Blob) {
-          const reader: FileReader = new FileReader();
-
-          reader.onload = () => {
-            const result: string = reader.result as string;
-
-            // add progress loader
-            this.session.stream += result.length;
-            this.session.streamCumlative += this.session.stream;
-
-            this.imapResponseHandler(result);
-          };
-
-          reader.readAsText(message.data);
-        }
-      };
-
-      /* Websocket onerror */
-      this.session.socket.onerror = (event: Event) => {
-        if (this.session.debug) {
-          console.error("[IMAP] Connection error", event);
-        }
-
-        if (this.session.retry > 0) {
-          setTimeout(() => {
-            this.imapConnect(success, error, authorise);
-          }, this.session.retry);
-        }
-
-        error && error(event);
-      };
-
-      /* Websocket onclose */
-      this.session.socket.onclose = (event: Event) => {
-        if (this.session.debug) {
-          console.log("[IMAP] Connection closed", event);
-        }
-      };
+    if (!(this.session.socket instanceof WebSocket)) {
+      return false;
     }
 
-    return;
+    this.session.lock = true;
+
+    this.session.socket.onopen = (event: Event) => {
+      if (this.session.debug) {
+        console.log("[IMAP] Client Connected");
+      }
+
+      this.session.request.push({
+        id: "",
+        request: "",
+        ok: () => {},
+        no: () => {},
+        bad: () => {},
+      });
+
+      this.session.lock = false;
+
+      if (authorise) {
+        this.imapAuthorise();
+      } else {
+        success && success(event);
+      }
+    };
+
+    this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
+      if (message.data instanceof Blob) {
+        const reader: FileReader = new FileReader();
+
+        reader.onload = () => {
+          const result: string = reader.result as string;
+
+          this.session.stream += result.length;
+          this.session.streamCumlative += this.session.stream;
+
+          this.imapResponseHandler(result);
+        };
+
+        reader.readAsText(message.data);
+      }
+    };
+
+    this.session.socket.onerror = (event: Event) => {
+      if (this.session.debug) {
+        console.error("[IMAP] Connection error", event);
+      }
+
+      if (this.session.retry > 0) {
+        setTimeout(() => {
+          this.imapConnect(authorise, success, error);
+        }, this.session.retry);
+      }
+
+      error && error(event);
+    };
+
+    this.session.socket.onclose = (event: Event) => {
+      if (this.session.debug) {
+        console.log("[IMAP] Connection closed", event);
+      }
+    };
+
+    return true;
+  }
+
+  /**
+   * @name imapConnect
+   * @returns boolean
+   */
+  public imapClose(): boolean {
+    this.session.socket?.close();
+
+    return true;
   }
 
   /**
@@ -305,18 +311,12 @@ export class ImapSocket {
 
   /**
    * @name imapAuthorise
-   * @returns Promise<boolean>
+   * @returns Promise<IImapResponse>
    */
-  public async imapAuthorise(): Promise<boolean> {
-    const response: IImapResponse = await this.imapRequest(
+  public async imapAuthorise(): Promise<IImapResponse> {
+    return await this.imapRequest(
       "LOGIN " + this.settings.username + " " + this.settings.password
     );
-
-    if (response.status !== EImapResponseStatus.OK) {
-      return false;
-    }
-
-    return true;
   }
 
   /**

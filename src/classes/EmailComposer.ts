@@ -26,7 +26,6 @@ export class EmailComposer {
     };
 
     composedEmail.subject = emailData.subject;
-    
     composedEmail.from = emailData.from;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
@@ -45,7 +44,7 @@ export class EmailComposer {
           ? (composedEmail.cc += ", " + recipient.value)
           : (composedEmail.cc = recipient.value ?? "");
       }
-      
+
       if (recipient.type === "Bcc") {
         composedEmail.bcc
           ? (composedEmail.bcc += ", " + recipient.value)

@@ -1,5 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Card, Alert, Form, Button, Row, Col } from "react-bootstrap";
+import {
+  Card,
+  Alert,
+  Form,
+  Button,
+  Row,
+  Col,
+  ProgressBar,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
@@ -33,23 +41,37 @@ import {
   ISmtpResponse,
   IComposePresets,
   ISettingsSecondaryEmail,
+  IEmail,
+  IImapResponse,
+  EImapResponseStatus,
+  IEmailFlags,
+  EComposePresetType,
+  IComposeSender,
 } from "interfaces";
 import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { EmailComposer } from "classes";
+import { convertAttachments } from "lib";
 
 const emailComposer = new EmailComposer();
 
+interface IViewProgressBar {
+  max: number;
+  now: number;
+}
+
+const progressBar: IViewProgressBar = { max: 0, now: 0 };
+
 export const Compose: React.FC = () => {
-  const { localStorage, stateManager, smtpSocket } = useContext(
-    DependenciesContext
-  );
+  const { imapHelper, imapSocket, localStorage, stateManager, smtpSocket } =
+    useContext(DependenciesContext);
 
-  const defaultSender: string = `"${localStorage.getSetting(
-    "name"
-  )}" <${localStorage.getSetting("email")}>`;
+  const defaultSender: IComposeSender = {
+    email: localStorage.getSetting("email") ?? "",
+    displayName: localStorage.getSetting("name") ?? "",
+  };
 
-  const [from, setFrom] = useState<string>(defaultSender);
+  const [from, setFrom] = useState<IComposeSender>(defaultSender);
 
   const [subject, setSubject] = useState<string | undefined>(undefined);
 
@@ -62,11 +84,13 @@ export const Compose: React.FC = () => {
   const [message, setMessage] = useState<string | undefined>(undefined);
   const [messageType, setMessageType] = useState<string | undefined>(undefined);
 
+  const composePresets: IComposePresets | undefined =
+    stateManager.getComposePresets();
+
   const emailSignature: string = localStorage.getSetting("signature") ?? "";
 
-  const secondaryEmails: ISettingsSecondaryEmail[] = localStorage.getSetting(
-    "secondaryEmails"
-  );
+  const secondaryEmails: ISettingsSecondaryEmail[] =
+    localStorage.getSetting("secondaryEmails");
 
   const findLinkEntities = (
     contentBlock: ContentBlock,
@@ -112,27 +136,169 @@ export const Compose: React.FC = () => {
     )
   );
 
+  const [showComposer, setShowComposer] = useState<boolean>(
+    composePresets?.uid === undefined
+  );
+
+  const [progressBarNow, setProgressBarNow] = useState<number>(0);
+
   useEffect(() => {
-    const composePresets:
-      | IComposePresets
-      | undefined = stateManager.getComposePresets();
+    (async () => {
+      if (composePresets) {
+        let presetEmail: IEmail | undefined;
 
-    if (composePresets) {
-      setEditorState(
-        EditorState.createWithContent(
-          /<\/?[a-z][\s\S]*>/i.test(composePresets.email)
-            ? stateFromHTML(composePresets.email)
-            : ContentState.createFromText(composePresets.email)
-        )
-      );
+        if (composePresets.uid) {
+          const fetchFlagsResponse: IImapResponse =
+            await imapSocket.imapRequest(
+              `UID FETCH ${composePresets.uid} (RFC822.SIZE FLAGS)`
+            );
 
-      setRecipients([{ id: 1, type: "To", value: composePresets.from }]);
-      setSubject("RE: " + composePresets.subject ?? "(no subject)");
-      setAttachments(composePresets.attachments ?? []);
+          if (fetchFlagsResponse.status !== EImapResponseStatus.OK) {
+            return;
+          }
 
-      stateManager.setComposePresets();
-    }
+          const emailFlags: IEmailFlags | undefined =
+            imapHelper.formatFetchEmailFlagsResponse(fetchFlagsResponse.data);
+
+          if (!emailFlags) {
+            return;
+          }
+
+          progressBar.max = emailFlags.size;
+
+          checkProgressBar(() => imapSocket.getStreamAmount());
+
+          const fetchEmailResponse: IImapResponse =
+            await imapSocket.imapRequest(
+              `UID FETCH ${composePresets.uid} RFC822`
+            );
+
+          if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
+            return;
+          }
+
+          presetEmail = imapHelper.formatFetchEmailResponse(
+            fetchEmailResponse.data
+          );
+        } else {
+          presetEmail = composePresets.email;
+        }
+
+        if (presetEmail) {
+          const convertedAttachments: IComposeAttachment[] | undefined =
+            await convertAttachments(presetEmail.attachments);
+
+          setEditorState(
+            EditorState.createWithContent(
+              presetEmail.bodyHtml
+                ? stateFromHTML(presetEmail.bodyHtml)
+                : ContentState.createFromText(presetEmail.bodyText ?? "")
+            )
+          );
+
+          switch (composePresets.type) {
+            case EComposePresetType.Reply:
+              setRecipients([{ id: 1, type: "To", value: presetEmail.from }]);
+              break;
+
+            case EComposePresetType.ReplyAll:
+              // Add functionality
+              break;
+
+            default:
+            case EComposePresetType.Forward:
+              break;
+          }
+
+          setSubject("RE: " + presetEmail.subject ?? "(no subject)");
+
+          if (convertedAttachments) {
+            setAttachments(convertedAttachments);
+          }
+
+          stateManager.setComposePresets();
+        }
+      }
+    })();
   }, []);
+
+  const checkProgressBar = (nowCallback: () => number): void => {
+    const setTimeoutMaxMs: number = 300000; // 5mins
+    let setTimeoutFallback: number = 0;
+
+    progressBar.now = nowCallback();
+
+    const progressBarNow: number = Math.ceil(
+      (progressBar.now / progressBar.max) * 100
+    );
+
+    setProgressBarNow(progressBarNow > 100 ? 100 : progressBarNow);
+
+    const progressBarThreshold: number =
+      progressBar.max - (progressBar.max * 5) / 100;
+
+    if (
+      progressBarThreshold > progressBar.now &&
+      setTimeoutFallback < setTimeoutMaxMs
+    ) {
+      setTimeout(() => {
+        setTimeoutFallback += 10;
+
+        checkProgressBar(nowCallback);
+      }, 10);
+    } else {
+      setTimeout(() => {
+        setShowComposer(true);
+      }, 1000);
+    }
+  };
+
+  const checkProgressBarTest = (
+    nowCallback: () => number | undefined
+  ): void => {
+    const setTimeoutMaxMs: number = 300000; // 5mins
+    let setTimeoutFallback: number = 0;
+
+    const callbackResponse: number | undefined = nowCallback();
+
+    if (!callbackResponse || (callbackResponse && callbackResponse < 1)) {
+      alert(1);
+      setTimeout(() => {
+        alert(2);
+        setTimeoutFallback += 10;
+
+        checkProgressBarTest(nowCallback);
+      }, 10);
+    }
+
+    progressBar.now = callbackResponse!;
+
+    const progressBarNow: number = Math.ceil(
+      (progressBar.now / progressBar.max) * 100
+    );
+
+    //setProgressBarNow(progressBarNow > 100 ? 100 : progressBarNow);
+
+    const progressBarThreshold: number =
+      progressBar.max - (progressBar.max * 5) / 100;
+
+    console.log(callbackResponse, progressBarThreshold, progressBar);
+
+    if (
+      progressBarThreshold > progressBar.now &&
+      setTimeoutFallback < setTimeoutMaxMs
+    ) {
+      setTimeout(() => {
+        setTimeoutFallback += 10;
+
+        console.log(progressBar.now, progressBarNow);
+
+        checkProgressBarTest(nowCallback);
+      }, 10);
+    } else {
+      console.log(`finished`);
+    }
+  };
 
   let lockSendEmail: boolean = false;
 
@@ -149,7 +315,11 @@ export const Compose: React.FC = () => {
 
     lockSendEmail = true;
 
+    smtpSocket.smtpConnect();
+
     const emailResponse: ISmtpResponse = await sendEmailRequest();
+
+    smtpSocket.smtpClose();
 
     if (emailResponse.status === ESmtpResponseStatus.Success) {
       stateManager.showMessageModal({
@@ -171,18 +341,16 @@ export const Compose: React.FC = () => {
   };
 
   const sendEmailRequest = async (): Promise<ISmtpResponse> => {
-    smtpSocket.smtpConnect();
-
     const emailData: IComposedEmail = emailComposer.composeEmail({
       editorState: editorState,
-      from: from,
+      from: `"${from.displayName}" <${from.email}>`,
       subject: subject,
       recipients: recipients,
       attachments: attachments,
     });
 
     const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-      `MAIL from: ${emailData.from}`,
+      `MAIL from: ${from.email}`,
       250
     );
 
@@ -207,6 +375,10 @@ export const Compose: React.FC = () => {
     if (dataResponse.status !== ESmtpResponseStatus.Success) {
       return dataResponse;
     }
+
+    progressBar.max = 1000000000;
+
+    checkProgressBarTest(smtpSocket.getBufferedAmount);
 
     const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `${emailData.payload}\r\n\r\n.`,
@@ -243,14 +415,14 @@ export const Compose: React.FC = () => {
 
   const blockStyleFn = (contentBlock: ContentBlock): string => {
     switch (contentBlock.getType()) {
-      case "text-left":
-        return "text-left";
+      case "text-start":
+        return "text-start";
 
       case "text-center":
         return "text-center";
 
-      case "text-right":
-        return "text-right";
+      case "text-end":
+        return "text-end";
 
       case "text-indent":
         return "text-indent";
@@ -261,15 +433,14 @@ export const Compose: React.FC = () => {
   };
 
   const updateSenderDetails = (secondaryEmailKey?: number): void => {
-    const secondaryEmail = secondaryEmailKey
-      ? secondaryEmails[secondaryEmailKey]
-      : undefined;
+    const secondaryEmail = secondaryEmails[secondaryEmailKey ?? NaN];
 
-    const updatedDetails: string = secondaryEmail
-      ? `"${secondaryEmail.name}" <${secondaryEmail.email}>`
-      : `"${localStorage.getSetting("name")}" <${localStorage.getSetting(
-          "email"
-        )}>`;
+    const updatedDetails: IComposeSender = secondaryEmail
+      ? { displayName: secondaryEmail.name, email: secondaryEmail.email }
+      : {
+          displayName: localStorage.getSetting("name"),
+          email: localStorage.getSetting("email"),
+        };
 
     setFrom(updatedDetails);
   };
@@ -281,12 +452,20 @@ export const Compose: React.FC = () => {
   const deleteEmail: () => void = () => {
     setEditorState(EditorState.createEmpty());
 
-    setRecipients([]);
+    setRecipients([{ id: 1, type: "To", value: "" }]);
     setSubject(undefined);
     setAttachments([]);
   };
 
-  return (
+  return !showComposer ? (
+    <Card className="mt-0 mt-sm-3">
+      <Card.Body>
+        <React.Fragment>
+          <ProgressBar className="mb-2" now={progressBarNow} />
+        </React.Fragment>
+      </Card.Body>
+    </Card>
+  ) : (
     <Card className="mt-0 mt-sm-3">
       <Card.Header>
         <Row>
@@ -298,12 +477,12 @@ export const Compose: React.FC = () => {
             </h4>
           </Col>
           <Col
-            className="d-none d-sm-block text-right text-sm-right text-nowrap"
+            className="d-none d-sm-block text-end text-sm-end text-nowrap"
             xs={6}
           >
             <Button
               onClick={() => sendEmail()}
-              className="mr-2"
+              className="me-2"
               variant="primary"
               type="button"
             >
@@ -313,7 +492,7 @@ export const Compose: React.FC = () => {
               size="sm"
               variant="outline-dark"
               type="button"
-              className="mr-2"
+              className="me-2"
               onClick={() => saveEmail()}
             >
               Save
@@ -330,7 +509,7 @@ export const Compose: React.FC = () => {
         </Row>
       </Card.Header>
       <Form>
-        <Card.Body className="pt-3 pl-3 pr-3 pb-0">
+        <Card.Body className="pt-3 ps-3 pe-3 pb-0">
           <Alert
             className={!message ? "d-none" : "d-block"}
             variant={
@@ -373,7 +552,7 @@ export const Compose: React.FC = () => {
             saveEmail={saveEmail}
             deleteEmail={deleteEmail}
           />
-          <div className="mt-2 ml-2 mr-2 mb-2 p-3 border rounded inner-shaddow">
+          <div className="mt-2 ms-2 me-2 mb-2 p-3 border rounded inner-shaddow">
             <Editor
               customStyleMap={{
                 link: {
@@ -393,12 +572,7 @@ export const Compose: React.FC = () => {
           />
         </div>
         <Card.Footer className="d-block d-sm-none">
-          <Button
-            block
-            onClick={() => sendEmail()}
-            variant="primary"
-            type="button"
-          >
+          <Button onClick={() => sendEmail()} variant="primary" type="button">
             <FontAwesomeIcon icon={faPaperPlane} /> Send
           </Button>
         </Card.Footer>

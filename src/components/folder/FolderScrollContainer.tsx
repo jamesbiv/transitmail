@@ -129,7 +129,7 @@ export class FolderScrollContainer extends React.PureComponent<
     if (this.props.folderEmails !== prevProps.folderEmails) {
       this.infiniteScroll.setTotalEntries(this.props.folderEmails?.length ?? 0);
 
-      this.updateVisibleEmails()
+      this.updateVisibleEmails();
     }
   };
 
@@ -173,8 +173,8 @@ export class FolderScrollContainer extends React.PureComponent<
           if (forceToogle !== undefined) {
             this.props.folderEmails[emailKey].selected = forceToogle;
           } else {
-            this.props.folderEmails[emailKey].selected = !this.props
-              .folderEmails[emailKey].selected;
+            this.props.folderEmails[emailKey].selected =
+              !this.props.folderEmails[emailKey].selected;
           }
         }
       }

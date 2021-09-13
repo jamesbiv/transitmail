@@ -2,6 +2,7 @@ export * from "./IComponent";
 export * from "./IComposeAttachment";
 export * from "./IComposePresets";
 export * from "./IComposeRecipient";
+export * from "./IComposeSender";
 export * from "./IComposedEmail";
 export * from "./IEmail";
 export * from "./IEmailFlagTypes";
