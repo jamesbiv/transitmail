@@ -38,7 +38,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
   };
 
   return (
-    <Row className="border-bottom pt-1 pb-1 font-weight-bold bg-light">
+    <Row className="border-bottom p-2 font-weight-bold bg-light g-0">
       <Col
         xs={0}
         sm={0}

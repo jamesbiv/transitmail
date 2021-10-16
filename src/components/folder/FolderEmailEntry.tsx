@@ -29,7 +29,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
 }) => {
   return (
     <Row
-      className={`border-bottom pt-1 pt-sm-2 pb-1 pointer ${
+      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${
         email.selected && "bg-light"
       }
       ${
@@ -134,7 +134,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
         </p>
       </Col>
       <Col
-        className="d-xs-block d-sm-none text-truncate subject-xs"
+        className="d-xs-block d-sm-none text-truncate ps-3 subject-xs"
         xs={10}
         sm={0}
         md={0}

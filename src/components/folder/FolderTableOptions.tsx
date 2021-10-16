@@ -23,8 +23,8 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
 }) => {
   return (
     <Collapse in={displayTableOptions}>
-      <Row className="border-bottom pt-2 pb-2 folder-sticky-top bg-white">
-        <Col className="ps-1 ps-md-3 pe-0">
+      <Row className="border-bottom g-0 ps-1 pe-1 pt-2 pb-2 folder-sticky-top bg-white">
+        <Col className="ps-md-1">
           <span className="d-none d-md-inline-block">
             <em>Selection options</em>
           </span>

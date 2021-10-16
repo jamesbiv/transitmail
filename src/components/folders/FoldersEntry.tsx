@@ -1,5 +1,12 @@
 import React from "react";
-import { Accordion, ListGroup, Button, Row, Col } from "react-bootstrap";
+import {
+  Accordion,
+  ListGroup,
+  Button,
+  Row,
+  Col,
+  useAccordionButton,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolderOpen,
@@ -19,6 +26,7 @@ interface IFoldersEntryProps {
     actionFolderId?: string
   ) => void;
   updateActiveKeyFolderId: (activeKey: string, folderId: string) => void;
+  toggleAccordionActiveKey: (eventKey: string) => void;
 }
 
 export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
@@ -26,6 +34,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
   activeFolderId,
   toggleActionModal,
   updateActiveKeyFolderId,
+  toggleAccordionActiveKey,
 }) => {
   return !folderEntry.folders.length ? (
     <ListGroup.Item
@@ -59,10 +68,9 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
       </Row>
     </ListGroup.Item>
   ) : (
-    <React.Fragment key={folderEntry.id}>
-      <Accordion.Button
-        as={ListGroup.Item}
-        eventKey={folderEntry.id.toString()}
+    <React.Fragment>
+      <ListGroup.Item
+        onClick={() => toggleAccordionActiveKey(folderEntry.id.toString())}
         className="pointer"
       >
         <Row>
@@ -94,8 +102,12 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             </Button>
           </Col>
         </Row>
-      </Accordion.Button>
-      <Accordion.Collapse eventKey={folderEntry.id.toString()}>
+      </ListGroup.Item>
+      <Accordion.Collapse
+        eventKey={folderEntry.id.toString()}
+        as={ListGroup.Item}
+        className="p-0"
+      >
         <ListGroup variant="flush">
           {folderEntry.folders.map((folderSubEntry: IFoldersSubEntry) => (
             <ListGroup.Item

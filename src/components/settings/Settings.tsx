@@ -210,9 +210,13 @@ export const Settings: React.FC = () => {
   return (
     <Card className="mt-0 mt-sm-3 mb-3">
       <Card.Header>
-        <h4 className="p-0 m-0 text-nowrap">
-          <FontAwesomeIcon icon={faCog} /> Settings
-        </h4>
+        <Row className="pt-2 pt-sm-0 pb-2 pb-sm-0">
+          <Col xs={6}>
+            <h4 className="p-0 m-0 text-nowrap">
+              <FontAwesomeIcon icon={faCog} /> Settings
+            </h4>
+          </Col>
+        </Row>
       </Card.Header>
       <Form
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
@@ -240,20 +244,24 @@ export const Settings: React.FC = () => {
         <Card.Footer>
           <Row>
             <Col>
-              <Button variant="primary" type="submit">
-                <FontAwesomeIcon icon={faSave} /> Save
-              </Button>
+              <div className="d-grid gap-2">
+                <Button variant="primary" type="submit">
+                  <FontAwesomeIcon icon={faSave} /> Save
+                </Button>
+              </div>
             </Col>
             <Col>
-              <Button
-                className="me-2"
-                type="button"
-                variant="secondary"
-                onClick={() => verifySettings()}
-              >
-                <FontAwesomeIcon icon={faSync} /> Verify{" "}
-                <span className="d-none d-sm-inline-block">settings</span>
-              </Button>
+              <div className="d-grid gap-2">
+                <Button
+                  className="me-2"
+                  type="button"
+                  variant="secondary"
+                  onClick={() => verifySettings()}
+                >
+                  <FontAwesomeIcon icon={faSync} /> Verify{" "}
+                  <span className="d-none d-sm-inline-block">settings</span>
+                </Button>
+              </div>
             </Col>
           </Row>
         </Card.Footer>

@@ -103,10 +103,10 @@ export class InfiniteScroll {
       pageSize: this.defaultPageSize,
       increment: this.defaultPageSize,
       desktopBreakpoint: 576,
-      loaderHeight: 64,
+      loaderHeight: 65,
       navbarOffset: 56,
-      placeholderDesktopHeight: 61,
-      placeholderMobileHeight: 133,
+      placeholderDesktopHeight: 65,
+      placeholderMobileHeight: 141,
       ...settings,
     };
 

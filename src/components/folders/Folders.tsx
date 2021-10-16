@@ -1,7 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { IFoldersEntry } from "interfaces";
 import { FoldersEntry, FoldersEntryActions, EFolderEntryActionType } from ".";
-import { Card, Col, Accordion, Spinner, Button, Row } from "react-bootstrap";
+import {
+  Card,
+  Col,
+  Accordion,
+  Spinner,
+  Button,
+  Row,
+  useAccordionButton,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFolderOpen,
@@ -65,11 +73,23 @@ export const Folders: React.FC = () => {
     setActionType(actionType), setShowActionModal(true);
   };
 
+  const [displayAccordionActiveKey, setAccordionActiveKey] =
+    useState<string | undefined>(undefined);
+
+  const toggleAccordionActiveKey: (eventKey: string) => void = (
+    eventKey: string
+  ) => {
+    const activeKey: string | undefined =
+      eventKey !== displayAccordionActiveKey ? eventKey : undefined;
+
+    setAccordionActiveKey(activeKey);
+  };
+
   return (
     <React.Fragment>
       <Card className="mt-0 mt-sm-3 mb-3">
         <Card.Header>
-          <Row>
+          <Row className="pt-2 pt-sm-0">
             <Col xs={12} sm={6}>
               <h4 className="p-0 m-0 text-nowrap">
                 <FontAwesomeIcon icon={faFolderOpen} /> Folders
@@ -108,6 +128,7 @@ export const Folders: React.FC = () => {
           variant="dark"
         />
         <Accordion
+          activeKey={displayAccordionActiveKey}
           onSelect={(id: string | null) => setActiveFolderId(id ?? undefined)}
           className={!folders?.length ? "d-none" : ""}
         >
@@ -118,6 +139,7 @@ export const Folders: React.FC = () => {
               activeFolderId={activeFolderId}
               toggleActionModal={toggleActionModal}
               updateActiveKeyFolderId={updateActiveKeyFolderId}
+              toggleAccordionActiveKey={toggleAccordionActiveKey}
             />
           ))}
         </Accordion>

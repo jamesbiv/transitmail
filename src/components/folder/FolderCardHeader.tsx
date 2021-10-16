@@ -18,7 +18,7 @@ export const FolderCardHeader: React.FC<FolderCardHeaderProps> = ({
 }) => {
   return (
     <Card.Header>
-      <Row className="pt-3 pt-sm-0">
+      <Row className="pt-2 pt-sm-0">
         <Col xs={12} sm={6} md={7} lg={9}>
           <h4 className="p-0 m-0 text-nowrap text-truncate">
             <FontAwesomeIcon icon={faInbox} /> {folderName}

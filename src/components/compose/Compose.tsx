@@ -378,7 +378,7 @@ export const Compose: React.FC = () => {
 
     progressBar.max = 1000000000;
 
-    checkProgressBarTest(smtpSocket.getBufferedAmount);
+    //checkProgressBarTest(smtpSocket.getBufferedAmount);
 
     const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `${emailData.payload}\r\n\r\n.`,
@@ -468,7 +468,7 @@ export const Compose: React.FC = () => {
   ) : (
     <Card className="mt-0 mt-sm-3">
       <Card.Header>
-        <Row>
+        <Row className="pt-2 pt-sm-0 pb-2 pb-sm-0">
           <Col xs={6}>
             <h4 className="p-0 m-0 text-nowrap middle">
               <span className="align-middle">
@@ -509,7 +509,7 @@ export const Compose: React.FC = () => {
         </Row>
       </Card.Header>
       <Form>
-        <Card.Body className="pt-3 ps-3 pe-3 pb-0">
+        <Card.Body className="p-2 ps-3 pe-3">
           <Alert
             className={!message ? "d-none" : "d-block"}
             variant={

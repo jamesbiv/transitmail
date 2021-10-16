@@ -8,7 +8,7 @@ import {
   IFolderScrollSpinner,
   IInfinateScrollHandler,
 } from "interfaces";
-import { Container, Spinner } from "react-bootstrap";
+import { Card, Spinner } from "react-bootstrap";
 import {
   FolderEmailEntry,
   FolderPlaceholder,
@@ -215,7 +215,7 @@ export class FolderScrollContainer extends React.PureComponent<
 
   render() {
     return (
-      <Container fluid>
+      <Card.Body className="p-0">
         <FolderTableOptions
           displayTableOptions={this.state.displayTableOptions}
           toggleSelection={this.toggleSelection}
@@ -252,7 +252,7 @@ export class FolderScrollContainer extends React.PureComponent<
           </div>
         )}
         <FolderPlaceholder height={this.state.folderPlaceholder?.bottom} />
-      </Container>
+      </Card.Body>
     );
   }
 }

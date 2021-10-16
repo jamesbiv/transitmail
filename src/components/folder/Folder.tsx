@@ -197,7 +197,7 @@ export const Folder: React.FC = () => {
 
   return (
     <React.Fragment>
-      <Card className={`${displayCardHeader ? "mt-0 mt-sm-3" : ""} mb-3`}>
+      <Card className={`${displayCardHeader ? "p-0 mt-0 mt-sm-3" : ""} mb-3`}>
         {displayCardHeader && (
           <FolderCardHeader
             folderName={stateManager.getFolderId()?.split("/").pop() ?? ""}

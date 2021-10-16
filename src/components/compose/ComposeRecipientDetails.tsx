@@ -144,7 +144,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> =
           )
         )}
         <Form.Group as={Row} controlId="formComposeSubject">
-          <Form.Label xs={4} sm={2} column className="pt-1 text-nowrap">
+          <Form.Label xs={4} sm={2} column className="pt-1 pb-0 text-nowrap">
             Subject
           </Form.Label>
           <Col xs={8} sm={10}>

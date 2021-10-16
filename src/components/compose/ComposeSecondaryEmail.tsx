@@ -28,8 +28,8 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
             }
           >
             <option value={undefined}>
-              Default Sender - {defaultSender.displayName}
-              &lt;{defaultSender.email}&gt;
+              Default Sender - {defaultSender.displayName} &lt;
+              {defaultSender.email}&gt;
             </option>
             {secondaryEmails?.map(
               (
