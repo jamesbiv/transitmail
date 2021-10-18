@@ -22,6 +22,7 @@
   },
   "plugins": ["react", "@typescript-eslint"],
   "rules": {
+    "@typescript-eslint/no-explicit-any": "error",
     "sort-imports": "off",
     "sort-keys": "off",
     "no-unused-vars": "off",

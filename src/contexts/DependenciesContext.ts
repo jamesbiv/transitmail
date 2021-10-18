@@ -23,4 +23,6 @@ const dependencies: IDependencies = {
   stateManager: new StateManager(),
 };
 
+export const directAccessToDependencies = () => dependencies;
+
 export const DependenciesContext = createContext(dependencies);

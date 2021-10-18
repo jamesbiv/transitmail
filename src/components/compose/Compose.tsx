@@ -51,16 +51,9 @@ import {
 import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { EmailComposer } from "classes";
-import { convertAttachments } from "lib";
+import { convertAttachments, initateProgressBar } from "lib";
 
 const emailComposer = new EmailComposer();
-
-interface IViewProgressBar {
-  max: number;
-  now: number;
-}
-
-const progressBar: IViewProgressBar = { max: 0, now: 0 };
 
 export const Compose: React.FC = () => {
   const { imapHelper, imapSocket, localStorage, stateManager, smtpSocket } =
@@ -83,6 +76,8 @@ export const Compose: React.FC = () => {
 
   const [message, setMessage] = useState<string | undefined>(undefined);
   const [messageType, setMessageType] = useState<string | undefined>(undefined);
+
+  const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
   const composePresets: IComposePresets | undefined =
     stateManager.getComposePresets();
@@ -140,8 +135,6 @@ export const Compose: React.FC = () => {
     composePresets?.uid === undefined
   );
 
-  const [progressBarNow, setProgressBarNow] = useState<number>(0);
-
   useEffect(() => {
     (async () => {
       if (composePresets) {
@@ -164,9 +157,12 @@ export const Compose: React.FC = () => {
             return;
           }
 
-          progressBar.max = emailFlags.size;
-
-          checkProgressBar(() => imapSocket.getStreamAmount());
+          initateProgressBar(
+            emailFlags.size,
+            setProgressBarNow,
+            () => imapSocket.getStreamAmount(),
+            () => setShowComposer(true)
+          );
 
           const fetchEmailResponse: IImapResponse =
             await imapSocket.imapRequest(
@@ -221,84 +217,6 @@ export const Compose: React.FC = () => {
       }
     })();
   }, []);
-
-  const checkProgressBar = (nowCallback: () => number): void => {
-    const setTimeoutMaxMs: number = 300000; // 5mins
-    let setTimeoutFallback: number = 0;
-
-    progressBar.now = nowCallback();
-
-    const progressBarNow: number = Math.ceil(
-      (progressBar.now / progressBar.max) * 100
-    );
-
-    setProgressBarNow(progressBarNow > 100 ? 100 : progressBarNow);
-
-    const progressBarThreshold: number =
-      progressBar.max - (progressBar.max * 5) / 100;
-
-    if (
-      progressBarThreshold > progressBar.now &&
-      setTimeoutFallback < setTimeoutMaxMs
-    ) {
-      setTimeout(() => {
-        setTimeoutFallback += 10;
-
-        checkProgressBar(nowCallback);
-      }, 10);
-    } else {
-      setTimeout(() => {
-        setShowComposer(true);
-      }, 1000);
-    }
-  };
-
-  const checkProgressBarTest = (
-    nowCallback: () => number | undefined
-  ): void => {
-    const setTimeoutMaxMs: number = 300000; // 5mins
-    let setTimeoutFallback: number = 0;
-
-    const callbackResponse: number | undefined = nowCallback();
-
-    if (!callbackResponse || (callbackResponse && callbackResponse < 1)) {
-      alert(1);
-      setTimeout(() => {
-        alert(2);
-        setTimeoutFallback += 10;
-
-        checkProgressBarTest(nowCallback);
-      }, 10);
-    }
-
-    progressBar.now = callbackResponse!;
-
-    const progressBarNow: number = Math.ceil(
-      (progressBar.now / progressBar.max) * 100
-    );
-
-    //setProgressBarNow(progressBarNow > 100 ? 100 : progressBarNow);
-
-    const progressBarThreshold: number =
-      progressBar.max - (progressBar.max * 5) / 100;
-
-    console.log(callbackResponse, progressBarThreshold, progressBar);
-
-    if (
-      progressBarThreshold > progressBar.now &&
-      setTimeoutFallback < setTimeoutMaxMs
-    ) {
-      setTimeout(() => {
-        setTimeoutFallback += 10;
-
-        console.log(progressBar.now, progressBarNow);
-
-        checkProgressBarTest(nowCallback);
-      }, 10);
-    } else {
-      console.log(`finished`);
-    }
-  };
 
   let lockSendEmail: boolean = false;
 
@@ -375,10 +293,6 @@ export const Compose: React.FC = () => {
     if (dataResponse.status !== ESmtpResponseStatus.Success) {
       return dataResponse;
     }
-
-    progressBar.max = 1000000000;
-
-    //checkProgressBarTest(smtpSocket.getBufferedAmount);
 
     const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `${emailData.payload}\r\n\r\n.`,

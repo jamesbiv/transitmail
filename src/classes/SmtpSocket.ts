@@ -324,7 +324,7 @@ export class SmtpSocket {
    * @name getStreamAmount
    * @returns number
    */
-  public getBufferedAmount = (): number | undefined => {
-    return this.session.socket?.bufferedAmount;
+  public getBufferedAmount = (): number => {
+    return this.session.socket?.bufferedAmount ?? 0;
   };
 }

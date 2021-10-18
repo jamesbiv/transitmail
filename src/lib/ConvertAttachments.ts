@@ -6,14 +6,14 @@ import { MimeTools } from "lib";
  * @param {IEmailAttachment[]} attachments
  * @returns IComposeAttachment[]
  */
-const convertAttachments = async (
+export const convertAttachments = async (
   attachments: IEmailAttachment[] | undefined
 ): Promise<IComposeAttachment[] | undefined> => {
   if (!attachments) {
     return undefined;
   }
 
-  let count: number = 0;
+  let attachmentCount: number = 0;
 
   return await attachments.reduce(
     async (
@@ -33,7 +33,7 @@ const convertAttachments = async (
       });
 
       (await convertedAttachments).push({
-        id: count++,
+        id: attachmentCount++,
         filename: attachment.filename,
         size: 0,
         mimeType: attachment.mimeType,
@@ -45,5 +45,3 @@ const convertAttachments = async (
     Promise.resolve([])
   );
 };
-
-export default convertAttachments;

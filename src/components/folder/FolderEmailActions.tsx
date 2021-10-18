@@ -17,6 +17,11 @@ import {
   IImapResponse,
 } from "interfaces";
 import { DependenciesContext } from "contexts";
+import {
+  copyEmailToFolder,
+  deleteEmailFromFolder,
+  moveEmailToFolder,
+} from "lib";
 
 interface IFolderEmailActionsProps {
   folderEmailActionState: {
@@ -24,7 +29,6 @@ interface IFolderEmailActionsProps {
     actionType: EFolderEmailActionType;
     showActionModal: boolean;
   };
-  removeUids: (emailUids: number[]) => void;
   onHide: () => void;
 }
 
@@ -47,7 +51,6 @@ interface IFolderEmailActionComponent {
 
 export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
   folderEmailActionState,
-  removeUids,
   onHide,
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
@@ -114,7 +117,6 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
         {React.createElement(FolderEmailAction[actionType].element, {
           actionUids,
           folders,
-          removeUids,
           imapSocket,
           submit,
           changeSubmit,
@@ -134,7 +136,6 @@ interface IFolderEmailActionProps {
   folders: IFoldersEntry[];
   imapSocket: ImapSocket;
   submit: boolean;
-  removeUids: (emailUids: number[]) => void;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
   successfulSubmit: () => void;
 }
@@ -144,7 +145,6 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   folders,
   submit,
   imapSocket,
-  removeUids,
   changeSubmit,
   successfulSubmit,
 }) => {
@@ -159,7 +159,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   });
 
   const submitAction = async () => {
-    if (!actionUids) {
+    if (!actionUids || !destinationFolder) {
       return;
     }
 
@@ -169,7 +169,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
       );
     });
 
-    removeUids(actionUids);
+    moveEmailToFolder(actionUids, destinationFolder);
 
     successfulSubmit();
   };
@@ -177,7 +177,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   return (
     <Form.Group controlId="formDisplayName">
       <Form.Label>
-        Copy email(s) to{" "}
+        Move email(s) to{" "}
         <FontAwesomeIcon
           icon={faAsterisk}
           size="xs"
@@ -227,11 +227,17 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
   });
 
   const submitAction = () => {
-    actionUids?.forEach(async (actionUid: number) => {
+    if (!actionUids || !destinationFolder) {
+      return;
+    }
+
+    actionUids.forEach(async (actionUid: number) => {
       await imapSocket.imapRequest(
         `UID COPY ${actionUid} "${destinationFolder}"`
       );
     });
+
+    copyEmailToFolder(actionUids, destinationFolder);
 
     successfulSubmit();
   };
@@ -374,7 +380,6 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
 export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   imapSocket,
-  removeUids,
   submit,
   changeSubmit,
   successfulSubmit,
@@ -398,7 +403,7 @@ export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
         )
     );
 
-    removeUids(actionUids);
+    deleteEmailFromFolder(actionUids);
 
     successfulSubmit();
   };

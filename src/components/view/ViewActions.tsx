@@ -21,6 +21,11 @@ import {
   IImapResponse,
 } from "interfaces";
 import { DependenciesContext } from "contexts";
+import {
+  copyEmailToFolder,
+  moveEmailToFolder,
+  deleteEmailFromFolder,
+} from "lib";
 
 interface IViewActionsProps {
   actionUid?: number;
@@ -190,6 +195,10 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
       return;
     }
 
+    if (actionUid && destinationFolder) {
+      moveEmailToFolder(actionUid, destinationFolder);
+    }
+
     successfulSubmit();
   };
 
@@ -254,6 +263,10 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
 
     if (moveResponse.status !== EImapResponseStatus.OK) {
       return;
+    }
+
+    if (actionUid && destinationFolder) {
+      copyEmailToFolder(actionUid, destinationFolder);
     }
 
     successfulSubmit();
@@ -439,6 +452,10 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
 
     if (deleteResponse.status !== EImapResponseStatus.OK) {
       return;
+    }
+
+    if (actionUid) {
+      deleteEmailFromFolder(actionUid);
     }
 
     successfulSubmit();

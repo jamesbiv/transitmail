@@ -167,15 +167,6 @@ export const Folder: React.FC = () => {
     stateManager.updateActiveKey("compose");
   };
 
-  const removeUids = (emailUids: number[]): void =>
-    emailUids.forEach((emailUid: number) => {
-      folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
-        if (folderEmail.uid === emailUid) {
-          folderEmails?.splice(emailKey, 1);
-        }
-      });
-    });
-
   const toggleActionModal = (actionType: EFolderEmailActionType): void => {
     const actionUids: number[] | undefined = folderEmails?.reduce(
       (selectedUids: number[], folderEmail: IFolderEmail) => {
@@ -234,7 +225,6 @@ export const Folder: React.FC = () => {
       </Card>
       <FolderEmailActions
         folderEmailActionState={folderEmailActionState}
-        removeUids={removeUids}
         onHide={() =>
           setFolderEmailActionState({
             ...folderEmailActionState,

@@ -16,13 +16,7 @@ import {
   EComposePresetType,
 } from "interfaces";
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
-
-interface IViewProgressBar {
-  max: number;
-  now: number;
-}
-
-const progressBar: IViewProgressBar = { max: 0, now: 0 };
+import { initateProgressBar } from "lib";
 
 export const View: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } =
@@ -87,9 +81,12 @@ export const View: React.FC = () => {
 
     setEmailFlags(emailFlags);
 
-    progressBar.max = emailFlags.size;
-
-    checkProgressBar();
+    initateProgressBar(
+      emailFlags.size,
+      setProgressBarNow,
+      () => imapSocket.getStreamAmount(),
+      () => setShowEmail(true)
+    );
 
     const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
       `UID FETCH ${stateManager.getActiveUid()} RFC822`
@@ -104,37 +101,6 @@ export const View: React.FC = () => {
     );
 
     setEmail(email);
-  };
-
-  const checkProgressBar = (): void => {
-    const setTimeoutMaxMs: number = 300000; // 5mins
-    let setTimeoutFallback: number = 0;
-
-    progressBar.now = imapSocket.getStreamAmount();
-
-    const progressBarNow: number = Math.ceil(
-      (progressBar.now / progressBar.max) * 100
-    );
-
-    setProgressBarNow(progressBarNow > 100 ? 100 : progressBarNow);
-
-    const progressBarThreshold: number =
-      progressBar.max - (progressBar.max * 5) / 100;
-
-    if (
-      progressBarThreshold > progressBar.now &&
-      setTimeoutFallback < setTimeoutMaxMs
-    ) {
-      setTimeout(() => {
-        setTimeoutFallback += 10;
-
-        checkProgressBar();
-      }, 10);
-    } else {
-      setTimeout(() => {
-        setShowEmail(true);
-      }, 1000);
-    }
   };
 
   const replyToEmail = async (all: boolean = false): Promise<void> => {

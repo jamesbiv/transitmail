@@ -1,7 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
-import { ImapSocket, SmtpSocket } from "classes";
 import { Card } from "react-bootstrap";
 import { DependenciesContext } from "contexts";
 
@@ -24,7 +23,7 @@ export const Logout: React.FC = () => {
           <li>
             If you would like to login and check email, please visit{" "}
             <b>Inbox</b> or <b>Folders</b>.
-          </li>{" "}
+          </li>
         </ul>
       </Card.Body>
     </Card>
