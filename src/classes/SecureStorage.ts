@@ -4,7 +4,7 @@ import { IImapSettings, ISmtpSettings } from "interfaces";
 type TDataKeys = "activeUid" | "folderId" | "composeMode";
 
 interface IData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 type TSettingsKeys =
@@ -24,10 +24,10 @@ type TSettingsKeys =
   | "folderSettings";
 
 interface ISettings {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-export class LocalStorage {
+export class SecureStorage {
   /**
    * @var {Pick<ISettings, TSettingsKeys>} settings
    */
@@ -47,9 +47,9 @@ export class LocalStorage {
    * @constructor
    */
   constructor() {
-    this.data = this.getLocalStorage("data");
+    this.data = this.getSecureStorage("data");
 
-    this.settings = this.getLocalStorage("settings");
+    this.settings = this.getSecureStorage("settings");
   }
 
   /**
@@ -61,7 +61,7 @@ export class LocalStorage {
   public setData<T>(name: TDataKeys, value: T): void {
     this.data[name] = value;
 
-    this.setLocalStorage("data", this.data);
+    this.setSecureStorage("data", this.data);
   }
 
   /**
@@ -70,7 +70,7 @@ export class LocalStorage {
    * @returns T
    */
   public getData<T>(name: TDataKeys): T {
-    return this.data[name];
+    return this.data[name] as T;
   }
 
   /**
@@ -81,7 +81,7 @@ export class LocalStorage {
   public setSetting<T>(name: TSettingsKeys, value: T): void {
     this.settings[name] = value;
 
-    this.setLocalStorage("settings", this.settings);
+    this.setSecureStorage("settings", this.settings);
   }
 
   /**
@@ -90,7 +90,7 @@ export class LocalStorage {
    * @returns T
    */
   public getSetting<T>(name: TSettingsKeys): T {
-    return this.settings[name];
+    return this.settings[name] as T;
   }
 
   /**
@@ -101,7 +101,7 @@ export class LocalStorage {
   public setSettings(settings: Pick<ISettings, TSettingsKeys>): void {
     this.settings = settings;
 
-    this.setLocalStorage("settings", this.settings);
+    this.setSecureStorage("settings", this.settings);
   }
 
   /**
@@ -122,7 +122,7 @@ export class LocalStorage {
       port: this.settings.imapPort,
       username: this.settings.imapUsername,
       password: this.settings.imapPassword,
-    };
+    } as IImapSettings;
   }
 
   /**
@@ -135,16 +135,16 @@ export class LocalStorage {
       port: this.settings.smtpPort,
       username: this.settings.smtpUsername,
       password: this.settings.smtpPassword,
-    };
+    } as ISmtpSettings;
   }
 
   /**
-   * @name setLocalStorage
+   * @name setSecureStorage
    * @param {string} name
    * @param {T} data
-   * @returns Promise<void>
+   * @returns void
    */
-  private async setLocalStorage<T>(name: string, data: T): Promise<void> {
+  private setSecureStorage<T>(name: string, data: T): void {
     const encryptedData: string = CryptoES.AES.encrypt(
       JSON.stringify(data),
       this.passPhrase
@@ -154,11 +154,11 @@ export class LocalStorage {
   }
 
   /**
-   * @name getLocalStorage
+   * @name getSecureStorage
    * @param {string} name
    * @returns T
    */
-  private getLocalStorage<T>(name: string): T {
+  private getSecureStorage<T>(name: string): T {
     const data: string = localStorage.getItem(name) ?? "";
 
     const decryptedData: string = CryptoES.AES.decrypt(

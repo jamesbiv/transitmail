@@ -66,8 +66,6 @@ export const checkProgressBar = (
       checkProgressBar(setProgressBarNow, currentBytesFn, finalCallbackFn);
     }, 10);
   } else {
-    setTimeout(() => {
-      finalCallbackFn();
-    }, 1000);
+    setTimeout(finalCallbackFn, 1000);
   }
 };

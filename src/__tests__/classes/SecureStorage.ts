@@ -1,22 +1,24 @@
-import { LocalStorage } from "classes";
+import { SecureStorage } from "classes";
 
-const localStorage = new LocalStorage();
+jest.mock("contexts/DependenciesContext");
 
-describe("Testing the LocalStorage class", () => {
+const secureStorage = new SecureStorage();
+
+describe("Testing the SecureStorage class", () => {
   describe("Test setData and getData", () => {
     test("Test a successful set and get senario", () => {
-      localStorage.setData("activeUid", "mockVariableContent");
+      secureStorage.setData("activeUid", "mockVariableContent");
 
-      const getDataResponse: any = localStorage.getData("activeUid");
+      const getDataResponse: any = secureStorage.getData("activeUid");
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });
 
   describe("Test setSetting and getSetting", () => {
     test("Test a successful set and get senario", () => {
-      localStorage.setSetting("name", "mockVariableContent");
+      secureStorage.setSetting("name", "mockVariableContent");
 
-      const getDataResponse: any = localStorage.getSetting("name");
+      const getDataResponse: any = secureStorage.getSetting("name");
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });
@@ -40,9 +42,9 @@ describe("Testing the LocalStorage class", () => {
         folderSettings: {},
       };
 
-      localStorage.setSettings(settingsMock);
+      secureStorage.setSettings(settingsMock);
 
-      const getDataResponse: any = localStorage.getSettings();
+      const getDataResponse: any = secureStorage.getSettings();
       expect(getDataResponse).toEqual(settingsMock);
     });
   });

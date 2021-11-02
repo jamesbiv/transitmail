@@ -1,5 +1,7 @@
 import { SmtpSocket } from "classes";
 
+jest.mock("contexts/DependenciesContext");
+
 const mockItem: any = {};
 
 const smtpSocket = new SmtpSocket({

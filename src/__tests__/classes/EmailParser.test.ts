@@ -1,6 +1,8 @@
 /* eslint-disable no-useless-escape */
 import { EmailParser } from "classes";
 
+jest.mock("contexts/DependenciesContext");
+
 const mockEmailRaw: any = `Return-Path: sender@transitmail.org\r\n\
 Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n\
 To: receiver@transitmail.org\r\n\

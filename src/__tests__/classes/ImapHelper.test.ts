@@ -1,5 +1,7 @@
 import { ImapHelper } from "classes";
 
+jest.mock("contexts/DependenciesContext");
+
 const imapHelper = new ImapHelper();
 
 describe("Testing the ImapHelper class", () => {

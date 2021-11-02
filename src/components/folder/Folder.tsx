@@ -180,9 +180,21 @@ export const Folder: React.FC = () => {
     );
 
     setFolderEmailActionState({
-      actionUids: actionUids,
       actionType: actionType,
+      actionUids: actionUids,
       showActionModal: true,
+    });
+  };
+
+  const updateFolderActionState = (): void => {
+    if (folderEmailActionState.actionType === EFolderEmailActionType.MOVE) {
+      setFolderEmails(stateManager.getCurrentFolder()?.emails ?? []);
+    }
+
+    setFolderEmailActionState({
+      actionType: folderEmailActionState.actionType,
+      actionUids: [],
+      showActionModal: false,
     });
   };
 
@@ -225,12 +237,7 @@ export const Folder: React.FC = () => {
       </Card>
       <FolderEmailActions
         folderEmailActionState={folderEmailActionState}
-        onHide={() =>
-          setFolderEmailActionState({
-            ...folderEmailActionState,
-            showActionModal: false,
-          })
-        }
+        onHide={updateFolderActionState}
       />
     </React.Fragment>
   );

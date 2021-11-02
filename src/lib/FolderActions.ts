@@ -1,17 +1,27 @@
 import { directAccessToDependencies } from "contexts";
-import { IFolderEmail } from "interfaces";
+import { EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
 
 /**
  * @name copyEmailToFolder
- * @param {number} actionUid
+ * @param {number[]} actionUid
  * @param {destinationFolderId} destinationFolderId
  * @returns boolean
  */
 export const copyEmailToFolder = (
-  actionUids: number | number[],
+  actionUids: number[],
   destinationFolderId: string
 ): boolean => {
-  const { stateManager } = directAccessToDependencies();
+  if (!actionUids.length) {
+    return false;
+  }
+
+  const { imapSocket, stateManager } = directAccessToDependencies();
+
+  actionUids.forEach(async (actionUid: number) => {
+    const copyResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID COPY ${actionUid} "${destinationFolderId}"`
+    );
+  });
 
   const currentEmailFolder = stateManager.getCurrentFolder()?.emails;
   const currentEmailFolderId = stateManager.getFolderId();
@@ -20,31 +30,24 @@ export const copyEmailToFolder = (
     return false;
   }
 
-  const actionUidArray: number[] =
-    actionUids instanceof Array ? actionUids : [actionUids];
-
-  const correctEmailKeys: number[] | undefined = getEmailKeys(
-    actionUidArray,
-    currentEmailFolder
-  );
-
-  if (!correctEmailKeys) {
-    return false;
-  }
-
   stateManager.setFolderId(destinationFolderId);
 
   const destinationEmailFolder = stateManager.getCurrentFolder()?.emails;
 
-  if (!destinationEmailFolder) {
-    return true;
+  const copiedFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
+    (currentEmail) => actionUids.includes(currentEmail.id)
+  );
+
+  if (!destinationEmailFolder || !copiedFolderEmails.length) {
+    return false;
   }
 
-  correctEmailKeys.forEach((correctEmailKey: number) => {
-    destinationEmailFolder.push({ ...currentEmailFolder[correctEmailKey] });
-  });
+  const updatedDestinationFolderEmails: IFolderEmail[] = [
+    ...destinationEmailFolder,
+    ...copiedFolderEmails,
+  ];
 
-  stateManager.updateCurrentFolder(currentEmailFolder);
+  stateManager.updateCurrentFolder(updatedDestinationFolderEmails);
   stateManager.setFolderId(currentEmailFolderId);
 
   return true;
@@ -52,15 +55,37 @@ export const copyEmailToFolder = (
 
 /**
  * @name moveEmailToFolder
- * @param {number} actionUid
+ * @param {number[]} actionUid
  * @param {destinationFolderId} destinationFolderId
  * @returns boolean
  */
 export const moveEmailToFolder = (
-  actionUids: number | number[],
+  actionUids: number[],
   destinationFolderId: string
 ): boolean => {
-  const { stateManager } = directAccessToDependencies();
+  if (!actionUids.length) {
+    return false;
+  }
+
+  const { imapSocket, stateManager } = directAccessToDependencies();
+
+  actionUids.forEach(async (actionUid: number) => {
+    const moveResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID MOVE ${actionUid} "${destinationFolderId}"`
+    );
+
+    if (moveResponse.status !== EImapResponseStatus.OK) {
+      await imapSocket.imapRequest(
+        `UID COPY ${actionUid} "${destinationFolderId}"`
+      );
+
+      await imapSocket.imapRequest(
+        `UID STORE ${actionUid} +FLAGS.SILENT (\\Deleted)`
+      );
+
+      await imapSocket.imapRequest(`UID EXPUNGE ${actionUid}`);
+    }
+  });
 
   const currentEmailFolder = stateManager.getCurrentFolder()?.emails;
   const currentEmailFolderId = stateManager.getFolderId();
@@ -69,39 +94,29 @@ export const moveEmailToFolder = (
     return false;
   }
 
-  const actionUidArray: number[] =
-    actionUids instanceof Array ? actionUids : [actionUids];
-
-  const correctEmailKeys: number[] | undefined = getEmailKeys(
-    actionUidArray,
-    currentEmailFolder
+  const movedFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
+    (currentEmail) => actionUids.includes(currentEmail.id)
   );
 
-  if (!correctEmailKeys) {
-    return false;
-  }
+  const updatedCurrentFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
+    (currentEmail) => !actionUids.includes(currentEmail.id)
+  );
 
-  const movedFolderEmails: IFolderEmail[] = [];
-
-  correctEmailKeys.forEach((correctEmailKey: number) => {
-    movedFolderEmails.push({ ...currentEmailFolder[correctEmailKey] });
-    currentEmailFolder.splice(correctEmailKey, 1);
-  });
-
-  stateManager.updateCurrentFolder(currentEmailFolder);
+  stateManager.updateCurrentFolder(updatedCurrentFolderEmails);
   stateManager.setFolderId(destinationFolderId);
 
   const destinationEmailFolder = stateManager.getCurrentFolder()?.emails;
 
   if (!destinationEmailFolder || !movedFolderEmails.length) {
-    return true;
+    return false;
   }
 
-  movedFolderEmails.forEach((movedFolderEmail: IFolderEmail) => {
-    destinationEmailFolder.push(movedFolderEmail);
-  });
+  const updatedDestinationFolderEmails: IFolderEmail[] = [
+    ...destinationEmailFolder,
+    ...movedFolderEmails,
+  ];
 
-  stateManager.updateCurrentFolder(currentEmailFolder);
+  stateManager.updateCurrentFolder(updatedDestinationFolderEmails);
   stateManager.setFolderId(currentEmailFolderId);
 
   return true;
@@ -109,13 +124,21 @@ export const moveEmailToFolder = (
 
 /**
  * @name deleteEmailFromFolder
- * @param {number} actionUid
+ * @param {number[]} actionUid
  * @returns boolean
  */
-export const deleteEmailFromFolder = (
-  actionUids: number | number[]
-): boolean => {
-  const { stateManager } = directAccessToDependencies();
+export const deleteEmailFromFolder = (actionUids: number[]): boolean => {
+  if (!actionUids.length) {
+    return false;
+  }
+
+  const { imapSocket, stateManager } = directAccessToDependencies();
+
+  actionUids.forEach(async (actionUid: number) => {
+    const deleteResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID STORE ${actionUid} +FLAGS (\\Deleted)`
+    );
+  });
 
   const currentEmailFolder = stateManager.getCurrentFolder()?.emails;
   const currentEmailFolderId = stateManager.getFolderId();
@@ -124,74 +147,15 @@ export const deleteEmailFromFolder = (
     return false;
   }
 
-  const actionUidArray: number[] =
-    actionUids instanceof Array ? actionUids : [actionUids];
-
-  const correctEmailKeys: number[] | undefined = getEmailKeys(
-    actionUidArray,
-    currentEmailFolder
+  const updatedCurrentFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
+    (currentEmail) => !actionUids.includes(currentEmail.id)
   );
 
-  if (!correctEmailKeys) {
+  if (!updatedCurrentFolderEmails.length) {
     return false;
   }
 
-  correctEmailKeys.forEach((correctEmailKey: number) => {
-    currentEmailFolder.splice(correctEmailKey, 1);
-  });
-
-  stateManager.updateCurrentFolder(currentEmailFolder);
+  stateManager.updateCurrentFolder(updatedCurrentFolderEmails);
 
   return true;
 };
-
-/**
- * @name getEmailKey[]
- * @param {number[]} actionUid
- * @param {IFolderEmail[]} emailFolder
- * @returns {number[] | undefined}
- */
-const getEmailKeys = (
-  actionUids: number[],
-  emailFolder: IFolderEmail[]
-): number[] | undefined => {
-  const emailKeys: number[] = actionUids.reduce(
-    (emailKeys: number[], actionUid) => {
-      const emailKey = getEmailKey(actionUid, emailFolder);
-
-      if (emailKey !== undefined) {
-        emailKeys.push(emailKey);
-      }
-
-      return emailKeys;
-    },
-    []
-  );
-
-  return emailKeys.length ? emailKeys : undefined;
-};
-
-/**
- * @name getEmailKey
- * @param {number} actionUid
- * @param {IFolderEmail[]} emailFolder
- * @returns number | undefined
- */
-const getEmailKey = (
-  actionUid: number,
-  emailFolder: IFolderEmail[]
-): number | undefined =>
-  emailFolder.reduce(
-    (
-      emailKeyResult: number | undefined,
-      emails: IFolderEmail,
-      emailKey: number
-    ) => {
-      if (emails.id === actionUid) {
-        emailKeyResult = emailKey;
-      }
-
-      return emailKeyResult;
-    },
-    undefined
-  );

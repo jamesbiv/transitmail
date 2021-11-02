@@ -1,5 +1,7 @@
 import { ImapSocket } from "classes";
 
+jest.mock("contexts/DependenciesContext");
+
 const mockEmailRaw: any = {};
 
 const imapSocket = new ImapSocket({

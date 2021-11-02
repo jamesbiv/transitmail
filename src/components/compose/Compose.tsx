@@ -56,12 +56,12 @@ import { convertAttachments, initateProgressBar } from "lib";
 const emailComposer = new EmailComposer();
 
 export const Compose: React.FC = () => {
-  const { imapHelper, imapSocket, localStorage, stateManager, smtpSocket } =
+  const { imapHelper, imapSocket, secureStorage, stateManager, smtpSocket } =
     useContext(DependenciesContext);
 
   const defaultSender: IComposeSender = {
-    email: localStorage.getSetting("email") ?? "",
-    displayName: localStorage.getSetting("name") ?? "",
+    email: secureStorage.getSetting("email") ?? "",
+    displayName: secureStorage.getSetting("name") ?? "",
   };
 
   const [from, setFrom] = useState<IComposeSender>(defaultSender);
@@ -82,10 +82,10 @@ export const Compose: React.FC = () => {
   const composePresets: IComposePresets | undefined =
     stateManager.getComposePresets();
 
-  const emailSignature: string = localStorage.getSetting("signature") ?? "";
+  const emailSignature: string = secureStorage.getSetting("signature") ?? "";
 
   const secondaryEmails: ISettingsSecondaryEmail[] =
-    localStorage.getSetting("secondaryEmails");
+    secureStorage.getSetting("secondaryEmails");
 
   const findLinkEntities = (
     contentBlock: ContentBlock,
@@ -352,8 +352,8 @@ export const Compose: React.FC = () => {
     const updatedDetails: IComposeSender = secondaryEmail
       ? { displayName: secondaryEmail.name, email: secondaryEmail.email }
       : {
-          displayName: localStorage.getSetting("name"),
-          email: localStorage.getSetting("email"),
+          displayName: secureStorage.getSetting("name"),
+          email: secureStorage.getSetting("email"),
         };
 
     setFrom(updatedDetails);

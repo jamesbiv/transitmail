@@ -10,9 +10,7 @@ import {
   faCode,
   IconDefinition,
 } from "@fortawesome/free-solid-svg-icons";
-import { ImapSocket } from "classes";
 import {
-  EImapResponseStatus,
   IEmail,
   IEmailFlags,
   IEmailFlagType,
@@ -25,6 +23,9 @@ import {
   copyEmailToFolder,
   moveEmailToFolder,
   deleteEmailFromFolder,
+  getFlagString,
+  updateFlags,
+  setFlagDefaults,
 } from "lib";
 
 interface IViewActionsProps {
@@ -133,7 +134,6 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
           folders,
           email,
           emailFlags,
-          imapSocket,
           submit,
           changeSubmit,
           successfulSubmit,
@@ -162,7 +162,6 @@ interface IViewActionProps {
   folders: IFoldersEntry[];
   email: IEmail;
   emailFlags: IEmailFlags;
-  imapSocket: ImapSocket;
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
   successfulSubmit: () => void;
@@ -171,7 +170,6 @@ interface IViewActionProps {
 export const ViewActionMove: React.FC<IViewActionProps> = ({
   actionUid,
   folders,
-  imapSocket,
   submit,
   changeSubmit,
   successfulSubmit,
@@ -187,17 +185,11 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async () => {
-    const moveResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID MOVE ${actionUid} "${destinationFolder}"`
-    );
-
-    if (moveResponse.status !== EImapResponseStatus.OK) {
+    if (!actionUid || !destinationFolder) {
       return;
     }
 
-    if (actionUid && destinationFolder) {
-      moveEmailToFolder(actionUid, destinationFolder);
-    }
+    moveEmailToFolder([actionUid], destinationFolder);
 
     successfulSubmit();
   };
@@ -241,7 +233,6 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
 export const ViewActionCopy: React.FC<IViewActionProps> = ({
   actionUid,
   folders,
-  imapSocket,
   submit,
   changeSubmit,
   successfulSubmit,
@@ -257,17 +248,11 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async () => {
-    const moveResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID COPY ${actionUid} "${destinationFolder}"`
-    );
-
-    if (moveResponse.status !== EImapResponseStatus.OK) {
+    if (!actionUid || !destinationFolder) {
       return;
     }
 
-    if (actionUid && destinationFolder) {
-      copyEmailToFolder(actionUid, destinationFolder);
-    }
+    copyEmailToFolder([actionUid], destinationFolder);
 
     successfulSubmit();
   };
@@ -311,31 +296,13 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
 export const ViewActionFlag: React.FC<IViewActionProps> = ({
   actionUid,
   emailFlags,
-  imapSocket,
   submit,
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [flags, updateFlags] = useState<IEmailFlagType[]>([
-    {
-      name: "Answered",
-      id: "\\Answered",
-      enabled: emailFlags.flags.includes("\\Answered"),
-      flagChanged: false,
-    },
-    {
-      name: "Urgent",
-      id: "\\Flagged",
-      enabled: emailFlags.flags.includes("\\Flagged"),
-      flagChanged: false,
-    },
-    {
-      name: "Draft",
-      id: "\\Draft",
-      enabled: emailFlags.flags.includes("\\Draft"),
-      flagChanged: false,
-    },
-  ]);
+  const [flags, setFlags] = useState<IEmailFlagType[]>(
+    setFlagDefaults(emailFlags.flags)
+  );
 
   useEffect(() => {
     if (submit) {
@@ -345,56 +312,13 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async (): Promise<void> => {
-    const enabledFlags: string | undefined = getValidFlags(true);
-
-    if (enabledFlags) {
-      const enabledFlagsResponse: IImapResponse = await imapSocket.imapRequest(
-        `UID STORE ${actionUid} +FLAGS (${enabledFlags})`
-      );
-
-      if (enabledFlagsResponse.status !== EImapResponseStatus.OK) {
-        return;
-      }
+    if (!actionUid || !flags) {
+      return;
     }
 
-    const disabledFlags: string | undefined = getValidFlags(false);
-
-    if (disabledFlags) {
-      const disabledFlagsResponse: IImapResponse = await imapSocket.imapRequest(
-        `UID STORE ${actionUid} -FLAGS (${disabledFlags})`
-      );
-
-      if (disabledFlagsResponse.status !== EImapResponseStatus.OK) {
-        return;
-      }
-    }
+    updateFlags([actionUid], flags);
 
     successfulSubmit();
-  };
-
-  const getValidFlags = (condition?: boolean): string | undefined => {
-    return flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (flag.enabled === condition && flag.flagChanged) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .join(" ");
-  };
-
-  const updateFlagProps = (): void => {
-    emailFlags.flags = flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (flag.enabled) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .filter((flagStatus: string | undefined) => flagStatus)
-      .join(" ");
   };
 
   return (
@@ -411,9 +335,9 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
                 flags[flagIndex].enabled = !flags[flagIndex].enabled;
                 flags[flagIndex].flagChanged = true;
 
-                updateFlags(flags);
+                emailFlags.flags = getFlagString(flags);
 
-                updateFlagProps();
+                setFlags(flags);
               }}
             />
           </li>
@@ -433,7 +357,6 @@ export const ViewActionView: React.FC<IViewActionProps> = ({ email }) => {
 
 export const ViewActionDelete: React.FC<IViewActionProps> = ({
   actionUid,
-  imapSocket,
   submit,
   changeSubmit,
   successfulSubmit,
@@ -446,16 +369,8 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
   });
 
   const submitAction = async () => {
-    const deleteResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID STORE ${actionUid} +FLAGS (\\Deleted)`
-    );
-
-    if (deleteResponse.status !== EImapResponseStatus.OK) {
-      return;
-    }
-
     if (actionUid) {
-      deleteEmailFromFolder(actionUid);
+      deleteEmailFromFolder([actionUid]);
     }
 
     successfulSubmit();

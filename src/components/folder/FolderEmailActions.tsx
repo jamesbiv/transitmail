@@ -21,6 +21,8 @@ import {
   copyEmailToFolder,
   deleteEmailFromFolder,
   moveEmailToFolder,
+  setFlagDefaults,
+  updateFlags,
 } from "lib";
 
 interface IFolderEmailActionsProps {
@@ -144,7 +146,6 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   folders,
   submit,
-  imapSocket,
   changeSubmit,
   successfulSubmit,
 }) => {
@@ -162,12 +163,6 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
     if (!actionUids || !destinationFolder) {
       return;
     }
-
-    actionUids.forEach(async (actionUid: number) => {
-      await imapSocket.imapRequest(
-        `UID MOVE ${actionUid} "${destinationFolder}"`
-      );
-    });
 
     moveEmailToFolder(actionUids, destinationFolder);
 
@@ -279,30 +274,10 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
 export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   submit,
-  imapSocket,
   changeSubmit,
   successfulSubmit,
 }) => {
-  const [flags, updateFlags] = useState<IEmailFlagType[]>([
-    {
-      name: "Answered",
-      id: "\\Answered",
-      enabled: false,
-      flagChanged: false,
-    },
-    {
-      name: "Urgent",
-      id: "\\Flagged",
-      enabled: false,
-      flagChanged: false,
-    },
-    {
-      name: "Draft",
-      id: "\\Draft",
-      enabled: false,
-      flagChanged: false,
-    },
-  ]);
+  const [flags, setFlags] = useState<IEmailFlagType[]>(setFlagDefaults(""));
 
   useEffect(() => {
     if (submit) {
@@ -316,41 +291,9 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
       return;
     }
 
-    const enabledFlags: string | undefined = getValidFlags(true);
-
-    if (enabledFlags) {
-      actionUids.forEach(
-        async (actionUid: number) =>
-          await imapSocket.imapRequest(
-            `UID STORE ${actionUid} +FLAGS (${enabledFlags})`
-          )
-      );
-    }
-
-    const disabledFlags: string | undefined = getValidFlags(false);
-
-    if (disabledFlags) {
-      actionUids.forEach(
-        async (actionUid: number) =>
-          await imapSocket.imapRequest(
-            `UID STORE ${actionUid} -FLAGS (${disabledFlags})`
-          )
-      );
-    }
+    updateFlags(actionUids, flags);
 
     successfulSubmit();
-  };
-
-  const getValidFlags = (condition?: boolean): string | undefined => {
-    return flags
-      .reduce((flagResult: string[], flag: IEmailFlagType) => {
-        if (flag.enabled === condition && flag.flagChanged) {
-          flagResult.push(flag.id);
-        }
-
-        return flagResult;
-      }, [])
-      .join(" ");
   };
 
   return (
@@ -367,7 +310,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
                 flags[flagIndex].enabled = !flags[flagIndex].enabled;
                 flags[flagIndex].flagChanged = true;
 
-                updateFlags(flags);
+                setFlags(flags);
               }}
             />
           </li>
@@ -379,7 +322,6 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
 
 export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
   actionUids,
-  imapSocket,
   submit,
   changeSubmit,
   successfulSubmit,
@@ -395,13 +337,6 @@ export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
     if (!actionUids) {
       return;
     }
-
-    actionUids.forEach(
-      async (actionUid: number) =>
-        await imapSocket.imapRequest(
-          `UID STORE ${actionUid} +FLAGS (\\Deleted)`
-        )
-    );
 
     deleteEmailFromFolder(actionUids);
 

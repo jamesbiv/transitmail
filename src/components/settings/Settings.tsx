@@ -21,7 +21,7 @@ interface ISettingsValidation {
 }
 
 export const Settings: React.FC = () => {
-  const { imapHelper, imapSocket, smtpSocket, localStorage, stateManager } =
+  const { imapHelper, imapSocket, smtpSocket, secureStorage, stateManager } =
     useContext(DependenciesContext);
 
   const settingsDefault: Partial<ISettings> = {
@@ -36,7 +36,7 @@ export const Settings: React.FC = () => {
 
   const settings: ISettings = {
     ...settingsDefault,
-    ...localStorage.getSettings(),
+    ...secureStorage.getSettings() as ISettings,
   };
 
   const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
@@ -65,7 +65,7 @@ export const Settings: React.FC = () => {
 
     setValidation({ message: "Settings saved successfully", type: "info" });
 
-    localStorage.setSettings(settings as Required<ISettings>);
+    secureStorage.setSettings(settings as Required<ISettings>);
 
     await createFolders(settings.folderSettings);
 

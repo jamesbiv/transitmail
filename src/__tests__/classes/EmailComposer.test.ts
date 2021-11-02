@@ -1,5 +1,7 @@
 import { EmailComposer } from "classes";
 
+jest.mock("contexts/DependenciesContext");
+
 const mockEmailData: any = {
   editorState: {
     getCurrentContent: () => jest.fn(),

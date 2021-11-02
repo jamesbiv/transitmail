@@ -52,7 +52,7 @@ const Index: React.FC = () => {
     threshold: 150,
   };
 
-  const { imapSocket, localStorage, smtpSocket, stateManager } =
+  const { imapSocket, secureStorage, smtpSocket, stateManager } =
     useContext(DependenciesContext);
 
   stateManager.indexState = {
@@ -62,8 +62,8 @@ const Index: React.FC = () => {
     setMessageModalState,
   };
 
-  imapSocket.settings = localStorage.getImapSettings();
-  smtpSocket.settings = localStorage.getSmtpSettings();
+  imapSocket.settings = secureStorage.getImapSettings();
+  smtpSocket.settings = secureStorage.getSmtpSettings();
 
   useEffect(() => {
     (document.getElementById("container-main") as HTMLElement).focus();

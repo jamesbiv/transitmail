@@ -57,12 +57,13 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
     useState<null | string>(null);
 
   return (
-    <Accordion onSelect={(eventKey) => setAttachmentEventKey(eventKey)}>
+    <Accordion
+      onSelect={(eventKey: null | string) => setAttachmentEventKey(eventKey)}
+    >
       <Accordion.Button
         className="text-dark font-weight-bold text-decoration-none p-0 m-0"
         as={Button}
         variant="link"
-        eventKey="0"
       >
         <FontAwesomeIcon
           icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare}

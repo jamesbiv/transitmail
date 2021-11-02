@@ -1,8 +1,10 @@
 import { StateManager } from "classes";
 
+jest.mock("contexts/DependenciesContext");
+
 const mockItem: any = {};
 
-const stateManager = new StateManager({} as any);
+const stateManager = new StateManager();
 
 describe("Testing the StateManager class", () => {
   describe("Test ", () => {
@@ -11,9 +13,8 @@ describe("Testing the StateManager class", () => {
 
       stateManager.setActiveUid(mockUid);
 
-      const getActiveUidResponse:
-        | number
-        | undefined = stateManager.getActiveUid();
+      const getActiveUidResponse: number | undefined =
+        stateManager.getActiveUid();
 
       expect(getActiveUidResponse).toEqual(mockUid);
     });
@@ -25,9 +26,8 @@ describe("Testing the StateManager class", () => {
 
       stateManager.setFolderId(mockFolderId);
 
-      const getFolderIdResponse:
-        | string
-        | undefined = stateManager.getFolderId();
+      const getFolderIdResponse: string | undefined =
+        stateManager.getFolderId();
 
       expect(getFolderIdResponse).toEqual(mockFolderId);
     });
@@ -70,9 +70,8 @@ describe("Testing the StateManager class", () => {
 
       stateManager.updateCurrentFolder(mockFolderEmails, "1");
 
-      const updateCurrentFolderResponse:
-        | any
-        | undefined = stateManager.getCurrentFolder();
+      const updateCurrentFolderResponse: any | undefined =
+        stateManager.getCurrentFolder();
 
       expect(updateCurrentFolderResponse).toEqual(mockFolderEmailsReponse);
     });
