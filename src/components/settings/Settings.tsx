@@ -1,6 +1,15 @@
 import React, { FormEvent, useContext, useState } from "react";
 import { SettingsForm, SettingsValidation, validationConditions } from ".";
-import { Row, Col, Card, Form, Button } from "react-bootstrap";
+import {
+  Row,
+  Col,
+  Card,
+  Form,
+  Button,
+  CardHeader,
+  CardBody,
+  CardFooter,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faCog, faSync } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -34,15 +43,16 @@ export const Settings: React.FC = () => {
     },
   };
 
-  const settings: ISettings = {
-    ...settingsDefault,
-    ...secureStorage.getSettings() as ISettings,
-  };
-
   const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
 
-  const [validation, setValidation] =
-    useState<ISettingsValidation | undefined>(undefined);
+  const [validation, setValidation] = useState<ISettingsValidation | undefined>(
+    undefined
+  );
+
+  const [settings, setSettings] = useState<ISettings>({
+    ...settingsDefault,
+    ...(secureStorage.getSettings() as ISettings),
+  });
 
   const saveSettings = async (): Promise<void> => {
     const validationErrors: ISettingsErrors = processValidationConditions();
@@ -209,7 +219,7 @@ export const Settings: React.FC = () => {
 
   return (
     <Card className="mt-0 mt-sm-3 mb-3">
-      <Card.Header>
+      <CardHeader>
         <Row className="pt-2 pt-sm-0 pb-2 pb-sm-0">
           <Col xs={6}>
             <h4 className="p-0 m-0 text-nowrap">
@@ -217,7 +227,7 @@ export const Settings: React.FC = () => {
             </h4>
           </Col>
         </Row>
-      </Card.Header>
+      </CardHeader>
       <Form
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
           event.preventDefault();
@@ -232,16 +242,17 @@ export const Settings: React.FC = () => {
         }}
         noValidate={true}
       >
-        <Card.Body>
+        <CardBody>
           <SettingsValidation validation={validation} />
           <SettingsForm
             settings={settings}
             validationConditions={validationConditions}
             displayFormFolders={displayFormFolders}
+            setSettings={setSettings}
             setDisplayFormFolders={setDisplayFormFolders}
           />
-        </Card.Body>
-        <Card.Footer>
+        </CardBody>
+        <CardFooter>
           <Row>
             <Col>
               <div className="d-grid gap-2">
@@ -264,7 +275,7 @@ export const Settings: React.FC = () => {
               </div>
             </Col>
           </Row>
-        </Card.Footer>
+        </CardFooter>
       </Form>
     </Card>
   );

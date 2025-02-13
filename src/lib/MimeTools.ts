@@ -50,7 +50,7 @@ const joinMimeWords = (
 const decodeMimeWord = (content: string): string => {
   const contentNoWhitespace: string = content.replace(/\s+/g, "");
 
-  const [match, charset, encoding, encodedContent]: RegExpMatchArray =
+  const [match, charset, encoding, encodedContent]: RegExpMatchArray | [] =
     contentNoWhitespace.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ??
     [];
 

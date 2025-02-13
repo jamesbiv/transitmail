@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Col, Row } from "react-bootstrap";
+import { Form, Col, Row, FormGroup, FormLabel, FormControl } from "react-bootstrap";
 import { IComposeSender, ISettingsSecondaryEmail } from "interfaces";
 
 interface IComposeSecondaryEmailProps {
@@ -14,13 +14,13 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
   updateSenderDetails,
 }) => {
   return (
-    <Form.Group controlId="exampleForm.ControlSelect1">
+    <FormGroup controlId="exampleForm.ControlSelect1">
       <Row>
         <Col xs={4} sm={2}>
-          <Form.Label>From:</Form.Label>
+          <FormLabel>From:</FormLabel>
         </Col>
         <Col xs={8} sm={10}>
-          <Form.Control
+          <FormControl
             size="sm"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
@@ -41,9 +41,9 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
                 </option>
               )
             )}
-          </Form.Control>
+          </FormControl>
         </Col>
       </Row>
-    </Form.Group>
+    </FormGroup>
   );
 };

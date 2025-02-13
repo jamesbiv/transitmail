@@ -53,7 +53,7 @@ export class ImapSocket {
    * @param {boolean} authorise
    * @param {TImapCallback} success
    * @param {TImapCallback} error
-   * @returns void
+   * @returns boolean
    */
   public imapConnect(
     authorise: boolean = true,
@@ -136,7 +136,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapConnect
+   * @name imapClose
    * @returns boolean
    */
   public imapClose(): boolean {
@@ -173,7 +173,9 @@ export class ImapSocket {
       }
     );
 
-    return { data: (await responsePayload).response ?? [], status: status };
+    const resolvedResponsePayload = await responsePayload;
+
+    return { data: resolvedResponsePayload.response ?? [], status: status };
   }
 
   /**
@@ -194,13 +196,12 @@ export class ImapSocket {
       setTimeout(() => {
         this.imapProcessRequest(request, ok, no, bad);
       }, 100);
+
       return;
     }
 
-    /* lock imap  */
     this.session.lock = true;
 
-    /* could verify id unquiness here */
     const requestId: string = Math.random().toString(36).substring(5);
     const blob: Blob = new Blob([requestId + " " + request + "\r\n"], {});
 
@@ -271,7 +272,6 @@ export class ImapSocket {
         }
       }
 
-      /* Proess final command */
       if (
         Array.isArray(result) &&
         result[0] === this.session.request[index].id
@@ -282,7 +282,6 @@ export class ImapSocket {
           this.session.request[index].response = this.session.responseQueue;
           this.session.responseQueue = [];
 
-          /* unlock imap for next request */
           this.session.lock = false;
 
           switch (result[1]) {
@@ -299,7 +298,7 @@ export class ImapSocket {
               break;
 
             default:
-              //unknown condition
+              // unknown condition
               break;
           }
         }

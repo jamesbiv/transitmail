@@ -9,6 +9,7 @@ import {
   Button,
   Row,
   useAccordionButton,
+  ListGroup,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -22,14 +23,17 @@ export const Folders: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } =
     useContext(DependenciesContext);
 
-  const [folders, setFolders] =
-    useState<IFoldersEntry[] | undefined>(undefined);
+  const [folders, setFolders] = useState<IFoldersEntry[] | undefined>(
+    undefined
+  );
 
-  const [activeFolderId, setActiveFolderId] =
-    useState<string | undefined>(undefined);
+  const [activeFolderId, setActiveFolderId] = useState<string | undefined>(
+    undefined
+  );
 
-  const [actionFolderId, setActionFolderId] =
-    useState<string | undefined>(undefined);
+  const [actionFolderId, setActionFolderId] = useState<string | undefined>(
+    undefined
+  );
 
   const [actionType, setActionType] = useState<EFolderEntryActionType>(
     EFolderEntryActionType.ADD
@@ -37,15 +41,23 @@ export const Folders: React.FC = () => {
 
   const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
-  useEffect(() => {
-    (async () => {
-      if (imapSocket.getReadyState() !== 1) {
-        imapSocket.imapConnect();
-      }
+  let initalizeFolderRun: boolean = false;
 
-      await updateFolders();
-    })();
+  useEffect(() => {
+    if (!initalizeFolderRun) {
+      initalizeFolderRun = true;
+
+      initalizeFolder();
+    }
   }, []);
+
+  const initalizeFolder = async (): Promise<void> => {
+    if (imapSocket.getReadyState() !== 1) {
+      imapSocket.imapConnect();
+    }
+
+    await updateFolders();
+  };
 
   const updateFolders = async (): Promise<void> => {
     const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
@@ -73,8 +85,9 @@ export const Folders: React.FC = () => {
     setActionType(actionType), setShowActionModal(true);
   };
 
-  const [displayAccordionActiveKey, setAccordionActiveKey] =
-    useState<string | undefined>(undefined);
+  const [displayAccordionActiveKey, setAccordionActiveKey] = useState<
+    string | undefined
+  >(undefined);
 
   const toggleAccordionActiveKey: (eventKey: string) => void = (
     eventKey: string
@@ -129,19 +142,23 @@ export const Folders: React.FC = () => {
         />
         <Accordion
           activeKey={displayAccordionActiveKey}
-          onSelect={(id: string | null) => setActiveFolderId(id ?? undefined)}
+          onSelect={(id: string | string[] | null | undefined) =>
+            setActiveFolderId((id ?? undefined) as string | undefined)
+          }
           className={!folders?.length ? "d-none" : ""}
         >
-          {folders?.map((folderEntry: IFoldersEntry) => (
-            <FoldersEntry
-              folderEntry={folderEntry}
-              key={folderEntry.id}
-              activeFolderId={activeFolderId}
-              toggleActionModal={toggleActionModal}
-              updateActiveKeyFolderId={updateActiveKeyFolderId}
-              toggleAccordionActiveKey={toggleAccordionActiveKey}
-            />
-          ))}
+          <ListGroup variant="flush">
+            {folders?.map((folderEntry: IFoldersEntry) => (
+              <FoldersEntry
+                folderEntry={folderEntry}
+                key={folderEntry.id}
+                activeFolderId={activeFolderId}
+                toggleActionModal={toggleActionModal}
+                updateActiveKeyFolderId={updateActiveKeyFolderId}
+                toggleAccordionActiveKey={toggleAccordionActiveKey}
+              />
+            ))}
+          </ListGroup>
         </Accordion>
       </Card>
       <FoldersEntryActions

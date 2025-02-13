@@ -6,6 +6,8 @@ import {
   Row,
   Col,
   useAccordionButton,
+  AccordionCollapse,
+  ListGroupItem,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -37,7 +39,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
   toggleAccordionActiveKey,
 }) => {
   return !folderEntry.folders.length ? (
-    <ListGroup.Item
+    <ListGroupItem
       onClick={() => updateActiveKeyFolderId("folder", folderEntry.ref)}
       key={folderEntry.id}
       className="pointer"
@@ -66,7 +68,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           </Button>
         </Col>
       </Row>
-    </ListGroup.Item>
+    </ListGroupItem>
   ) : (
     <React.Fragment>
       <ListGroup.Item
@@ -103,7 +105,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           </Col>
         </Row>
       </ListGroup.Item>
-      <Accordion.Collapse
+      <AccordionCollapse
         eventKey={folderEntry.id.toString()}
         as={ListGroup.Item}
         className="p-0"
@@ -152,7 +154,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             </ListGroup.Item>
           ))}
         </ListGroup>
-      </Accordion.Collapse>
+      </AccordionCollapse>
     </React.Fragment>
   );
 };

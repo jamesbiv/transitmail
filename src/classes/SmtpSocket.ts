@@ -53,7 +53,7 @@ export class SmtpSocket {
    * @param {boolean} authorise
    * @param {TSmtpCallback} success
    * @param {TSmtpCallback} error
-   * @returns void
+   * @returns boolean
    */
   public smtpConnect(
     authorise: boolean = true,
@@ -132,7 +132,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpConnect
+   * @name smtpClose
    * @returns boolean
    */
   public smtpClose(): boolean {
@@ -149,7 +149,7 @@ export class SmtpSocket {
    */
   public async smtpRequest(
     request: string,
-    code: number
+    code: number | number[]
   ): Promise<ISmtpResponse> {
     let status: ESmtpResponseStatus | undefined;
 
@@ -170,7 +170,9 @@ export class SmtpSocket {
       }
     );
 
-    return { data: (await responsePayload).response ?? [], status };
+    const resolvedResponsePayload = await responsePayload;
+
+    return { data: resolvedResponsePayload.response ?? [], status };
   }
 
   /**
@@ -183,7 +185,7 @@ export class SmtpSocket {
    */
   private smtpProcessRequest(
     request: string,
-    code: number,
+    code: number | number[],
     success?: TSmtpCallback,
     failure?: TSmtpCallback
   ): void {
@@ -191,10 +193,10 @@ export class SmtpSocket {
       setTimeout(() => {
         this.smtpProcessRequest(request, code, success, failure);
       }, 100);
+      
       return;
     }
 
-    /* lock smtp  */
     this.session.lock = true;
     this.session.stream = 0;
 
@@ -265,8 +267,12 @@ export class SmtpSocket {
     const request: ISmtpResponseData = this.session.request[index];
 
     if (request) {
-      // We may want to switch this to an array of passable codes instead
-      Number(responseCode) === request.code
+      const requestCodeArray = Array.isArray(request.code)
+        ? request.code
+        : [request.code];
+      console.log(request.code, responseCode);
+
+      requestCodeArray.includes(Number(responseCode))
         ? request.success && request.success(request)
         : request.failure && request.failure(request);
     }
@@ -306,7 +312,7 @@ export class SmtpSocket {
 
     const passResponse: ISmtpResponse = await this.smtpRequest(
       btoa(this.settings.password),
-      235
+      [235, 250, 334]
     );
 
     return passResponse;

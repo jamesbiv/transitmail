@@ -1,5 +1,12 @@
 import React from "react";
-import { Modal, Button } from "react-bootstrap";
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter,
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { IMessageModalState } from "interfaces";
@@ -19,14 +26,14 @@ export const MessageModal: React.FC<IMessageModalProps> = ({
       centered={true}
       aria-labelledby="contained-modal-title-vcenter"
     >
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
+      <ModalHeader closeButton>
+        <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={faExclamationTriangle} />{" "}
           {messageModalState.title}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>{messageModalState.content}</Modal.Body>
-      <Modal.Footer>
+        </ModalTitle>
+      </ModalHeader>
+      <ModalBody>{messageModalState.content}</ModalBody>
+      <ModalFooter>
         <Button
           onClick={() => {
             messageModalState.action();
@@ -36,7 +43,7 @@ export const MessageModal: React.FC<IMessageModalProps> = ({
           Ok
         </Button>
         <Button onClick={() => onHide()}>Close</Button>
-      </Modal.Footer>
+      </ModalFooter>
     </Modal>
   );
 };

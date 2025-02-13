@@ -1,13 +1,13 @@
 import React from "react";
 import { ContentState, EditorState, RichUtils, SelectionState } from "draft-js";
-import { Button, Overlay, Popover, Form, Row, Col } from "react-bootstrap/";
+import { Button, Overlay, Popover, Form, Row, Col, PopoverBody, PopoverHeader, FormControl } from "react-bootstrap/";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
 
 interface IComposeEditorLinkOverlayProps {
   editorState: EditorState;
   showLinkOverlay: boolean;
-  overlayTarget: React.RefObject<HTMLButtonElement>;
+  overlayTarget: React.RefObject<HTMLButtonElement | null>;
   toggleLinkOverlay: React.Dispatch<boolean>;
   setEditorState: React.Dispatch<EditorState>;
 }
@@ -58,11 +58,11 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
         transition={false}
       >
         <Popover id="addHyperlink" className="w-auto">
-          <Popover.Header as="h4">Add Hyperlink</Popover.Header>
-          <Popover.Body>
+          <PopoverHeader as="h4">Add Hyperlink</PopoverHeader>
+          <PopoverBody>
             <Row>
               <Col xs={8} className="pe-0">
-                <Form.Control
+                <FormControl
                   id="linkUrl"
                   size="sm"
                   type="text"
@@ -107,7 +107,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 </Button>
               </Col>
             </Row>
-          </Popover.Body>
+          </PopoverBody>
         </Popover>
       </Overlay>
     );

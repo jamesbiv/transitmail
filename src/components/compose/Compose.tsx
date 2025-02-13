@@ -7,6 +7,9 @@ import {
   Row,
   Col,
   ProgressBar,
+  CardBody,
+  CardHeader,
+  CardFooter,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -206,7 +209,7 @@ export const Compose: React.FC = () => {
               break;
           }
 
-          setSubject("RE: " + presetEmail.subject ?? "(no subject)");
+          setSubject("RE: " + (presetEmail.subject ?? "(no subject)"));
 
           if (convertedAttachments) {
             setAttachments(convertedAttachments);
@@ -269,7 +272,7 @@ export const Compose: React.FC = () => {
 
     const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `MAIL from: ${from.email}`,
-      250
+      [235, 250]
     );
 
     if (mailResponse.status !== ESmtpResponseStatus.Success) {
@@ -278,7 +281,7 @@ export const Compose: React.FC = () => {
 
     const rcptResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `RCPT to: ${emailData.to}`,
-      250
+      [235, 250]
     );
 
     if (rcptResponse.status !== ESmtpResponseStatus.Success) {
@@ -287,7 +290,7 @@ export const Compose: React.FC = () => {
 
     const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       "DATA",
-      354
+      [235, 250, 354]
     );
 
     if (dataResponse.status !== ESmtpResponseStatus.Success) {
@@ -296,7 +299,7 @@ export const Compose: React.FC = () => {
 
     const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `${emailData.payload}\r\n\r\n.`,
-      250
+      [235, 250, 354]
     );
 
     if (payloadResponse.status !== ESmtpResponseStatus.Success) {
@@ -305,7 +308,7 @@ export const Compose: React.FC = () => {
 
     const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `QUIT`,
-      221
+      [221, 250]
     );
 
     return quitResponse;
@@ -373,15 +376,15 @@ export const Compose: React.FC = () => {
 
   return !showComposer ? (
     <Card className="mt-0 mt-sm-3">
-      <Card.Body>
+      <CardBody>
         <React.Fragment>
           <ProgressBar className="mb-2" now={progressBarNow} />
         </React.Fragment>
-      </Card.Body>
+      </CardBody>
     </Card>
   ) : (
     <Card className="mt-0 mt-sm-3">
-      <Card.Header>
+      <CardHeader>
         <Row className="pt-2 pt-sm-0 pb-2 pb-sm-0">
           <Col xs={6}>
             <h4 className="p-0 m-0 text-nowrap middle">
@@ -421,9 +424,9 @@ export const Compose: React.FC = () => {
             </Button>
           </Col>
         </Row>
-      </Card.Header>
+      </CardHeader>
       <Form>
-        <Card.Body className="p-2 ps-3 pe-3">
+        <CardBody className="p-2 ps-3 pe-3">
           <Alert
             className={!message ? "d-none" : "d-block"}
             variant={
@@ -458,7 +461,7 @@ export const Compose: React.FC = () => {
             setRecipients={setRecipients}
             setSubject={setSubject}
           />
-        </Card.Body>
+        </CardBody>
         <div className="border-top border-gray">
           <ComposeEditorToolbar
             editorState={editorState}
@@ -485,11 +488,11 @@ export const Compose: React.FC = () => {
             setAttachments={setAttachments}
           />
         </div>
-        <Card.Footer className="d-block d-sm-none">
+        <CardFooter className="d-block d-sm-none">
           <Button onClick={() => sendEmail()} variant="primary" type="button">
             <FontAwesomeIcon icon={faPaperPlane} /> Send
           </Button>
-        </Card.Footer>
+        </CardFooter>
       </Form>
     </Card>
   );

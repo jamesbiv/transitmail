@@ -1,9 +1,11 @@
-import React, { ErrorInfo } from "react";
+import React, { ErrorInfo, ReactNode } from "react";
 import { StateManager } from "classes";
 import { DependenciesContext } from "contexts";
 import Spinner from "react-bootstrap/Spinner";
 
-interface IErrorBoundaryProps {}
+interface IErrorBoundaryProps {
+  children: ReactNode;
+}
 
 interface IErrorBoundaryState {
   hasError: boolean;
@@ -34,7 +36,9 @@ export class ErrorBoundary extends React.PureComponent<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.stateManager = this.context.stateManager;
+    console.log(this.context)
+
+    // this.stateManager = this.context.stateManager;
 
     if (error.message.includes("WebSocket")) {
       const MessageModalState = {

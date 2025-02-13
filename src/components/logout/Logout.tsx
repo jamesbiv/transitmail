@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
-import { Card } from "react-bootstrap";
+import { Card, CardBody } from "react-bootstrap";
 import { DependenciesContext } from "contexts";
 
 export const Logout: React.FC = () => {
@@ -13,7 +13,7 @@ export const Logout: React.FC = () => {
 
   return (
     <Card className="mt-0 mt-sm-3">
-      <Card.Body>
+      <CardBody>
         <h4>
           <FontAwesomeIcon icon={faSignOutAlt} /> You have successfully logged
           out!
@@ -25,7 +25,7 @@ export const Logout: React.FC = () => {
             <b>Inbox</b> or <b>Folders</b>.
           </li>
         </ul>
-      </Card.Body>
+      </CardBody>
     </Card>
   );
 };

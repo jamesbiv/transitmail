@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { ListGroup } from "react-bootstrap";
+import { Col, Container, ListGroup, ListGroupItem, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faInbox,
@@ -30,21 +30,25 @@ const Menu: React.FC = () => {
   ];
 
   return (
-    <React.Fragment>
-      <h3>Menu</h3>
+    <Container>
+      <Row>
+        <Col>
+          <h3>Menu</h3>
 
-      <ListGroup variant="flush">
-        {menu.map((menuItem: IMenuItem) => (
-          <ListGroup.Item
-            action
-            key={menuItem.id}
-            onClick={() => stateManager.updateActiveKey(menuItem.eventKey)}
-          >
-            <FontAwesomeIcon icon={menuItem.icon} /> {menuItem.name}
-          </ListGroup.Item>
-        ))}
-      </ListGroup>
-    </React.Fragment>
+          <ListGroup>
+            {menu.map((menuItem: IMenuItem) => (
+              <ListGroupItem
+                action
+                key={menuItem.id}
+                onClick={() => stateManager.updateActiveKey(menuItem.eventKey)}
+              >
+                <FontAwesomeIcon icon={menuItem.icon} /> {menuItem.name}
+              </ListGroupItem>
+            ))}
+          </ListGroup>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

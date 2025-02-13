@@ -7,6 +7,9 @@ import {
   InputGroup,
   DropdownButton,
   Dropdown,
+  FormGroup,
+  FormLabel,
+  FormControl,
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -77,13 +80,13 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> =
       <React.Fragment>
         {recipients.map(
           (recipient: IComposeRecipient, recipientKey: number) => (
-            <Form.Group
+            <FormGroup
               as={Row}
               key={recipientKey}
               controlId="formComposeTo"
               className="mt-1 mb-0"
             >
-              <Form.Label column xs={4} sm={2} className="pt-0">
+              <FormLabel column xs={4} sm={2} className="pt-0">
                 <DropdownButton
                   size="sm"
                   variant="outline-dark"
@@ -101,10 +104,10 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> =
                     </Dropdown.Item>
                   ))}
                 </DropdownButton>
-              </Form.Label>
+              </FormLabel>
               <Col xs={8} sm={10}>
                 <InputGroup>
-                  <Form.Control
+                  <FormControl
                     size="sm"
                     type="text"
                     placeholder="Enter email address"
@@ -140,15 +143,15 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> =
                   )}
                 </InputGroup>
               </Col>
-            </Form.Group>
+            </FormGroup>
           )
         )}
-        <Form.Group as={Row} controlId="formComposeSubject">
-          <Form.Label xs={4} sm={2} column className="pt-1 pb-0 text-nowrap">
+        <FormGroup as={Row} controlId="formComposeSubject">
+          <FormLabel xs={4} sm={2} column className="pt-1 pb-0 text-nowrap">
             Subject
-          </Form.Label>
+          </FormLabel>
           <Col xs={8} sm={10}>
-            <Form.Control
+            <FormControl
               size="sm"
               name="subject"
               type="text"
@@ -159,7 +162,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> =
               }
             />
           </Col>
-        </Form.Group>
+        </FormGroup>
       </React.Fragment>
     );
   };

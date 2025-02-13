@@ -12,7 +12,7 @@ export class ImapHelper extends EmailParser {
     fetchData: string[][]
   ): IEmailFlags | undefined {
     const flagDataRaw: string = fetchData[0][2];
-    const flagData: RegExpMatchArray | undefined =
+    const flagData: RegExpMatchArray | [] | undefined =
       flagDataRaw.match(
         /.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/
       ) ?? undefined;
@@ -110,7 +110,7 @@ export class ImapHelper extends EmailParser {
 
     folderData.forEach((folderDataRow: string[]) => {
       if (folderDataRow[0] === "*") {
-        const rawFolder: RegExpMatchArray | undefined =
+        const rawFolder: RegExpMatchArray | [] | undefined =
           folderDataRow[2].match(/\((.*)\) "(.*)" (.*)/) ?? undefined;
 
         const santatisedRawfolder: string | undefined = rawFolder?.[3].replace(

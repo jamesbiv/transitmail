@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Accordion } from "react-bootstrap";
+import { Button, Accordion, AccordionButton, AccordionCollapse } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFile,
@@ -53,14 +53,17 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
     document.body.removeChild(anchorElement);
   };
 
-  const [attachmentEventKey, setAttachmentEventKey] =
-    useState<null | string>(null);
+  const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(
+    null
+  );
 
   return (
     <Accordion
-      onSelect={(eventKey: null | string) => setAttachmentEventKey(eventKey)}
+      onSelect={(eventKey: string | string[] | null | undefined) =>
+        setAttachmentEventKey(eventKey as null | string)
+      }
     >
-      <Accordion.Button
+      <AccordionButton
         className="text-dark font-weight-bold text-decoration-none p-0 m-0"
         as={Button}
         variant="link"
@@ -69,8 +72,8 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
           icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare}
         />{" "}
         Attachments
-      </Accordion.Button>
-      <Accordion.Collapse eventKey="0" className="p-0 m-0 mt-2">
+      </AccordionButton>
+      <AccordionCollapse eventKey="0" className="p-0 m-0 mt-2">
         <>
           {attachments ? (
             attachments.map(
@@ -116,7 +119,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
             </p>
           )}
         </>
-      </Accordion.Collapse>
+      </AccordionCollapse>
     </Accordion>
   );
 };

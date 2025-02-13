@@ -13,6 +13,7 @@ interface ISettingsFormProps {
   settings: ISettings;
   validationConditions: ISettingsValidationCondition[];
   displayFormFolders: boolean;
+  setSettings: React.Dispatch<ISettings>;
   setDisplayFormFolders: React.Dispatch<boolean>;
 }
 
@@ -20,10 +21,12 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
   settings,
   validationConditions,
   displayFormFolders,
+  setSettings,
   setDisplayFormFolders,
 }) => {
-  const [errorMessage, setErrorMessage] =
-    useState<Partial<ISettings> | undefined>(undefined);
+  const [errorMessage, setErrorMessage] = useState<
+    Partial<ISettings> | undefined
+  >(undefined);
 
   const setSettingValue = (
     settingName: keyof ISettings,
@@ -48,7 +51,12 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
 
     setErrorMessage(updatedErrorMessage);
 
-    settings[settingName] = settingValue;
+    const updatedSettings: ISettings = {
+      ...settings,
+      [settingName]: settingValue,
+    };
+
+    setSettings(updatedSettings);
   };
 
   const updateSecondaryEmails: (

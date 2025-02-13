@@ -1,3 +1,5 @@
+import { JSX } from "react";
+
 export interface IMessageModalState {
   title: string;
   content: JSX.Element | string;

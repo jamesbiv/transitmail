@@ -34,7 +34,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   saveEmail,
   deleteEmail,
 }) => {
-  const linkButtonTarget: React.RefObject<HTMLButtonElement> =
+  const linkButtonTarget: React.RefObject<HTMLButtonElement | null>  =
     React.useRef<HTMLButtonElement>(null);
 
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);

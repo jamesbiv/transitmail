@@ -1,6 +1,17 @@
-import React, { useContext, useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import { Container, Navbar, Row, Col, Button, Tab } from "react-bootstrap";
+import React, { StrictMode, useContext, useEffect, useState } from "react";
+import {  createRoot, Root } from "react-dom/client";
+import {
+  Container,
+  Navbar,
+  Row,
+  Col,
+  Button,
+  Tab,
+  TabContent,
+  TabPane,
+  NavbarBrand,
+  TabContainer,
+} from "react-bootstrap";
 import {
   Folder,
   Folders,
@@ -13,7 +24,7 @@ import {
   MessageModal,
   Logout,
 } from "components";
-import { DependenciesContext } from "contexts";
+import { DependenciesContext, IDependencies } from "contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -23,7 +34,7 @@ import {
   ITouchState,
 } from "interfaces";
 
-import * as serviceWorker from "serviceWorker";
+// import * as serviceWorker from "serviceWorker";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
@@ -53,7 +64,7 @@ const Index: React.FC = () => {
   };
 
   const { imapSocket, secureStorage, smtpSocket, stateManager } =
-    useContext(DependenciesContext);
+    useContext<IDependencies>(DependenciesContext);
 
   stateManager.indexState = {
     sliderState,
@@ -66,7 +77,7 @@ const Index: React.FC = () => {
   smtpSocket.settings = secureStorage.getSmtpSettings();
 
   useEffect(() => {
-    (document.getElementById("container-main") as HTMLElement).focus();
+    document.getElementById("container-main")!.focus();
 
     setActiveKey(window.location.hash.substring(1) || "inbox");
 
@@ -108,15 +119,15 @@ const Index: React.FC = () => {
   ];
 
   return (
-    <React.StrictMode>
+    <StrictMode>
       <Navbar
         bg="dark"
         variant="dark"
         className="fixed-top pt-2 pb-2 ps-3 pe-3"
       >
-        <Navbar.Brand href="">
+        <NavbarBrand href="/">
           <FontAwesomeIcon icon={faAt} /> transit
-        </Navbar.Brand>
+        </NavbarBrand>
         <Button
           className="d-sm-block d-md-none ms-auto"
           variant="light"
@@ -138,9 +149,9 @@ const Index: React.FC = () => {
         onTouchEnd={onTouchEndTrigger}
         onTouchMove={onTouchMoveTrigger}
       >
-        <Container fluid>
-          <Tab.Container activeKey={activeKey}>
-            <Row>
+        <Container fluid="true" className="h-100">
+          <TabContainer activeKey={activeKey}>
+            <Row className="g-0 h-100">
               <Col
                 className={`bg-light pt-4 sideMenu ${
                   sliderState.sliderAction ? "slide-in" : "slide-out"
@@ -156,23 +167,23 @@ const Index: React.FC = () => {
                 <Menu />
               </Col>
               <Col className="ps-0 pe-0 pe-sm-3 ps-sm-3" sm={12} md={8} lg={9}>
-                <Tab.Content>
+                <TabContent>
                   <ErrorBoundary>
                     {components.map((component: IComponent) => (
-                      <Tab.Pane
+                      <TabPane
                         key={component.id}
                         mountOnEnter={true}
                         unmountOnExit={true}
                         eventKey={component.eventKey}
                       >
                         {React.createElement(component.element)}
-                      </Tab.Pane>
+                      </TabPane>
                     ))}
                   </ErrorBoundary>
-                </Tab.Content>
+                </TabContent>
               </Col>
             </Row>
-          </Tab.Container>
+          </TabContainer>
         </Container>
       </div>
       <MessageModal
@@ -184,13 +195,16 @@ const Index: React.FC = () => {
           })
         }
       />
-    </React.StrictMode>
+    </StrictMode>
   );
 };
 
-ReactDOM.render(<Index />, document.getElementById("root"));
+const container = document.getElementById("root") as Element;
+const root: Root = createRoot(container!);
+
+root.render(<Index />);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+// serviceWorker.unregister();

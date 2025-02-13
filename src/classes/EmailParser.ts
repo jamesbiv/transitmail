@@ -98,7 +98,7 @@ export class EmailParser {
     let headerContent: string = "";
 
     headerRows.forEach((headerRow: string) => {
-      const [match, contentHeaderName, contentHeaderData]: RegExpMatchArray =
+      const [match, contentHeaderName, contentHeaderData]: RegExpMatchArray | [] =
         headerRow.match(/(^\S*):\s*(.*)/) ?? [];
 
       if (!headerEnd) {
@@ -184,7 +184,7 @@ export class EmailParser {
 
         case "content-type":
           {
-            const [match, mimeType]: RegExpMatchArray =
+            const [match, mimeType]: RegExpMatchArray | [] =
               headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
               headerData.match(/['|"]?(\S+)['|"]?/i) ??
               [];
@@ -430,7 +430,7 @@ export class EmailParser {
           switch (headerKey.toLowerCase()) {
             case "content-disposition":
               {
-                const [match, mimeType, contentData]: RegExpMatchArray =
+                const [match, mimeType, contentData]: RegExpMatchArray | [] =
                   headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
                   headerData.match(/['|"]?(\S+)['|"]?/i) ??
                   [];
@@ -460,7 +460,7 @@ export class EmailParser {
 
             case "content-type":
               {
-                const [match, mimeType, contentData]: RegExpMatchArray =
+                const [match, mimeType, contentData]: RegExpMatchArray | [] =
                   headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
                   headerData.match(/['|"]?(\S+)['|"]?/i) ??
                   [];
@@ -540,7 +540,7 @@ export class EmailParser {
     }
 
     const regex = new RegExp(attribute + "=['|\"]?(\\S+)", "i");
-    const [match, attributeValue]: RegExpMatchArray = data.match(regex) ?? [];
+    const [match, attributeValue]: RegExpMatchArray | [] = data.match(regex) ?? [];
 
     return attributeValue?.replace(/['|"]/g, "") || undefined;
   }

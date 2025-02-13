@@ -26,8 +26,9 @@ export const Folder: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } =
     useContext(DependenciesContext);
 
-  const [folderEmails, setFolderEmails] =
-    useState<IFolderEmail[] | undefined>(undefined);
+  const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(
+    undefined
+  );
 
   const [displayCardHeader, setDisplayCardHeader] = useState<boolean>(true);
   const [folderSpinner, setFolderSpinner] = useState<boolean>(true);
@@ -39,23 +40,31 @@ export const Folder: React.FC = () => {
       showActionModal: false,
     });
 
+  let initalizeFoldersRun: boolean = false;
+
   useEffect(() => {
-    (async () => {
-      if (imapSocket.getReadyState() !== 1) {
-        imapSocket.imapConnect();
-      }
+    if (!initalizeFoldersRun) {
+      initalizeFoldersRun = true;
 
-      setFolderSpinner(true);
-
-      const currentFolder: IFolderEmail[] | undefined =
-        stateManager.getCurrentFolder()?.emails || (await getLatestEmails());
-
-      setFolderEmails(currentFolder);
-      setFolderSpinner(false);
-
-      stateManager.updateCurrentFolder(currentFolder);
-    })();
+      initalizeFolders();
+    }
   }, []);
+
+  const initalizeFolders = async (): Promise<void> => {
+    if (imapSocket.getReadyState() !== 1) {
+      imapSocket.imapConnect();
+    }
+
+    setFolderSpinner(true);
+
+    const currentFolder: IFolderEmail[] | undefined =
+      stateManager.getCurrentFolder()?.emails || (await getLatestEmails());
+
+    setFolderEmails(currentFolder);
+    setFolderSpinner(false);
+
+    stateManager.updateCurrentFolder(currentFolder);
+  };
 
   const checkEmail = async (): Promise<void> => {
     setFolderSpinner(true);

@@ -19,7 +19,8 @@ export const validationConditions: ISettingsValidationCondition[] = [
   },
   {
     field: "signature",
-    constraint: (value: unknown) => (value as string)?.length <= 1000,
+    constraint: (value: unknown) =>
+      (value as string)?.length <= 1000 || (value as string)?.length < 1,
     message: "Signature must have a maximum of 1000 characters",
   },
   {
