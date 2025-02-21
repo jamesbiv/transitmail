@@ -1,15 +1,6 @@
 import React, { FormEvent, useContext, useState } from "react";
 import { SettingsForm, SettingsValidation, validationConditions } from ".";
-import {
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  CardHeader,
-  CardBody,
-  CardFooter,
-} from "react-bootstrap";
+import { Row, Col, Card, Form, Button, CardHeader, CardBody, CardFooter } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faCog, faSync } from "@fortawesome/free-solid-svg-icons";
 import {
@@ -20,7 +11,7 @@ import {
   ISettings,
   ISettingsErrors,
   ISettingsFolders,
-  ISmtpResponse,
+  ISmtpResponse
 } from "interfaces";
 import { DependenciesContext } from "contexts";
 
@@ -39,27 +30,24 @@ export const Settings: React.FC = () => {
       draftsFolder: process.env.REACT_APP_DEFAULT_DRAFTS_FOLDER ?? "",
       sentItemsFolder: process.env.REACT_APP_DEFAULT_SENT_ITEMS_FOLDER ?? "",
       spamFolder: process.env.REACT_APP_DEFAULT_SPAM_FOLDER ?? "",
-      trashFolder: process.env.REACT_APP_DEFAULT_TRASH_FOLDER ?? "",
-    },
+      trashFolder: process.env.REACT_APP_DEFAULT_TRASH_FOLDER ?? ""
+    }
   };
 
   const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
 
-  const [validation, setValidation] = useState<ISettingsValidation | undefined>(
-    undefined
-  );
+  const [validation, setValidation] = useState<ISettingsValidation | undefined>(undefined);
 
   const [settings, setSettings] = useState<ISettings>({
     ...settingsDefault,
-    ...(secureStorage.getSettings() as ISettings),
+    ...(secureStorage.getSettings() as ISettings)
   });
 
   const saveSettings = async (): Promise<void> => {
     const validationErrors: ISettingsErrors = processValidationConditions();
 
     if (Object.keys(validationErrors).length) {
-      const errorMessages: string =
-        processValidationErrorMessages(validationErrors);
+      const errorMessages: string = processValidationErrorMessages(validationErrors);
 
       if (settings.folderSettings) {
         setDisplayFormFolders(true);
@@ -67,7 +55,7 @@ export const Settings: React.FC = () => {
 
       setValidation({
         message: `Please check the following errors: ${errorMessages}`,
-        type: "error",
+        type: "error"
       });
 
       return;
@@ -84,10 +72,7 @@ export const Settings: React.FC = () => {
 
   const processValidationConditions = (): ISettingsErrors => {
     return validationConditions.reduce(
-      (
-        validationResults: ISettingsErrors,
-        { field, subField, constraint, message }
-      ) => {
+      (validationResults: ISettingsErrors, { field, subField, constraint, message }) => {
         if (!subField) {
           const settingsValue = settings[field] as string;
 
@@ -102,7 +87,7 @@ export const Settings: React.FC = () => {
           if (!constraint(settingsValue[subField])) {
             validationResults[field] = {
               [field]: message,
-              ...(validationResults[field] as object),
+              ...(validationResults[field] as object)
             };
           }
         }
@@ -113,9 +98,7 @@ export const Settings: React.FC = () => {
     );
   };
 
-  const processValidationErrorMessages = (
-    validationErrors: ISettingsErrors
-  ): string => {
+  const processValidationErrorMessages = (validationErrors: ISettingsErrors): string => {
     return `<ul>${Object.keys(validationErrors).reduce(
       (errorResponse: string, valueKey: string): string => {
         if (typeof validationErrors[valueKey] === "string") {
@@ -153,8 +136,7 @@ export const Settings: React.FC = () => {
     let imapVerfied: boolean = false;
     let smtpVerfied: boolean = true;
 
-    const imapAuthroiseResponse: IImapResponse =
-      await imapSocket.imapAuthorise();
+    const imapAuthroiseResponse: IImapResponse = await imapSocket.imapAuthorise();
 
     if (imapAuthroiseResponse.status === EImapResponseStatus.OK) {
       imapVerfied = true;
@@ -162,8 +144,7 @@ export const Settings: React.FC = () => {
 
     imapSocket.imapClose();
 
-    const smtpAuthroiseResponse: ISmtpResponse =
-      await smtpSocket.smtpAuthorise();
+    const smtpAuthroiseResponse: ISmtpResponse = await smtpSocket.smtpAuthorise();
 
     if (smtpAuthroiseResponse.status === ESmtpResponseStatus.Success) {
       smtpVerfied = true;
@@ -175,29 +156,26 @@ export const Settings: React.FC = () => {
       stateManager.showMessageModal({
         title: "Settings verfieid",
         content: "Your email settings have been verfied",
-        action: () => {},
+        action: () => {}
       });
     } else {
       stateManager.showMessageModal({
         title: "Unable to verify your settings",
         content:
           "Unable to verifiy your email settings, please check your credientals and try again",
-        action: () => {},
+        action: () => {}
       });
     }
   };
 
-  const createFolders = async (
-    folderSettings: ISettingsFolders
-  ): Promise<void> => {
+  const createFolders = async (folderSettings: ISettingsFolders): Promise<void> => {
     if (imapSocket.getReadyState() !== 1) {
       imapSocket.imapConnect();
     }
 
     const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
-    const currentFolders: IFoldersEntry[] =
-      imapHelper.formatListFoldersResponse(listResponse.data);
+    const currentFolders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
     Object.keys(folderSettings).forEach(async (settingsFolder: string) => {
       const folderPath: string = folderSettings[settingsFolder];
@@ -207,8 +185,9 @@ export const Settings: React.FC = () => {
       );
 
       if (!folderFound) {
-        const createFolderResponse: IImapResponse =
-          await imapSocket.imapRequest(`CREATE "${folderPath}"`);
+        const createFolderResponse: IImapResponse = await imapSocket.imapRequest(
+          `CREATE "${folderPath}"`
+        );
 
         if (createFolderResponse.status !== EImapResponseStatus.OK) {
           return;
@@ -232,9 +211,7 @@ export const Settings: React.FC = () => {
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
           event.preventDefault();
 
-          const containerElement = document.getElementById(
-            "container-main"
-          ) as HTMLElement;
+          const containerElement = document.getElementById("container-main") as HTMLElement;
 
           containerElement.scroll(0, 0);
 

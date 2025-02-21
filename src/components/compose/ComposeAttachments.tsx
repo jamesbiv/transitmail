@@ -8,7 +8,7 @@ import {
   faFileWord,
   faFileExcel,
   faTimes,
-  faEye,
+  faEye
 } from "@fortawesome/free-solid-svg-icons";
 import { IComposeAttachment } from "interfaces";
 import { MimeTools } from "lib";
@@ -20,40 +20,37 @@ interface IComposeAttachmentProps {
 
 export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
   attachments,
-  setAttachments,
+  setAttachments
 }) => {
-  const loadAttachments: (event: React.ChangeEvent<HTMLInputElement>) => void =
-    (event) => {
-      const fileList: FileList | undefined = event.target.files ?? undefined;
-      const files: File[] = Array.from(fileList ?? []);
+  const loadAttachments: (event: React.ChangeEvent<HTMLInputElement>) => void = (event) => {
+    const fileList: FileList | undefined = event.target.files ?? undefined;
+    const files: File[] = Array.from(fileList ?? []);
 
-      let count: number = 0;
+    let count: number = 0;
 
-      files.forEach((file: File) => {
-        const reader: FileReader = new FileReader();
+    files.forEach((file: File) => {
+      const reader: FileReader = new FileReader();
 
-        reader.onload = () => {
-          attachments.push({
-            id: count++,
-            filename: file.name,
-            size: file.size,
-            mimeType: file.type,
-            data: reader.result,
-          });
+      reader.onload = () => {
+        attachments.push({
+          id: count++,
+          filename: file.name,
+          size: file.size,
+          mimeType: file.type,
+          data: reader.result
+        });
 
-          if (files?.length === count) {
-            setAttachments([...attachments]);
-          }
-        };
+        if (files?.length === count) {
+          setAttachments([...attachments]);
+        }
+      };
 
-        reader.readAsBinaryString(file);
-      });
-    };
+      reader.readAsBinaryString(file);
+    });
+  };
 
   const viewAttachment: (id: number) => void = (id) => {
-    const attachment = attachments.find(
-      (attachment: IComposeAttachment) => attachment.id === id
-    );
+    const attachment = attachments.find((attachment: IComposeAttachment) => attachment.id === id);
 
     if (attachment) {
       const blob: Blob = MimeTools.binaryStringToBlob(
@@ -82,9 +79,7 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
       name="files[]"
       hidden
       multiple
-      onChange={(event: React.ChangeEvent<HTMLInputElement> & Event) =>
-        loadAttachments(event)
-      }
+      onChange={(event: React.ChangeEvent<HTMLInputElement> & Event) => loadAttachments(event)}
     />
   );
 

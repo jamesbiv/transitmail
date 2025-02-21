@@ -9,7 +9,7 @@ import {
   ProgressBar,
   CardBody,
   CardHeader,
-  CardFooter,
+  CardFooter
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,7 +18,7 @@ import {
   faFeather,
   faPaperPlane,
   faTimes,
-  faTrash,
+  faTrash
 } from "@fortawesome/free-solid-svg-icons";
 import {
   CharacterMetadata,
@@ -28,14 +28,14 @@ import {
   DraftHandleValue,
   Editor,
   EditorState,
-  RichUtils,
+  RichUtils
 } from "draft-js";
 import { stateFromHTML } from "draft-js-import-html";
 import {
   ComposeAttachments,
   ComposeRecipientDetails,
   ComposeEditorToolbar,
-  ComposeSecondaryEmail,
+  ComposeSecondaryEmail
 } from ".";
 import {
   IComposeRecipient,
@@ -49,7 +49,7 @@ import {
   EImapResponseStatus,
   IEmailFlags,
   EComposePresetType,
-  IComposeSender,
+  IComposeSender
 } from "interfaces";
 import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
@@ -64,7 +64,7 @@ export const Compose: React.FC = () => {
 
   const defaultSender: IComposeSender = {
     email: secureStorage.getSetting("email") ?? "",
-    displayName: secureStorage.getSetting("name") ?? "",
+    displayName: secureStorage.getSetting("name") ?? ""
   };
 
   const [from, setFrom] = useState<IComposeSender>(defaultSender);
@@ -72,7 +72,7 @@ export const Compose: React.FC = () => {
   const [subject, setSubject] = useState<string | undefined>(undefined);
 
   const [recipients, setRecipients] = useState<IComposeRecipient[]>([
-    { id: 1, type: "To", value: "" },
+    { id: 1, type: "To", value: "" }
   ]);
 
   const [attachments, setAttachments] = useState<IComposeAttachment[]>([]);
@@ -82,13 +82,11 @@ export const Compose: React.FC = () => {
 
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
-  const composePresets: IComposePresets | undefined =
-    stateManager.getComposePresets();
+  const composePresets: IComposePresets | undefined = stateManager.getComposePresets();
 
   const emailSignature: string = secureStorage.getSetting("signature") ?? "";
 
-  const secondaryEmails: ISettingsSecondaryEmail[] =
-    secureStorage.getSetting("secondaryEmails");
+  const secondaryEmails: ISettingsSecondaryEmail[] = secureStorage.getSetting("secondaryEmails");
 
   const findLinkEntities = (
     contentBlock: ContentBlock,
@@ -98,18 +96,11 @@ export const Compose: React.FC = () => {
     contentBlock.findEntityRanges((entityRange: CharacterMetadata) => {
       const entityKey = entityRange.getEntity();
 
-      return (
-        entityKey !== null &&
-        contentState.getEntity(entityKey).getType() === "LINK"
-      );
+      return entityKey !== null && contentState.getEntity(entityKey).getType() === "LINK";
     }, callback);
   };
 
-  const Link = (props: {
-    contentState: ContentState;
-    entityKey: string;
-    children: string;
-  }) => {
+  const Link = (props: { contentState: ContentState; entityKey: string; children: string }) => {
     return (
       <a
         href={props.contentState.getEntity(props.entityKey).getData()}
@@ -128,15 +119,13 @@ export const Compose: React.FC = () => {
       new CompositeDecorator([
         {
           strategy: findLinkEntities,
-          component: Link,
-        },
+          component: Link
+        }
       ])
     )
   );
 
-  const [showComposer, setShowComposer] = useState<boolean>(
-    composePresets?.uid === undefined
-  );
+  const [showComposer, setShowComposer] = useState<boolean>(composePresets?.uid === undefined);
 
   useEffect(() => {
     (async () => {
@@ -144,17 +133,17 @@ export const Compose: React.FC = () => {
         let presetEmail: IEmail | undefined;
 
         if (composePresets.uid) {
-          const fetchFlagsResponse: IImapResponse =
-            await imapSocket.imapRequest(
-              `UID FETCH ${composePresets.uid} (RFC822.SIZE FLAGS)`
-            );
+          const fetchFlagsResponse: IImapResponse = await imapSocket.imapRequest(
+            `UID FETCH ${composePresets.uid} (RFC822.SIZE FLAGS)`
+          );
 
           if (fetchFlagsResponse.status !== EImapResponseStatus.OK) {
             return;
           }
 
-          const emailFlags: IEmailFlags | undefined =
-            imapHelper.formatFetchEmailFlagsResponse(fetchFlagsResponse.data);
+          const emailFlags: IEmailFlags | undefined = imapHelper.formatFetchEmailFlagsResponse(
+            fetchFlagsResponse.data
+          );
 
           if (!emailFlags) {
             return;
@@ -167,25 +156,23 @@ export const Compose: React.FC = () => {
             () => setShowComposer(true)
           );
 
-          const fetchEmailResponse: IImapResponse =
-            await imapSocket.imapRequest(
-              `UID FETCH ${composePresets.uid} RFC822`
-            );
+          const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
+            `UID FETCH ${composePresets.uid} RFC822`
+          );
 
           if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
             return;
           }
 
-          presetEmail = imapHelper.formatFetchEmailResponse(
-            fetchEmailResponse.data
-          );
+          presetEmail = imapHelper.formatFetchEmailResponse(fetchEmailResponse.data);
         } else {
           presetEmail = composePresets.email;
         }
 
         if (presetEmail) {
-          const convertedAttachments: IComposeAttachment[] | undefined =
-            await convertAttachments(presetEmail.attachments);
+          const convertedAttachments: IComposeAttachment[] | undefined = await convertAttachments(
+            presetEmail.attachments
+          );
 
           setEditorState(
             EditorState.createWithContent(
@@ -228,7 +215,7 @@ export const Compose: React.FC = () => {
       stateManager.showMessageModal({
         title: "Unable to send email",
         content: "An email is already currently being processed",
-        action: () => {},
+        action: () => {}
       });
 
       return;
@@ -246,13 +233,13 @@ export const Compose: React.FC = () => {
       stateManager.showMessageModal({
         title: "Your email has been sent",
         content: "Your email has been sent successfully!",
-        action: () => {},
+        action: () => {}
       });
     } else {
       stateManager.showMessageModal({
         title: "Unable to send email",
         content: emailResponse.data[0].join(),
-        action: () => {},
+        action: () => {}
       });
     }
 
@@ -267,7 +254,7 @@ export const Compose: React.FC = () => {
       from: `"${from.displayName}" <${from.email}>`,
       subject: subject,
       recipients: recipients,
-      attachments: attachments,
+      attachments: attachments
     });
 
     const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
@@ -288,10 +275,7 @@ export const Compose: React.FC = () => {
       return rcptResponse;
     }
 
-    const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-      "DATA",
-      [235, 250, 354]
-    );
+    const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest("DATA", [235, 250, 354]);
 
     if (dataResponse.status !== ESmtpResponseStatus.Success) {
       return dataResponse;
@@ -306,18 +290,12 @@ export const Compose: React.FC = () => {
       return payloadResponse;
     }
 
-    const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-      `QUIT`,
-      [221, 250]
-    );
+    const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(`QUIT`, [221, 250]);
 
     return quitResponse;
   };
 
-  const handleKeyCommand = (
-    command: string,
-    editorState: EditorState
-  ): DraftHandleValue => {
+  const handleKeyCommand = (command: string, editorState: EditorState): DraftHandleValue => {
     const newEditorState: EditorState | undefined =
       RichUtils.handleKeyCommand(editorState, command) ?? undefined;
 
@@ -356,7 +334,7 @@ export const Compose: React.FC = () => {
       ? { displayName: secondaryEmail.name, email: secondaryEmail.email }
       : {
           displayName: secureStorage.getSetting("name"),
-          email: secureStorage.getSetting("email"),
+          email: secureStorage.getSetting("email")
         };
 
     setFrom(updatedDetails);
@@ -393,16 +371,8 @@ export const Compose: React.FC = () => {
               </span>
             </h4>
           </Col>
-          <Col
-            className="d-none d-sm-block text-end text-sm-end text-nowrap"
-            xs={6}
-          >
-            <Button
-              onClick={() => sendEmail()}
-              className="me-2"
-              variant="primary"
-              type="button"
-            >
+          <Col className="d-none d-sm-block text-end text-sm-end text-nowrap" xs={6}>
+            <Button onClick={() => sendEmail()} className="me-2" variant="primary" type="button">
               <FontAwesomeIcon icon={faPaperPlane} /> Send
             </Button>
             <Button
@@ -414,12 +384,7 @@ export const Compose: React.FC = () => {
             >
               Save
             </Button>
-            <Button
-              size="sm"
-              variant="danger"
-              type="button"
-              onClick={() => deleteEmail()}
-            >
+            <Button size="sm" variant="danger" type="button" onClick={() => deleteEmail()}>
               <FontAwesomeIcon icon={faTrash} />
             </Button>
           </Col>
@@ -430,11 +395,7 @@ export const Compose: React.FC = () => {
           <Alert
             className={!message ? "d-none" : "d-block"}
             variant={
-              messageType === "info"
-                ? "success"
-                : messageType === "warning"
-                ? "warning"
-                : "danger"
+              messageType === "info" ? "success" : messageType === "warning" ? "warning" : "danger"
             }
           >
             <FontAwesomeIcon
@@ -442,8 +403,8 @@ export const Compose: React.FC = () => {
                 messageType === "info"
                   ? faCheck
                   : messageType === "warning"
-                  ? faExclamationTriangle
-                  : faTimes
+                    ? faExclamationTriangle
+                    : faTimes
               }
             />{" "}
             {message}
@@ -474,8 +435,8 @@ export const Compose: React.FC = () => {
               customStyleMap={{
                 link: {
                   color: "#ff0000",
-                  textDecoration: "underline",
-                },
+                  textDecoration: "underline"
+                }
               }}
               editorState={editorState}
               handleKeyCommand={handleKeyCommand}
@@ -483,10 +444,7 @@ export const Compose: React.FC = () => {
               onChange={setEditorState}
             />
           </div>
-          <ComposeAttachments
-            attachments={attachments}
-            setAttachments={setAttachments}
-          />
+          <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
         </div>
         <CardFooter className="d-block d-sm-none">
           <Button onClick={() => sendEmail()} variant="primary" type="button">

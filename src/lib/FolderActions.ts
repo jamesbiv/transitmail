@@ -7,10 +7,7 @@ import { EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
  * @param {destinationFolderId} destinationFolderId
  * @returns boolean
  */
-export const copyEmailToFolder = (
-  actionUids: number[],
-  destinationFolderId: string
-): boolean => {
+export const copyEmailToFolder = (actionUids: number[], destinationFolderId: string): boolean => {
   if (!actionUids.length) {
     return false;
   }
@@ -34,8 +31,8 @@ export const copyEmailToFolder = (
 
   const destinationEmailFolder = stateManager.getCurrentFolder()?.emails;
 
-  const copiedFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
-    (currentEmail) => actionUids.includes(currentEmail.id)
+  const copiedFolderEmails: IFolderEmail[] = currentEmailFolder.filter((currentEmail) =>
+    actionUids.includes(currentEmail.id)
   );
 
   if (!destinationEmailFolder || !copiedFolderEmails.length) {
@@ -44,7 +41,7 @@ export const copyEmailToFolder = (
 
   const updatedDestinationFolderEmails: IFolderEmail[] = [
     ...destinationEmailFolder,
-    ...copiedFolderEmails,
+    ...copiedFolderEmails
   ];
 
   stateManager.updateCurrentFolder(updatedDestinationFolderEmails);
@@ -59,10 +56,7 @@ export const copyEmailToFolder = (
  * @param {destinationFolderId} destinationFolderId
  * @returns boolean
  */
-export const moveEmailToFolder = (
-  actionUids: number[],
-  destinationFolderId: string
-): boolean => {
+export const moveEmailToFolder = (actionUids: number[], destinationFolderId: string): boolean => {
   if (!actionUids.length) {
     return false;
   }
@@ -75,14 +69,8 @@ export const moveEmailToFolder = (
     );
 
     if (moveResponse.status !== EImapResponseStatus.OK) {
-      await imapSocket.imapRequest(
-        `UID COPY ${actionUid} "${destinationFolderId}"`
-      );
-
-      await imapSocket.imapRequest(
-        `UID STORE ${actionUid} +FLAGS.SILENT (\\Deleted)`
-      );
-
+      await imapSocket.imapRequest(`UID COPY ${actionUid} "${destinationFolderId}"`);
+      await imapSocket.imapRequest(`UID STORE ${actionUid} +FLAGS.SILENT (\\Deleted)`);
       await imapSocket.imapRequest(`UID EXPUNGE ${actionUid}`);
     }
   });
@@ -94,8 +82,8 @@ export const moveEmailToFolder = (
     return false;
   }
 
-  const movedFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
-    (currentEmail) => actionUids.includes(currentEmail.id)
+  const movedFolderEmails: IFolderEmail[] = currentEmailFolder.filter((currentEmail) =>
+    actionUids.includes(currentEmail.id)
   );
 
   const updatedCurrentFolderEmails: IFolderEmail[] = currentEmailFolder.filter(
@@ -113,7 +101,7 @@ export const moveEmailToFolder = (
 
   const updatedDestinationFolderEmails: IFolderEmail[] = [
     ...destinationEmailFolder,
-    ...movedFolderEmails,
+    ...movedFolderEmails
   ];
 
   stateManager.updateCurrentFolder(updatedDestinationFolderEmails);

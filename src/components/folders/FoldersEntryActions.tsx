@@ -9,7 +9,7 @@ import {
   faTrash,
   faEdit,
   faSuitcase,
-  IconDefinition,
+  IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
 import { IFoldersEntry, EImapResponseStatus, IImapResponse } from "interfaces";
 import { ImapSocket } from "classes";
@@ -29,7 +29,7 @@ export enum EFolderEntryActionType {
   COPY = 1,
   MOVE = 2,
   RENAME = 3,
-  DELETE = 4,
+  DELETE = 4
 }
 
 interface IFolderEntryActionComponents {
@@ -49,7 +49,7 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
   showActionModal,
   imapSocket,
   getFolders,
-  onHide,
+  onHide
 }) => {
   const [submit, changeSubmit] = useState<boolean>(false);
 
@@ -57,28 +57,28 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
     [EFolderEntryActionType.ADD]: {
       label: "Add folder",
       icon: faPlus,
-      element: FoldersEntryActionAdd,
+      element: FoldersEntryActionAdd
     },
     [EFolderEntryActionType.COPY]: {
       label: "Copy folder",
       icon: faCopy,
-      element: FoldersEntryActionCopy,
+      element: FoldersEntryActionCopy
     },
     [EFolderEntryActionType.MOVE]: {
       label: "Move folder",
       icon: faSuitcase,
-      element: FoldersEntryActionMove,
+      element: FoldersEntryActionMove
     },
     [EFolderEntryActionType.RENAME]: {
       label: "Rename folder",
       icon: faEdit,
-      element: FoldersEntryActionRename,
+      element: FoldersEntryActionRename
     },
     [EFolderEntryActionType.DELETE]: {
       label: "Delete folder",
       icon: faTrash,
-      element: FoldersEntryActionDelete,
-    },
+      element: FoldersEntryActionDelete
+    }
   };
 
   const successfulSubmit: () => void = (): void => {
@@ -87,11 +87,7 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
   };
 
   return (
-    <Modal
-      show={showActionModal}
-      centered={true}
-      aria-labelledby="contained-modal-title-vcenter"
-    >
+    <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
       <Modal.Header closeButton onClick={() => onHide()}>
         <Modal.Title id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={folderEntryAction[actionType].icon} />{" "}
@@ -105,7 +101,7 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
           submit,
           imapSocket,
           changeSubmit,
-          successfulSubmit,
+          successfulSubmit
         })}
       </Modal.Body>
       <Modal.Footer>
@@ -130,7 +126,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   submit,
   imapSocket,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   const [folderName, setFolderName] = useState<string | undefined>();
   const [subFolder, setSubFolder] = useState<string | undefined>();
@@ -143,13 +139,9 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = async () => {
-    const folderPath: string | undefined = subFolder
-      ? `${subFolder}/${folderName}`
-      : folderName;
+    const folderPath: string | undefined = subFolder ? `${subFolder}/${folderName}` : folderName;
 
-    const createResponse: IImapResponse = await imapSocket.imapRequest(
-      `CREATE "${folderPath}"`
-    );
+    const createResponse: IImapResponse = await imapSocket.imapRequest(`CREATE "${folderPath}"`);
 
     if (createResponse.status !== EImapResponseStatus.OK) {
       return;
@@ -163,11 +155,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
       <Form.Group controlId="formDisplayName">
         <Form.Label>
           Add new folder{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
+          <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </Form.Label>
         <Form.Control
           type="text"
@@ -181,11 +169,7 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
       <Form.Group controlId="formDisplayName">
         <Form.Label>
           Add to a sub folder{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
+          <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </Form.Label>
         <Form.Control
           as="select"
@@ -211,11 +195,10 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   submit,
   imapSocket,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
-  const [destinationSubFolder, setDestinationSubFolder] =
-    useState<string | undefined>();
+  const [destinationSubFolder, setDestinationSubFolder] = useState<string | undefined>();
 
   useEffect(() => {
     if (submit) {
@@ -229,17 +212,13 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
       ? `${destinationSubFolder}/${newFolderName}`
       : newFolderName;
 
-    const createResponse: IImapResponse = await imapSocket.imapRequest(
-      `CREATE "${newFolderPath}"`
-    );
+    const createResponse: IImapResponse = await imapSocket.imapRequest(`CREATE "${newFolderPath}"`);
 
     if (createResponse.status !== EImapResponseStatus.OK) {
       return;
     }
 
-    const selectResponse: IImapResponse = await imapSocket.imapRequest(
-      `SELECT "${folderId}"`
-    );
+    const selectResponse: IImapResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
       return;
@@ -261,11 +240,7 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
       <Form.Group controlId="formDisplayName">
         <Form.Label>
           Copy folder as{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
+          <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </Form.Label>
         <Form.Control
           type="text"
@@ -279,11 +254,7 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
       <Form.Group controlId="formDisplayName">
         <Form.Label>
           Copy folder to{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
+          <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </Form.Label>
         <Form.Control
           as="select"
@@ -309,10 +280,9 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   submit,
   imapSocket,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
-  const [destinationFolder, setDestinationFolder] =
-    useState<string | undefined>();
+  const [destinationFolder, setDestinationFolder] = useState<string | undefined>();
 
   useEffect(() => {
     if (submit) {
@@ -340,12 +310,7 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   return (
     <Form.Group controlId="formDisplayName">
       <Form.Label>
-        Move folder to{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
+        Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </Form.Label>
       <Form.Control
         as="select"
@@ -369,7 +334,7 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   submit,
   imapSocket,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
 
@@ -396,11 +361,7 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
     <Form.Group controlId="formDisplayName">
       <Form.Label>
         Rename folder as{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
+        <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </Form.Label>
       <Form.Control
         type="text"
@@ -419,7 +380,7 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   submit,
   imapSocket,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   useEffect(() => {
     if (submit) {
@@ -429,9 +390,7 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
   });
 
   const submitAction = async () => {
-    const deleteResponse: IImapResponse = await imapSocket.imapRequest(
-      `DELETE "${folderId}"`
-    );
+    const deleteResponse: IImapResponse = await imapSocket.imapRequest(`DELETE "${folderId}"`);
 
     if (deleteResponse.status !== EImapResponseStatus.OK) {
       return;
@@ -442,8 +401,7 @@ export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
 
   return (
     <Alert variant="danger">
-      <FontAwesomeIcon icon={faExclamationTriangle} /> Are you sure you want to
-      delete this folder?
+      <FontAwesomeIcon icon={faExclamationTriangle} /> Are you sure you want to delete this folder?
     </Alert>
   );
 };

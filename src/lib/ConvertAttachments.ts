@@ -16,10 +16,7 @@ export const convertAttachments = async (
   let attachmentCount: number = 0;
 
   return await attachments.reduce(
-    async (
-      convertedAttachments: Promise<IComposeAttachment[]>,
-      attachment: IEmailAttachment
-    ) => {
+    async (convertedAttachments: Promise<IComposeAttachment[]>, attachment: IEmailAttachment) => {
       const attachmentContent: Blob = MimeTools.base64toBlob(
         attachment.content,
         attachment.mimeType
@@ -37,7 +34,7 @@ export const convertAttachments = async (
         filename: attachment.filename,
         size: 0,
         mimeType: attachment.mimeType,
-        data: fileReaderResponse.result,
+        data: fileReaderResponse.result
       });
 
       return Promise.resolve(convertedAttachments);

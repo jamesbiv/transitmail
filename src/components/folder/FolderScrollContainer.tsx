@@ -6,15 +6,10 @@ import {
   IFolderLongPress,
   IFolderPlaceholder,
   IFolderScrollSpinner,
-  IInfinateScrollHandler,
+  IInfinateScrollHandler
 } from "interfaces";
 import { Card, Spinner } from "react-bootstrap";
-import {
-  FolderEmailEntry,
-  FolderPlaceholder,
-  FolderTableHeader,
-  FolderTableOptions,
-} from ".";
+import { FolderEmailEntry, FolderPlaceholder, FolderTableHeader, FolderTableOptions } from ".";
 import { EFolderEmailActionType } from ".";
 
 interface IFolderScrollContainerProps {
@@ -64,7 +59,7 @@ export class FolderScrollContainer extends React.PureComponent<
 
     this.state = {
       displayTableOptions: false,
-      displayTableHeader: true,
+      displayTableHeader: true
     };
 
     this.infiniteScroll = new InfiniteScroll();
@@ -75,7 +70,7 @@ export class FolderScrollContainer extends React.PureComponent<
       timer: 0,
       isReturned: false,
       handleLongPress: this.handleLongPress,
-      handleLongRelease: this.handleLongRelease,
+      handleLongRelease: this.handleLongRelease
     };
 
     this.scrollHandler = ({
@@ -83,7 +78,7 @@ export class FolderScrollContainer extends React.PureComponent<
       maxIndex,
       folderPlaceholder,
       folderScrollSpinner,
-      callback,
+      callback
     }) => {
       const displayHeaders: boolean = minIndex === 0;
 
@@ -94,7 +89,7 @@ export class FolderScrollContainer extends React.PureComponent<
           visibleEmails: this.props.folderEmails?.slice(minIndex, maxIndex),
           displayTableHeader: displayHeaders,
           folderPlaceholder,
-          folderScrollSpinner,
+          folderScrollSpinner
         },
         callback
       );
@@ -123,9 +118,7 @@ export class FolderScrollContainer extends React.PureComponent<
     this.infiniteScroll.stopObservertions();
   };
 
-  public componentDidUpdate = async (
-    prevProps: IFolderScrollContainerProps
-  ) => {
+  public componentDidUpdate = async (prevProps: IFolderScrollContainerProps) => {
     if (this.props.folderEmails !== prevProps.folderEmails) {
       this.infiniteScroll.setTotalEntries(this.props.folderEmails?.length ?? 0);
 
@@ -138,10 +131,7 @@ export class FolderScrollContainer extends React.PureComponent<
 
     if (currentSlice) {
       this.setState({
-        visibleEmails: this.props.folderEmails?.slice(
-          currentSlice.minIndex,
-          currentSlice.maxIndex
-        ),
+        visibleEmails: this.props.folderEmails?.slice(currentSlice.minIndex, currentSlice.maxIndex)
       });
     }
   };
@@ -149,36 +139,30 @@ export class FolderScrollContainer extends React.PureComponent<
   public toggleTableOptionsDisplay = () => {
     this.setState({
       displayTableOptions:
-        this.props.folderEmails?.some(
-          (folderEmail: IFolderEmail) => folderEmail.selected
-        ) ?? false,
+        this.props.folderEmails?.some((folderEmail: IFolderEmail) => folderEmail.selected) ?? false
     });
   };
 
   public toggleSelection = (emailUid: number, forceToogle?: boolean): void => {
     if (emailUid === -1) {
-      this.toggleSelectionAll =
-        forceToogle !== undefined ? forceToogle : !this.toggleSelectionAll;
+      this.toggleSelectionAll = forceToogle !== undefined ? forceToogle : !this.toggleSelectionAll;
     }
 
-    this.props.folderEmails?.forEach(
-      (folderEmail: IFolderEmail, emailKey: number) => {
-        if (!this.props.folderEmails?.[emailKey]) {
-          return;
-        }
+    this.props.folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
+      if (!this.props.folderEmails?.[emailKey]) {
+        return;
+      }
 
-        if (emailUid === -1) {
-          this.props.folderEmails[emailKey].selected = this.toggleSelectionAll;
-        } else if (folderEmail.uid === emailUid) {
-          if (forceToogle !== undefined) {
-            this.props.folderEmails[emailKey].selected = forceToogle;
-          } else {
-            this.props.folderEmails[emailKey].selected =
-              !this.props.folderEmails[emailKey].selected;
-          }
+      if (emailUid === -1) {
+        this.props.folderEmails[emailKey].selected = this.toggleSelectionAll;
+      } else if (folderEmail.uid === emailUid) {
+        if (forceToogle !== undefined) {
+          this.props.folderEmails[emailKey].selected = forceToogle;
+        } else {
+          this.props.folderEmails[emailKey].selected = !this.props.folderEmails[emailKey].selected;
         }
       }
-    );
+    });
 
     this.updateVisibleEmails();
 
@@ -186,18 +170,13 @@ export class FolderScrollContainer extends React.PureComponent<
   };
 
   public clearAllSelections = (): void =>
-    this.props.folderEmails?.forEach(
-      (folderEmail: IFolderEmail, emailKey: number) => {
-        if (this.props.folderEmails?.[emailKey]) {
-          this.props.folderEmails[emailKey].selected = false;
-        }
+    this.props.folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
+      if (this.props.folderEmails?.[emailKey]) {
+        this.props.folderEmails[emailKey].selected = false;
       }
-    );
+    });
 
-  public handleLongPress: (emailUid: number, delay?: number) => void = (
-    emailUid,
-    delay = 1000
-  ) => {
+  public handleLongPress: (emailUid: number, delay?: number) => void = (emailUid, delay = 1000) => {
     this.folderLongPress.isReturned = false;
 
     this.folderLongPress.timer = setTimeout((handler: TimerHandler): void => {

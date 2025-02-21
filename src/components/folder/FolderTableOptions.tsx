@@ -1,13 +1,7 @@
 import React from "react";
 import { Row, Collapse, Col, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCopy,
-  faFlag,
-  faSuitcase,
-  faTimes,
-  faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCopy, faFlag, faSuitcase, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { EFolderEmailActionType } from ".";
 
 interface FolderTableOptionsProps {
@@ -19,7 +13,7 @@ interface FolderTableOptionsProps {
 export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
   displayTableOptions,
   toggleSelection,
-  toggleActionModal,
+  toggleActionModal
 }) => {
   return (
     <Collapse in={displayTableOptions}>
@@ -53,8 +47,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
             className="ms-2"
             onClick={() => toggleActionModal(EFolderEmailActionType.FLAG)}
           >
-            <FontAwesomeIcon icon={faFlag} />{" "}
-            <span className="d-none d-md-inline-block">Flag</span>
+            <FontAwesomeIcon icon={faFlag} /> <span className="d-none d-md-inline-block">Flag</span>
           </Button>
           <Button
             size="sm"

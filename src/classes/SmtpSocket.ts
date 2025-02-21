@@ -3,7 +3,7 @@ import {
   ISmtpSession,
   ISmtpResponse,
   ESmtpResponseStatus,
-  ISmtpResponseData,
+  ISmtpResponseData
 } from "interfaces";
 
 type TSmtpCallback = (event: ISmtpResponseData | Event) => void;
@@ -28,7 +28,7 @@ export class SmtpSocket {
       host: host ?? "", // SMTP WebSocket host
       port: port ?? 8025, // SMTP WebSocket port
       username: username ?? "", // SMTP account username
-      password: password ?? "", // SMTP account password
+      password: password ?? "" // SMTP account password
     };
 
     // Session variables
@@ -44,7 +44,7 @@ export class SmtpSocket {
       responseContent: "", // the response being processed
       streamCumlative: 0, // download count of entire session
       stream: 0, // download count of last request
-      lock: true, // locking asynchronous messages
+      lock: true // locking asynchronous messages
     };
   }
 
@@ -75,6 +75,7 @@ export class SmtpSocket {
 
     this.session.socket.onopen = (event: Event) => {
       if (this.session.debug) {
+        // eslint-disable-next-line no-console
         console.log("[SMTP] Client Connected");
       }
 
@@ -82,7 +83,7 @@ export class SmtpSocket {
         code: 250,
         request: "",
         success: () => {},
-        failure: () => {},
+        failure: () => {}
       });
 
       this.session.lock = false;
@@ -110,6 +111,7 @@ export class SmtpSocket {
 
     this.session.socket.onerror = (event: Event) => {
       if (this.session.debug) {
+        // eslint-disable-next-line no-console
         console.error("[SMTP] Connection error", event);
       }
 
@@ -124,6 +126,7 @@ export class SmtpSocket {
 
     this.session.socket.onclose = (event: Event) => {
       if (this.session.debug) {
+        // eslint-disable-next-line no-console
         console.log("[SMTP] Connection closed", event);
       }
     };
@@ -147,28 +150,23 @@ export class SmtpSocket {
    * @param {number} code
    * @returns Promise<ISmtpResponse>
    */
-  public async smtpRequest(
-    request: string,
-    code: number | number[]
-  ): Promise<ISmtpResponse> {
+  public async smtpRequest(request: string, code: number | number[]): Promise<ISmtpResponse> {
     let status: ESmtpResponseStatus | undefined;
 
-    const responsePayload: Promise<ISmtpResponseData> = new Promise(
-      (fulfilled, rejected) => {
-        this.smtpProcessRequest(
-          request,
-          code,
-          (event: ISmtpResponseData | Event) => {
-            fulfilled(event as ISmtpResponseData);
-            status = ESmtpResponseStatus.Success;
-          },
-          (event: ISmtpResponseData | Event) => {
-            fulfilled(event as ISmtpResponseData);
-            status = ESmtpResponseStatus.Failure;
-          }
-        );
-      }
-    );
+    const responsePayload: Promise<ISmtpResponseData> = new Promise((fulfilled, rejected) => {
+      this.smtpProcessRequest(
+        request,
+        code,
+        (event: ISmtpResponseData | Event) => {
+          fulfilled(event as ISmtpResponseData);
+          status = ESmtpResponseStatus.Success;
+        },
+        (event: ISmtpResponseData | Event) => {
+          fulfilled(event as ISmtpResponseData);
+          status = ESmtpResponseStatus.Failure;
+        }
+      );
+    });
 
     const resolvedResponsePayload = await responsePayload;
 
@@ -193,7 +191,7 @@ export class SmtpSocket {
       setTimeout(() => {
         this.smtpProcessRequest(request, code, success, failure);
       }, 100);
-      
+
       return;
     }
 
@@ -203,6 +201,7 @@ export class SmtpSocket {
     const blob: Blob = new Blob([request + "\r\n"], {});
 
     if (this.session.debug) {
+      // eslint-disable-next-line no-console
       console.log("[SMTP] Request: " + request);
     }
 
@@ -210,18 +209,14 @@ export class SmtpSocket {
       request: request,
       code: code,
       success: success,
-      failure: failure,
+      failure: failure
     });
 
     const readyStateCallack = () =>
       setTimeout(() => {
         const currentReadyState: number | undefined = this.getReadyState();
 
-        if (
-          this.session.socket &&
-          currentReadyState &&
-          currentReadyState === 1
-        ) {
+        if (this.session.socket && currentReadyState && currentReadyState === 1) {
           this.session.socket.send(blob);
         } else {
           readyStateCallack();
@@ -241,6 +236,7 @@ export class SmtpSocket {
     const responseRows: string[] = response.split("\r\n");
 
     if (this.session.debug) {
+      // eslint-disable-next-line no-console
       console.log("[SMTP] Response: " + response);
     }
 
@@ -267,9 +263,8 @@ export class SmtpSocket {
     const request: ISmtpResponseData = this.session.request[index];
 
     if (request) {
-      const requestCodeArray = Array.isArray(request.code)
-        ? request.code
-        : [request.code];
+      const requestCodeArray = Array.isArray(request.code) ? request.code : [request.code];
+      // eslint-disable-next-line no-console
       console.log(request.code, responseCode);
 
       requestCodeArray.includes(Number(responseCode))
@@ -283,28 +278,19 @@ export class SmtpSocket {
    * @returns Promise<ISmtpResponse>
    */
   public async smtpAuthorise(): Promise<ISmtpResponse> {
-    const ehloResponse: ISmtpResponse = await this.smtpRequest(
-      `EHLO ${this.settings.host}`,
-      220
-    );
+    const ehloResponse: ISmtpResponse = await this.smtpRequest(`EHLO ${this.settings.host}`, 220);
 
     if (ehloResponse.status !== ESmtpResponseStatus.Success) {
       return ehloResponse;
     }
 
-    const authResponse: ISmtpResponse = await this.smtpRequest(
-      "AUTH LOGIN",
-      250
-    );
+    const authResponse: ISmtpResponse = await this.smtpRequest("AUTH LOGIN", 250);
 
     if (authResponse.status !== ESmtpResponseStatus.Success) {
       return authResponse;
     }
 
-    const userResponse: ISmtpResponse = await this.smtpRequest(
-      btoa(this.settings.username),
-      334
-    );
+    const userResponse: ISmtpResponse = await this.smtpRequest(btoa(this.settings.username), 334);
 
     if (userResponse.status !== ESmtpResponseStatus.Success) {
       return userResponse;

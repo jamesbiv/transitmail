@@ -11,10 +11,7 @@ interface IErrorBoundaryState {
   hasError: boolean;
 }
 
-export class ErrorBoundary extends React.PureComponent<
-  IErrorBoundaryProps,
-  IErrorBoundaryState
-> {
+export class ErrorBoundary extends React.PureComponent<IErrorBoundaryProps, IErrorBoundaryState> {
   /**
    * @var {DependenciesContext} contextType
    */
@@ -36,10 +33,6 @@ export class ErrorBoundary extends React.PureComponent<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.log(this.context)
-
-    // this.stateManager = this.context.stateManager;
-
     if (error.message.includes("WebSocket")) {
       const MessageModalState = {
         title: "Invalid connection settings",
@@ -47,12 +40,11 @@ export class ErrorBoundary extends React.PureComponent<
           <>
             <p>Your connection settings for are invalid or not responding.</p>
             <p>
-              Please visit <strong>Settings</strong> to change these settings
-              before proceeding.
+              Please visit <strong>Settings</strong> to change these settings before proceeding.
             </p>
           </>
         ),
-        action: () => this.stateManager.updateActiveKey("settings"),
+        action: () => this.stateManager.updateActiveKey("settings")
       };
 
       this.stateManager.showMessageModal(MessageModalState);
@@ -63,11 +55,7 @@ export class ErrorBoundary extends React.PureComponent<
     if (this.state.hasError) {
       return (
         <div style={{ textAlign: "center" }}>
-          <Spinner
-            animation="grow"
-            variant="dark"
-            className="mt-5 ms-auto me-auto"
-          />
+          <Spinner animation="grow" variant="dark" className="mt-5 ms-auto me-auto" />
         </div>
       );
     }

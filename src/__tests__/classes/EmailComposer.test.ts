@@ -4,7 +4,7 @@ jest.mock("contexts/DependenciesContext");
 
 const mockEmailData: any = {
   editorState: {
-    getCurrentContent: () => jest.fn(),
+    getCurrentContent: () => jest.fn()
   },
   from: "sender@transitmail.org",
   subject: "Test Email",
@@ -12,28 +12,28 @@ const mockEmailData: any = {
     {
       id: 1,
       type: "To",
-      value: "receiver@transitmail.org",
+      value: "receiver@transitmail.org"
     },
     {
       id: 2,
       type: "Cc",
-      value: "receivercc@transitmail.org",
+      value: "receivercc@transitmail.org"
     },
     {
       id: 3,
       type: "Cc",
-      value: "receivercc1@transitmail.org",
+      value: "receivercc1@transitmail.org"
     },
     {
       id: 4,
       type: "Bcc",
-      value: "receiverbcc@transitmail.org",
+      value: "receiverbcc@transitmail.org"
     },
     {
       id: 5,
       type: "Bcc",
-      value: "receiverbcc1@transitmail.org",
-    },
+      value: "receiverbcc1@transitmail.org"
+    }
   ],
   attachments: [
     {
@@ -41,9 +41,9 @@ const mockEmailData: any = {
       filename: "filename.jpg",
       id: 0,
       mimeType: "image/jpeg",
-      size: 1,
-    },
-  ],
+      size: 1
+    }
+  ]
 };
 
 const mockComposedEmail: any = {
@@ -68,7 +68,7 @@ Test Body\r\n\r\n\
 --transit--client--wjbcgv9\r\n\
 Content-Type: text/html; charset="utf-8"\r\n\r\n\
 <p>Test Body</p>\r\n\r\n\
---transit--client--wjbcgv9--`,
+--transit--client--wjbcgv9--`
 };
 
 const mockContentBlocks: any = {
@@ -80,7 +80,7 @@ const mockContentBlocks: any = {
       depth: 0,
       inlineStyleRanges: [],
       entityRanges: [],
-      data: {},
+      data: {}
     },
     {
       key: "4pfol",
@@ -89,21 +89,21 @@ const mockContentBlocks: any = {
       depth: 0,
       inlineStyleRanges: [],
       entityRanges: [],
-      data: {},
-    },
-  ],
+      data: {}
+    }
+  ]
 };
 
 jest.mock("draft-js", () => ({
   convertToRaw: () => {
     return mockContentBlocks;
-  },
+  }
 }));
 
 jest.mock("draft-js-export-html", () => ({
   stateToHTML: () => {
     return "<p>Test Body</p>";
-  },
+  }
 }));
 
 const emailParser = new EmailComposer();
@@ -113,7 +113,7 @@ describe("Testing the EmailCompose class", () => {
     const emailParserResponse: any = emailParser.composeEmail(mockEmailData);
 
     expect(emailParserResponse).toMatchObject<{ contentHTML: string }>({
-      contentHTML: "<p>Test Body</p>",
+      contentHTML: "<p>Test Body</p>"
     });
   });
 });

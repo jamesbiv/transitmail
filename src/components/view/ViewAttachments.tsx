@@ -6,7 +6,7 @@ import {
   faDownload,
   faEye,
   faPlusSquare,
-  faMinusSquare,
+  faMinusSquare
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmailAttachment } from "interfaces";
 import { MimeTools } from "lib";
@@ -15,9 +15,7 @@ interface IViewAttachmentsProps {
   attachments?: IEmailAttachment[];
 }
 
-export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
-  attachments,
-}) => {
+export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
@@ -53,9 +51,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
     document.body.removeChild(anchorElement);
   };
 
-  const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(
-    null
-  );
+  const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(null);
 
   return (
     <Accordion
@@ -68,51 +64,47 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({
         as={Button}
         variant="link"
       >
-        <FontAwesomeIcon
-          icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare}
-        />{" "}
+        <FontAwesomeIcon icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare} />{" "}
         Attachments
       </AccordionButton>
       <AccordionCollapse eventKey="0" className="p-0 m-0 mt-2">
         <>
           {attachments ? (
-            attachments.map(
-              (attachment: IEmailAttachment, attachmentKey: number) => (
-                <div
-                  key={attachmentKey}
-                  className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
+            attachments.map((attachment: IEmailAttachment, attachmentKey: number) => (
+              <div
+                key={attachmentKey}
+                className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
+              >
+                <Button
+                  variant="light"
+                  size="sm"
+                  style={{ zIndex: 20000 }}
+                  className="float-end p-0 ms-2"
+                  onClick={() => downloadAttachment(attachment)}
                 >
-                  <Button
-                    variant="light"
-                    size="sm"
-                    style={{ zIndex: 20000 }}
-                    className="float-end p-0 ms-2"
-                    onClick={() => downloadAttachment(attachment)}
-                  >
-                    <FontAwesomeIcon icon={faDownload} />
-                  </Button>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    style={{ zIndex: 20000 }}
-                    className="float-end p-0 ms-2"
-                    onClick={() => viewAttachment(attachment)}
-                  >
-                    <FontAwesomeIcon icon={faEye} />
-                  </Button>
-                  <FontAwesomeIcon
-                    className="me-1"
-                    icon={(() => {
-                      switch (attachment.mimeType) {
-                        default:
-                          return faFile;
-                      }
-                    })()}
-                  />{" "}
-                  {attachment.filename}
-                </div>
-              )
-            )
+                  <FontAwesomeIcon icon={faDownload} />
+                </Button>
+                <Button
+                  variant="light"
+                  size="sm"
+                  style={{ zIndex: 20000 }}
+                  className="float-end p-0 ms-2"
+                  onClick={() => viewAttachment(attachment)}
+                >
+                  <FontAwesomeIcon icon={faEye} />
+                </Button>
+                <FontAwesomeIcon
+                  className="me-1"
+                  icon={(() => {
+                    switch (attachment.mimeType) {
+                      default:
+                        return faFile;
+                    }
+                  })()}
+                />{" "}
+                {attachment.filename}
+              </div>
+            ))
           ) : (
             <p>
               <em>No attachments found</em>

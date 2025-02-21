@@ -14,15 +14,13 @@ interface ISettingsFormFoldersProps {
 export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
   folderSettings,
   displayFormFolders,
-  setDisplayFormFolders,
+  setDisplayFormFolders
 }) => {
-  const [errorMessage, setErrorMessage] =
-    useState<Partial<ISettingsFolders> | undefined>(undefined);
+  const [errorMessage, setErrorMessage] = useState<Partial<ISettingsFolders> | undefined>(
+    undefined
+  );
 
-  const setFolderSetting = (
-    folderName: keyof ISettingsFolders,
-    folderValue: string
-  ) => {
+  const setFolderSetting = (folderName: keyof ISettingsFolders, folderValue: string) => {
     const settingsCondition = validationConditions.find(
       (validationCondition: ISettingsValidationCondition) =>
         validationCondition.field === "folderSettings" &&
@@ -33,13 +31,14 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
       return;
     }
 
-    const updatedErrorMessage: Partial<ISettingsFolders> | undefined =
-      settingsCondition.constraint(folderValue)
-        ? { ...errorMessage, [folderName]: undefined }
-        : {
-            ...errorMessage,
-            [folderName]: settingsCondition.message,
-          };
+    const updatedErrorMessage: Partial<ISettingsFolders> | undefined = settingsCondition.constraint(
+      folderValue
+    )
+      ? { ...errorMessage, [folderName]: undefined }
+      : {
+          ...errorMessage,
+          [folderName]: settingsCondition.message
+        };
 
     setErrorMessage(updatedErrorMessage);
 
@@ -49,14 +48,8 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
   return (
     <Accordion activeKey={displayFormFolders ? "0" : undefined}>
       <Card className="mt-3">
-        <Card.Header
-          className="pointer"
-          onClick={() => setDisplayFormFolders(!displayFormFolders)}
-        >
-          <FontAwesomeIcon
-            className="me-2"
-            icon={displayFormFolders ? faMinus : faPlus}
-          />
+        <Card.Header className="pointer" onClick={() => setDisplayFormFolders(!displayFormFolders)}>
+          <FontAwesomeIcon className="me-2" icon={displayFormFolders ? faMinus : faPlus} />
           Folder Settings
         </Card.Header>
         <Accordion.Collapse eventKey="0" as={Card.Body}>
@@ -65,11 +58,7 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
               <Form.Group controlId="formFolderArchive">
                 <Form.Label>
                   Archive Folder{" "}
-                  <FontAwesomeIcon
-                    icon={faAsterisk}
-                    size="xs"
-                    className="text-danger mb-1"
-                  />
+                  <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                 </Form.Label>
                 <Form.Control
                   type="text"
@@ -87,11 +76,7 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
               <Form.Group controlId="formFolderTrash">
                 <Form.Label>
                   Trash Folder{" "}
-                  <FontAwesomeIcon
-                    icon={faAsterisk}
-                    size="xs"
-                    className="text-danger mb-1"
-                  />
+                  <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                 </Form.Label>
                 <Form.Control
                   type="text"
@@ -109,11 +94,7 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
               <Form.Group controlId="formFolderDrafts">
                 <Form.Label>
                   Drafts Folder{" "}
-                  <FontAwesomeIcon
-                    icon={faAsterisk}
-                    size="xs"
-                    className="text-danger mb-1"
-                  />
+                  <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                 </Form.Label>
                 <Form.Control
                   type="text"
@@ -133,11 +114,7 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
               <Form.Group controlId="formFolderSentItems">
                 <Form.Label>
                   Sent Items Folder{" "}
-                  <FontAwesomeIcon
-                    icon={faAsterisk}
-                    size="xs"
-                    className="text-danger mb-1"
-                  />
+                  <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                 </Form.Label>
                 <Form.Control
                   type="text"
@@ -155,11 +132,7 @@ export const SettingsFormFolders: React.FC<ISettingsFormFoldersProps> = ({
               <Form.Group controlId="formFolderSpam">
                 <Form.Label>
                   Spam Folder{" "}
-                  <FontAwesomeIcon
-                    icon={faAsterisk}
-                    size="xs"
-                    className="text-danger mb-1"
-                  />
+                  <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                 </Form.Label>
                 <Form.Control
                   type="text"

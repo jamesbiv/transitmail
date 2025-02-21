@@ -11,7 +11,7 @@ interface IComposeSecondaryEmailProps {
 export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
   defaultSender,
   secondaryEmails,
-  updateSenderDetails,
+  updateSenderDetails
 }) => {
   return (
     <FormGroup controlId="exampleForm.ControlSelect1">
@@ -32,10 +32,7 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
               {defaultSender.email}&gt;
             </option>
             {secondaryEmails?.map(
-              (
-                secondaryEmail: ISettingsSecondaryEmail,
-                secondaryEmailKey: number
-              ) => (
+              (secondaryEmail: ISettingsSecondaryEmail, secondaryEmailKey: number) => (
                 <option key={secondaryEmailKey} value={secondaryEmailKey}>
                   {secondaryEmail.name} &lt;{secondaryEmail.email}&gt;
                 </option>

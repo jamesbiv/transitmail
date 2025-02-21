@@ -121,7 +121,7 @@ export class SecureStorage {
       host: this.settings.imapHost,
       port: this.settings.imapPort,
       username: this.settings.imapUsername,
-      password: this.settings.imapPassword,
+      password: this.settings.imapPassword
     } as IImapSettings;
   }
 
@@ -134,7 +134,7 @@ export class SecureStorage {
       host: this.settings.smtpHost,
       port: this.settings.smtpPort,
       username: this.settings.smtpUsername,
-      password: this.settings.smtpPassword,
+      password: this.settings.smtpPassword
     } as ISmtpSettings;
   }
 
@@ -161,10 +161,9 @@ export class SecureStorage {
   private getSecureStorage<T>(name: string): T {
     const data: string = localStorage.getItem(name) ?? "";
 
-    const decryptedData: string = CryptoES.AES.decrypt(
-      data,
-      this.passPhrase
-    ).toString(CryptoES.enc.Utf8);
+    const decryptedData: string = CryptoES.AES.decrypt(data, this.passPhrase).toString(
+      CryptoES.enc.Utf8
+    );
 
     try {
       return JSON.parse(decryptedData);

@@ -1,4 +1,4 @@
-import { IImapResponseData } from "."
+import { IImapResponseData } from ".";
 
 export interface IImapRequest {
   id: string;

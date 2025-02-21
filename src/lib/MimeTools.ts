@@ -10,12 +10,8 @@ export const parseMimeWords = (content: string): string => {
   return content
     .replace(
       joinRegex,
-      (
-        match: string,
-        header: string,
-        firstSegment: string,
-        secondSegment: string
-      ) => joinMimeWords(match, header, firstSegment, secondSegment)
+      (match: string, header: string, firstSegment: string, secondSegment: string) =>
+        joinMimeWords(match, header, firstSegment, secondSegment)
     )
     .replace(decodeRegex, (mimeWord: string) => decodeMimeWord(mimeWord));
 };
@@ -36,7 +32,7 @@ const joinMimeWords = (
 ) => {
   const result: string = Buffer.concat([
     Buffer.from(firstSegment, "base64"),
-    Buffer.from(secondSegment, "base64"),
+    Buffer.from(secondSegment, "base64")
   ]).toString("base64");
 
   return `${header}${result}?=`;
@@ -51,8 +47,7 @@ const decodeMimeWord = (content: string): string => {
   const contentNoWhitespace: string = content.replace(/\s+/g, "");
 
   const [match, charset, encoding, encodedContent]: RegExpMatchArray | [] =
-    contentNoWhitespace.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ??
-    [];
+    contentNoWhitespace.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ?? [];
 
   if (!encodedContent) {
     return content;
@@ -118,11 +113,7 @@ export const binaryStringToBlob = (
 ): Blob => {
   const byteArrays: Uint8Array[] = [];
 
-  for (
-    let byteOffset: number = 0;
-    byteOffset < content.length;
-    byteOffset += sliceSize
-  ) {
+  for (let byteOffset: number = 0; byteOffset < content.length; byteOffset += sliceSize) {
     const byteSlice: string = content.slice(byteOffset, byteOffset + sliceSize);
     const byteNumbers: number[] = new Array(byteSlice.length);
 
@@ -142,8 +133,7 @@ export const binaryStringToBlob = (
  * @returns string
  */
 const quotedPrintableDecoder = (content: string): string => {
-  const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || [])
-    .length;
+  const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || []).length;
   const bufferLength: number = content.length - encodedBytesCount * 2;
   const buffer: Buffer = Buffer.alloc(bufferLength);
 

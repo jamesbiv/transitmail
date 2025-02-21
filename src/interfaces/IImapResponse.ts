@@ -6,5 +6,5 @@ export interface IImapResponse {
 export enum EImapResponseStatus {
   OK,
   NO,
-  BAD,
+  BAD
 }

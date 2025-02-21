@@ -13,14 +13,14 @@ describe("Testing convertAttachments", () => {
           "content-type": 'text/plain; name="testattachment.txt"',
           "content-disposition": 'attachment; filename="testattachment.txt"',
           "content-transfer-encoding": "base64",
-          content: "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n\r\n",
+          content: "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n\r\n"
         },
         content: "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n\r\n",
         mimeType: "text/plain",
         isAttachment: true,
         filename: "testattachment.txt",
-        encoding: "base64",
-      },
+        encoding: "base64"
+      }
     ];
 
     const mockConvertAttachmentsResponse: any = [
@@ -29,13 +29,11 @@ describe("Testing convertAttachments", () => {
         filename: "testattachment.txt",
         id: 0,
         mimeType: "text/plain",
-        size: 0,
-      },
+        size: 0
+      }
     ];
 
-    const convertAttachmentsResponse = await convertAttachments(
-      mockConvertAttachmentsContent
-    );
+    const convertAttachmentsResponse = await convertAttachments(mockConvertAttachmentsContent);
 
     expect(convertAttachmentsResponse).toEqual(mockConvertAttachmentsResponse);
   });

@@ -96,8 +96,7 @@ const mockProcessEmailResponse: any = {
     bcc: "",
     "mime-version": "1.0",
     "x-mailer": "Transit alpha0.0.1",
-    "content-type":
-      'multipart/alternative; boundary="transit--client--6ohw29r5"',
+    "content-type": 'multipart/alternative; boundary="transit--client--6ohw29r5"'
   },
   date: "Thu, 01 Apr 2021 00:00:00 -0300",
   to: "receiver@transitmail.org",
@@ -112,15 +111,14 @@ const mockProcessEmailResponse: any = {
     {
       contents: [
         {
-          contentRaw:
-            'Content-Type: text/plain; charset="utf-8"\r\n\r\nTest Body\r\n\r\n',
+          contentRaw: 'Content-Type: text/plain; charset="utf-8"\r\n\r\nTest Body\r\n\r\n',
           headers: {
             "content-type": 'text/plain; charset="utf-8"',
-            content: "Test Body\r\n\r\n\r\n",
+            content: "Test Body\r\n\r\n\r\n"
           },
           content: "Test Body\r\n\r\n\r\n",
           mimeType: "text/plain",
-          charset: "utf-8",
+          charset: "utf-8"
         },
         {
           contentRaw:
@@ -132,27 +130,25 @@ const mockProcessEmailResponse: any = {
             "\r\n",
           headers: {
             "content-type": 'text/html; charset="utf-8"',
-            content:
-              "<p>Test Body</p>\r\n\r\n--transit--client--6ohw29r5-\r\n\r\n\r\n",
+            content: "<p>Test Body</p>\r\n\r\n--transit--client--6ohw29r5-\r\n\r\n\r\n"
           },
-          content:
-            "<p>Test Body</p>\r\n\r\n--transit--client--6ohw29r5-\r\n\r\n\r\n",
+          content: "<p>Test Body</p>\r\n\r\n--transit--client--6ohw29r5-\r\n\r\n\r\n",
           mimeType: "text/html",
-          charset: "utf-8",
-        },
-      ],
-    },
+          charset: "utf-8"
+        }
+      ]
+    }
   ],
   bodyText: "Test Body\r\n\r\n\r\n",
   bodyTextHeaders: {
     "content-type": 'text/plain; charset="utf-8"',
-    content: "Test Body\r\n\r\n\r\n",
+    content: "Test Body\r\n\r\n\r\n"
   },
   bodyHtml: "<p>Test Body</p>\n\n--transit--client--6ohw29r5-\n\n\n",
   bodyHtmlHeaders: {
     "content-type": 'text/html; charset="utf-8"',
-    content: "<p>Test Body</p>\r\n\r\n--transit--client--6ohw29r5-\r\n\r\n\r\n",
-  },
+    content: "<p>Test Body</p>\r\n\r\n--transit--client--6ohw29r5-\r\n\r\n\r\n"
+  }
 };
 
 const emailParser = new EmailParser();
@@ -164,7 +160,7 @@ describe("Testing the EmailParser class", () => {
     expect(getEmailResponse).toEqual({
       contentRaw: "",
       emailRaw: "",
-      headersRaw: "",
+      headersRaw: ""
     });
   });
 

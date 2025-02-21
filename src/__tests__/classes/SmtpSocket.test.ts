@@ -5,7 +5,7 @@ jest.mock("contexts/DependenciesContext");
 const mockItem: any = {};
 
 const smtpSocket = new SmtpSocket({
-  host: "test-host",
+  host: "test-host"
 });
 
 describe("Testing the SmtpSocket class", () => {
