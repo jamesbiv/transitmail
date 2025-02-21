@@ -23,6 +23,7 @@
   "plugins": ["react", "@typescript-eslint"],
   "rules": {
     "@typescript-eslint/no-explicit-any": "error",
+    "no-console": "error",
     "sort-imports": "off",
     "sort-keys": "off",
     "no-unused-vars": "off",

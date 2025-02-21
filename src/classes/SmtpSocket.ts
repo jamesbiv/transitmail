@@ -75,6 +75,7 @@ export class SmtpSocket {
 
     this.session.socket.onopen = (event: Event) => {
       if (this.session.debug) {
+        // eslint-disable-next-line no-console
         console.log("[SMTP] Client Connected");
       }
 
@@ -110,6 +111,7 @@ export class SmtpSocket {
 
     this.session.socket.onerror = (event: Event) => {
       if (this.session.debug) {
+        // eslint-disable-next-line no-console
         console.error("[SMTP] Connection error", event);
       }
 
@@ -124,6 +126,7 @@ export class SmtpSocket {
 
     this.session.socket.onclose = (event: Event) => {
       if (this.session.debug) {
+        // eslint-disable-next-line no-console
         console.log("[SMTP] Connection closed", event);
       }
     };
@@ -198,6 +201,7 @@ export class SmtpSocket {
     const blob: Blob = new Blob([request + "\r\n"], {});
 
     if (this.session.debug) {
+      // eslint-disable-next-line no-console
       console.log("[SMTP] Request: " + request);
     }
 
@@ -232,6 +236,7 @@ export class SmtpSocket {
     const responseRows: string[] = response.split("\r\n");
 
     if (this.session.debug) {
+      // eslint-disable-next-line no-console
       console.log("[SMTP] Response: " + response);
     }
 
@@ -259,6 +264,7 @@ export class SmtpSocket {
 
     if (request) {
       const requestCodeArray = Array.isArray(request.code) ? request.code : [request.code];
+      // eslint-disable-next-line no-console
       console.log(request.code, responseCode);
 
       requestCodeArray.includes(Number(responseCode))

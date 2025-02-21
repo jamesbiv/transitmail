@@ -33,10 +33,6 @@ export class ErrorBoundary extends React.PureComponent<IErrorBoundaryProps, IErr
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.log(this.context);
-
-    // this.stateManager = this.context.stateManager;
-
     if (error.message.includes("WebSocket")) {
       const MessageModalState = {
         title: "Invalid connection settings",
