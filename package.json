@@ -17,8 +17,7 @@
     "react": "^19.0.0",
     "react-bootstrap": "^2.10.9",
     "react-dom": "^19.0.0",
-    "react-scripts": "5.0.1",
-    "typescript": "^5.7.3"
+    "react-scripts": "5.0.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
@@ -29,14 +28,17 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.2",
     "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3"
+    "@types/react-dom": "^19.0.3",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll",
     "eject": "react-scripts eject",
-    "eslint": "eslint src --ignore-pattern \"src/__tests__\""
+    "eslint": "eslint src --ignore-pattern \"src/__tests__\"",
+    "prettier": "prettier --write --ignore-unknown \"**/*.{js,jsx,ts,tsx}\""
   },
   "browserslist": {
     "production": [
