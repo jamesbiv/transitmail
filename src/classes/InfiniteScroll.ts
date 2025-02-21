@@ -30,7 +30,6 @@ export class InfiniteScroll {
    * @var {IntersectionObserverInit} observerDefaults
    */
   protected observerDefaults: IntersectionObserverInit = {
-    root: null,
     rootMargin: "0px",
     threshold: 1.0
   };

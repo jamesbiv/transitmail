@@ -20,9 +20,14 @@
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": ["react", "@typescript-eslint"],
+  "plugins": [
+    "react",
+    "@typescript-eslint",
+    "no-null"
+  ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "error",
+    "no-null/no-null": "error",
     "no-console": "error",
     "sort-imports": "off",
     "sort-keys": "off",
