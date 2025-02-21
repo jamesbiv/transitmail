@@ -17,7 +17,7 @@ import {
   faLink,
   faPaperclip,
   faUndo,
-  faRedo,
+  faRedo
 } from "@fortawesome/free-solid-svg-icons";
 import { ComposeEditorLinkOverlay } from ".";
 
@@ -32,9 +32,9 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
   editorState,
   setEditorState,
   saveEmail,
-  deleteEmail,
+  deleteEmail
 }) => {
-  const linkButtonTarget: React.RefObject<HTMLButtonElement | null>  =
+  const linkButtonTarget: React.RefObject<HTMLButtonElement | null> =
     React.useRef<HTMLButtonElement>(null);
 
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
@@ -244,11 +244,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faRedo} />
         </Button>
       </ButtonGroup>
-      <ButtonGroup
-        size="sm"
-        className="me-2 mt-2 d-block d-sm-none"
-        aria-label=""
-      >
+      <ButtonGroup size="sm" className="me-2 mt-2 d-block d-sm-none" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
@@ -261,11 +257,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faSave} />
         </Button>
       </ButtonGroup>
-      <ButtonGroup
-        size="sm"
-        className="me-2 mt-2 d-block d-sm-none"
-        aria-label=""
-      >
+      <ButtonGroup size="sm" className="me-2 mt-2 d-block d-sm-none" aria-label="">
         <Button
           variant="danger"
           type="button"

@@ -1,5 +1,5 @@
 import React, { StrictMode, useContext, useEffect, useState } from "react";
-import {  createRoot, Root } from "react-dom/client";
+import { createRoot, Root } from "react-dom/client";
 import {
   Container,
   Navbar,
@@ -10,7 +10,7 @@ import {
   TabContent,
   TabPane,
   NavbarBrand,
-  TabContainer,
+  TabContainer
 } from "react-bootstrap";
 import {
   Folder,
@@ -22,17 +22,12 @@ import {
   View,
   ErrorBoundary,
   MessageModal,
-  Logout,
+  Logout
 } from "components";
 import { DependenciesContext, IDependencies } from "contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
-import {
-  IComponent,
-  IMessageModalState,
-  ISliderState,
-  ITouchState,
-} from "interfaces";
+import { IComponent, IMessageModalState, ISliderState, ITouchState } from "interfaces";
 
 // import * as serviceWorker from "serviceWorker";
 
@@ -40,27 +35,24 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
 
 const Index: React.FC = () => {
-  const [activeKey, setActiveKey] = useState<string>(
-    window.location.hash.substring(1) || "inbox"
-  );
+  const [activeKey, setActiveKey] = useState<string>(window.location.hash.substring(1) || "inbox");
 
   const [sliderState, setSliderState] = useState<ISliderState>({
     sliderAction: false,
-    sliderInitalDisplay: false,
+    sliderInitalDisplay: false
   });
 
-  const [messageModalState, setMessageModalState] =
-    useState<IMessageModalState>({
-      title: "",
-      content: "",
-      action: () => {},
-      show: false,
-    });
+  const [messageModalState, setMessageModalState] = useState<IMessageModalState>({
+    title: "",
+    content: "",
+    action: () => {},
+    show: false
+  });
 
   const touchState: ITouchState = {
     start: undefined,
     end: undefined,
-    threshold: 150,
+    threshold: 150
   };
 
   const { imapSocket, secureStorage, smtpSocket, stateManager } =
@@ -70,7 +62,7 @@ const Index: React.FC = () => {
     sliderState,
     setSliderState,
     setActiveKey,
-    setMessageModalState,
+    setMessageModalState
   };
 
   imapSocket.settings = secureStorage.getImapSettings();
@@ -115,16 +107,12 @@ const Index: React.FC = () => {
     { id: 4, element: Settings, eventKey: "settings" },
     { id: 5, element: View, eventKey: "view" },
     { id: 6, element: Folder, eventKey: "folder" },
-    { id: 7, element: Logout, eventKey: "logout" },
+    { id: 7, element: Logout, eventKey: "logout" }
   ];
 
   return (
     <StrictMode>
-      <Navbar
-        bg="dark"
-        variant="dark"
-        className="fixed-top pt-2 pb-2 ps-3 pe-3"
-      >
+      <Navbar bg="dark" variant="dark" className="fixed-top pt-2 pb-2 ps-3 pe-3">
         <NavbarBrand href="/">
           <FontAwesomeIcon icon={faAt} /> transit
         </NavbarBrand>
@@ -135,7 +123,7 @@ const Index: React.FC = () => {
           onClick={() =>
             setSliderState({
               sliderAction: !sliderState.sliderAction,
-              sliderInitalDisplay: true,
+              sliderInitalDisplay: true
             })
           }
         >
@@ -155,11 +143,7 @@ const Index: React.FC = () => {
               <Col
                 className={`bg-light pt-4 sideMenu ${
                   sliderState.sliderAction ? "slide-in" : "slide-out"
-                } ${
-                  !sliderState.sliderInitalDisplay
-                    ? "d-none d-md-block"
-                    : "d-block"
-                }`}
+                } ${!sliderState.sliderInitalDisplay ? "d-none d-md-block" : "d-block"}`}
                 sm={0}
                 md={4}
                 lg={3}
@@ -191,7 +175,7 @@ const Index: React.FC = () => {
         onHide={() =>
           setMessageModalState({
             ...messageModalState,
-            show: false,
+            show: false
           })
         }
       />

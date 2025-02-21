@@ -7,7 +7,7 @@ import {
   faFolderOpen,
   faCog,
   faSignOutAlt,
-  IconDefinition,
+  IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
 
@@ -26,7 +26,7 @@ const Menu: React.FC = () => {
     { id: 2, name: "Compose", eventKey: "compose", icon: faFeather },
     { id: 3, name: "Folders", eventKey: "folders", icon: faFolderOpen },
     { id: 4, name: "Settings", eventKey: "settings", icon: faCog },
-    { id: 5, name: "Logout", eventKey: "logout", icon: faSignOutAlt },
+    { id: 5, name: "Logout", eventKey: "logout", icon: faSignOutAlt }
   ];
 
   return (

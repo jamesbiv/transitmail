@@ -6,13 +6,9 @@ import {
   faPaperclip,
   faReply,
   faShare,
-  faTrash,
+  faTrash
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  IFolderEmail,
-  IFolderEmailActions,
-  IFolderLongPress,
-} from "interfaces";
+import { IFolderEmail, IFolderEmailActions, IFolderLongPress } from "interfaces";
 
 interface IFolderEmailEntryProps {
   email: IFolderEmail;
@@ -25,26 +21,14 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
   email,
   toggleSelection,
   folderEmailActions,
-  folderLongPress,
+  folderLongPress
 }) => {
   return (
     <Row
-      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${
-        email.selected && "bg-light"
-      }
-      ${
-        !email.flags.includes("Seen") || email.flags.includes("Recent")
-          ? "font-weight-bold"
-          : ""
-      }`}
+      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${email.selected && "bg-light"}
+      ${!email.flags.includes("Seen") || email.flags.includes("Recent") ? "font-weight-bold" : ""}`}
     >
-      <Col
-        xs={0}
-        sm={0}
-        md={1}
-        lg={1}
-        className="d-none d-sm-block me-3 folder-checkbox"
-      >
+      <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
         <Form.Check
           type="checkbox"
           id=""
@@ -101,35 +85,21 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           size="sm"
           aria-label=""
         >
-          <Button
-            variant="primary"
-            onClick={() => folderEmailActions.viewEmail(email.uid)}
-          >
+          <Button variant="primary" onClick={() => folderEmailActions.viewEmail(email.uid)}>
             <FontAwesomeIcon icon={faEnvelopeOpen} />
           </Button>
-          <Button
-            variant="success"
-            onClick={() => folderEmailActions.replyToEmail(email.uid)}
-          >
+          <Button variant="success" onClick={() => folderEmailActions.replyToEmail(email.uid)}>
             <FontAwesomeIcon icon={faReply} />
           </Button>
-          <Button
-            variant="success"
-            onClick={() => folderEmailActions.forwardEmail(email.uid)}
-          >
+          <Button variant="success" onClick={() => folderEmailActions.forwardEmail(email.uid)}>
             <FontAwesomeIcon icon={faShare} />
           </Button>
-          <Button
-            variant="danger"
-            onClick={() => folderEmailActions.deleteEmail(email.uid)}
-          >
+          <Button variant="danger" onClick={() => folderEmailActions.deleteEmail(email.uid)}>
             <FontAwesomeIcon icon={faTrash} />
           </Button>
         </ButtonGroup>
         <p className="d-none d-sm-inline">
-          {email.hasAttachment && (
-            <FontAwesomeIcon className="me-2" icon={faPaperclip} />
-          )}
+          {email.hasAttachment && <FontAwesomeIcon className="me-2" icon={faPaperclip} />}
           {email.subject || "(no subject)"}
         </p>
       </Col>
@@ -151,9 +121,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
       >
         <b>Subject</b>
         <br />
-        {email.hasAttachment && (
-          <FontAwesomeIcon className="me-2" icon={faPaperclip} />
-        )}
+        {email.hasAttachment && <FontAwesomeIcon className="me-2" icon={faPaperclip} />}
         {email.subject || "(no subject)"}
       </Col>
     </Row>

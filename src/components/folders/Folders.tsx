@@ -9,35 +9,22 @@ import {
   Button,
   Row,
   useAccordionButton,
-  ListGroup,
+  ListGroup
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faFolderOpen,
-  faPlus,
-  faSync,
-} from "@fortawesome/free-solid-svg-icons";
+import { faFolderOpen, faPlus, faSync } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
 
 export const Folders: React.FC = () => {
-  const { imapHelper, imapSocket, stateManager } =
-    useContext(DependenciesContext);
+  const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
 
-  const [folders, setFolders] = useState<IFoldersEntry[] | undefined>(
-    undefined
-  );
+  const [folders, setFolders] = useState<IFoldersEntry[] | undefined>(undefined);
 
-  const [activeFolderId, setActiveFolderId] = useState<string | undefined>(
-    undefined
-  );
+  const [activeFolderId, setActiveFolderId] = useState<string | undefined>(undefined);
 
-  const [actionFolderId, setActionFolderId] = useState<string | undefined>(
-    undefined
-  );
+  const [actionFolderId, setActionFolderId] = useState<string | undefined>(undefined);
 
-  const [actionType, setActionType] = useState<EFolderEntryActionType>(
-    EFolderEntryActionType.ADD
-  );
+  const [actionType, setActionType] = useState<EFolderEntryActionType>(EFolderEntryActionType.ADD);
 
   const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
@@ -62,36 +49,26 @@ export const Folders: React.FC = () => {
   const updateFolders = async (): Promise<void> => {
     const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
-    const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
-      listResponse.data
-    );
+    const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
     setFolders(folders);
   };
 
-  const updateActiveKeyFolderId = (
-    activeKey: string,
-    folderId: string
-  ): void => {
+  const updateActiveKeyFolderId = (activeKey: string, folderId: string): void => {
     stateManager.setFolderId(folderId);
     stateManager.updateActiveKey(activeKey);
   };
 
-  const toggleActionModal = (
-    actionType: EFolderEntryActionType,
-    actionFolderId?: string
-  ): void => {
+  const toggleActionModal = (actionType: EFolderEntryActionType, actionFolderId?: string): void => {
     setActionFolderId(actionFolderId);
     setActionType(actionType), setShowActionModal(true);
   };
 
-  const [displayAccordionActiveKey, setAccordionActiveKey] = useState<
-    string | undefined
-  >(undefined);
+  const [displayAccordionActiveKey, setAccordionActiveKey] = useState<string | undefined>(
+    undefined
+  );
 
-  const toggleAccordionActiveKey: (eventKey: string) => void = (
-    eventKey: string
-  ) => {
+  const toggleAccordionActiveKey: (eventKey: string) => void = (eventKey: string) => {
     const activeKey: string | undefined =
       eventKey !== displayAccordionActiveKey ? eventKey : undefined;
 
@@ -117,11 +94,7 @@ export const Folders: React.FC = () => {
                 </Button>
               </h4>
             </Col>
-            <Col
-              className="text-end text-sm-end text-nowrap mt-3 mt-sm-0"
-              xs={12}
-              sm={6}
-            >
+            <Col className="text-end text-sm-end text-nowrap mt-3 mt-sm-0" xs={12} sm={6}>
               <Button
                 size="sm"
                 variant="outline-dark"
@@ -134,9 +107,7 @@ export const Folders: React.FC = () => {
           </Row>
         </Card.Header>
         <Spinner
-          className={`mt-3 mb-3 ms-auto me-auto ${
-            folders?.length ? "d-none" : ""
-          }`}
+          className={`mt-3 mb-3 ms-auto me-auto ${folders?.length ? "d-none" : ""}`}
           animation="grow"
           variant="dark"
         />

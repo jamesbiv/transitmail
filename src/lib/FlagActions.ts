@@ -6,20 +6,20 @@ const flagTypes: IEmailFlagType[] = [
     name: "Answered",
     id: "\\Answered",
     enabled: false,
-    flagChanged: false,
+    flagChanged: false
   },
   {
     name: "Urgent",
     id: "\\Flagged",
     enabled: false,
-    flagChanged: false,
+    flagChanged: false
   },
   {
     name: "Draft",
     id: "\\Draft",
     enabled: false,
-    flagChanged: false,
-  },
+    flagChanged: false
+  }
 ];
 
 /**
@@ -40,10 +40,7 @@ export const setFlagDefaults = (flagString: string): IEmailFlagType[] =>
  * @param {IEmailFlagType[]} flags
  * @returns boolean
  */
-export const updateFlags = (
-  actionUids: number[],
-  flags: IEmailFlagType[]
-): boolean => {
+export const updateFlags = (actionUids: number[], flags: IEmailFlagType[]): boolean => {
   if (!actionUids.length) {
     return false;
   }
@@ -54,18 +51,14 @@ export const updateFlags = (
 
   actionUids.forEach(
     async (actionUid: number) =>
-      await imapSocket.imapRequest(
-        `UID STORE ${actionUid} +FLAGS (${enabledFlags})`
-      )
+      await imapSocket.imapRequest(`UID STORE ${actionUid} +FLAGS (${enabledFlags})`)
   );
 
   const disabledFlags: string | undefined = getFlagString(flags, false);
 
   actionUids.forEach(
     async (actionUid: number) =>
-      await imapSocket.imapRequest(
-        `UID STORE ${actionUid} -FLAGS (${disabledFlags})`
-      )
+      await imapSocket.imapRequest(`UID STORE ${actionUid} -FLAGS (${disabledFlags})`)
   );
 
   return true;
@@ -77,16 +70,10 @@ export const updateFlags = (
  * @param {boolean | undefined} condition
  * @returns string
  */
-export const getFlagString = (
-  flags: IEmailFlagType[],
-  condition?: boolean | undefined
-): string =>
+export const getFlagString = (flags: IEmailFlagType[], condition?: boolean | undefined): string =>
   flags
     .reduce((flagResult: string[], flag: IEmailFlagType) => {
-      if (
-        condition === undefined ||
-        (flag.enabled === condition && flag.flagChanged)
-      ) {
+      if (condition === undefined || (flag.enabled === condition && flag.flagChanged)) {
         flagResult.push(flag.id);
       }
 

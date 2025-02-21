@@ -39,7 +39,7 @@ describe("Testing the SecureStorage class", () => {
         smtpUsername: "mockSmtpUsername",
         smtpPassword: "mockSmtpPassword",
         secondaryEmails: [],
-        folderSettings: {},
+        folderSettings: {}
       };
 
       secureStorage.setSettings(settingsMock);

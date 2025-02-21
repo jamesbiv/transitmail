@@ -1,9 +1,4 @@
-import {
-  IComposePresets,
-  IFolderEmail,
-  IMessageModalState,
-  ISliderState,
-} from "interfaces";
+import { IComposePresets, IFolderEmail, IMessageModalState, ISliderState } from "interfaces";
 
 interface IFolderEmails {
   emails?: IFolderEmail[];
@@ -60,7 +55,7 @@ export class StateManager {
     if (sliderState) {
       this.indexState.setSliderState({
         sliderAction: false,
-        sliderInitalDisplay: false,
+        sliderInitalDisplay: false
       });
     }
   }
@@ -108,13 +103,12 @@ export class StateManager {
       return undefined;
     }
 
-    const folderEmails: IFolderEmails | undefined =
-      this.folderEmails?.[this.folderId];
+    const folderEmails: IFolderEmails | undefined = this.folderEmails?.[this.folderId];
 
     return folderEmails
       ? {
           emails: folderEmails.emails,
-          latestUid: folderEmails.latestUid,
+          latestUid: folderEmails.latestUid
         }
       : undefined;
   }

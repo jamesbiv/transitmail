@@ -10,7 +10,7 @@ import {
   faCopy,
   faCode,
   faFlag,
-  faEdit,
+  faEdit
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmail } from "interfaces";
 import { EViewActionType } from "./";
@@ -26,17 +26,13 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
   email,
   toggleActionModal,
   replyToEmail,
-  forwardEmail,
+  forwardEmail
 }) => {
   return (
     <React.Fragment>
       <div className="ms-2 float-end text-end">
         <div className="mb-2 d-none d-sm-block">
-          <Button
-            variant="primary"
-            type="button"
-            onClick={() => replyToEmail()}
-          >
+          <Button variant="primary" type="button" onClick={() => replyToEmail()}>
             <FontAwesomeIcon icon={faReply} /> Reply
           </Button>
           <Button
@@ -70,28 +66,19 @@ export const ViewHeader: React.FC<IViewHeaderProps> = ({
         </div>
         <Dropdown>
           <Dropdown.Toggle size="sm" variant="outline-dark" id="dropdown-basic">
-            <FontAwesomeIcon icon={faSlidersH} />{" "}
-            <span className="d-none">More Options</span>
+            <FontAwesomeIcon icon={faSlidersH} /> <span className="d-none">More Options</span>
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <Dropdown.Item
-              onClick={() => toggleActionModal(EViewActionType.MOVE)}
-            >
+            <Dropdown.Item onClick={() => toggleActionModal(EViewActionType.MOVE)}>
               <FontAwesomeIcon icon={faEdit} /> Move
             </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => toggleActionModal(EViewActionType.COPY)}
-            >
+            <Dropdown.Item onClick={() => toggleActionModal(EViewActionType.COPY)}>
               <FontAwesomeIcon icon={faCopy} /> Copy
             </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => toggleActionModal(EViewActionType.FLAG)}
-            >
+            <Dropdown.Item onClick={() => toggleActionModal(EViewActionType.FLAG)}>
               <FontAwesomeIcon icon={faFlag} /> Flag
             </Dropdown.Item>
-            <Dropdown.Item
-              onClick={() => toggleActionModal(EViewActionType.VIEW)}
-            >
+            <Dropdown.Item onClick={() => toggleActionModal(EViewActionType.VIEW)}>
               <FontAwesomeIcon icon={faCode} /> View Source
             </Dropdown.Item>
           </Dropdown.Menu>

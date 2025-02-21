@@ -14,7 +14,7 @@ export const FolderCardHeader: React.FC<FolderCardHeaderProps> = ({
   folderName,
   folderSpinner,
   checkEmail,
-  searchEmails,
+  searchEmails
 }) => {
   return (
     <Card.Header>

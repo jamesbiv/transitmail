@@ -8,21 +8,16 @@ import {
   faFlag,
   faCopy,
   faEdit,
-  IconDefinition,
+  IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  IEmailFlagType,
-  IFoldersEntry,
-  IFoldersSubEntry,
-  IImapResponse,
-} from "interfaces";
+import { IEmailFlagType, IFoldersEntry, IFoldersSubEntry, IImapResponse } from "interfaces";
 import { DependenciesContext } from "contexts";
 import {
   copyEmailToFolder,
   deleteEmailFromFolder,
   moveEmailToFolder,
   setFlagDefaults,
-  updateFlags,
+  updateFlags
 } from "lib";
 
 interface IFolderEmailActionsProps {
@@ -38,7 +33,7 @@ export enum EFolderEmailActionType {
   MOVE = 0,
   COPY = 1,
   FLAG = 2,
-  DELETE = 4,
+  DELETE = 4
 }
 
 interface IFolderEmailActionComponents {
@@ -53,7 +48,7 @@ interface IFolderEmailActionComponent {
 
 export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
   folderEmailActionState,
-  onHide,
+  onHide
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
 
@@ -65,13 +60,9 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
   useEffect(() => {
     if (showActionModal && folders.length == 0) {
       (async () => {
-        const listResponse: IImapResponse = await imapSocket.imapRequest(
-          `LIST "" "*"`
-        );
+        const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
-        const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
-          listResponse.data
-        );
+        const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
         updateFolders(folders);
       })();
@@ -84,31 +75,27 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
     [EFolderEmailActionType.MOVE]: {
       label: "Move email(s)",
       icon: faEdit,
-      element: FolderEmailActionMove,
+      element: FolderEmailActionMove
     },
     [EFolderEmailActionType.COPY]: {
       label: "Copy email(s)",
       icon: faCopy,
-      element: FolderEmailActionCopy,
+      element: FolderEmailActionCopy
     },
     [EFolderEmailActionType.FLAG]: {
       label: "Flag email(s)",
       icon: faFlag,
-      element: FolderEmailActionFlag,
+      element: FolderEmailActionFlag
     },
     [EFolderEmailActionType.DELETE]: {
       label: "Delete email(s)",
       icon: faEdit,
-      element: FolderEmailActionDelete,
-    },
+      element: FolderEmailActionDelete
+    }
   };
 
   return (
-    <Modal
-      show={showActionModal}
-      centered={true}
-      aria-labelledby="contained-modal-title-vcenter"
-    >
+    <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
       <Modal.Header closeButton onClick={() => onHide()}>
         <Modal.Title id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={FolderEmailAction[actionType].icon} />{" "}
@@ -122,7 +109,7 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
           imapSocket,
           submit,
           changeSubmit,
-          successfulSubmit,
+          successfulSubmit
         })}
       </Modal.Body>
       <Modal.Footer>
@@ -147,10 +134,9 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   folders,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
-  const [destinationFolder, setDestinationFolder] =
-    useState<string | undefined>(undefined);
+  const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -173,11 +159,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
     <Form.Group controlId="formDisplayName">
       <Form.Label>
         Move email(s) to{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
+        <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </Form.Label>
       <Form.Control
         as="select"
@@ -189,10 +171,7 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
           <React.Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option
-                key={subFolder.id}
-                value={`${folder.name}/${subFolder.name}`}
-              >
+              <option key={subFolder.id} value={`${folder.name}/${subFolder.name}`}>
                 &nbsp;{subFolder.name}
               </option>
             ))}
@@ -209,10 +188,9 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
   submit,
   imapSocket,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
-  const [destinationFolder, setDestinationFolder] =
-    useState<string | undefined>(undefined);
+  const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -227,9 +205,7 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
     }
 
     actionUids.forEach(async (actionUid: number) => {
-      await imapSocket.imapRequest(
-        `UID COPY ${actionUid} "${destinationFolder}"`
-      );
+      await imapSocket.imapRequest(`UID COPY ${actionUid} "${destinationFolder}"`);
     });
 
     copyEmailToFolder(actionUids, destinationFolder);
@@ -241,11 +217,7 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
     <Form.Group controlId="formDisplayName">
       <Form.Label>
         Move email(s) to{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
+        <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </Form.Label>
       <Form.Control
         as="select"
@@ -257,10 +229,7 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
           <React.Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option
-                key={subFolder.id}
-                value={`${folder.name}/${subFolder.name}`}
-              >
+              <option key={subFolder.id} value={`${folder.name}/${subFolder.name}`}>
                 &nbsp;{subFolder.name}
               </option>
             ))}
@@ -275,7 +244,7 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   const [flags, setFlags] = useState<IEmailFlagType[]>(setFlagDefaults(""));
 
@@ -324,7 +293,7 @@ export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
   actionUids,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   useEffect(() => {
     if (submit) {

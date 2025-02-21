@@ -5,7 +5,7 @@ import {
   faEnvelopeOpen,
   faTimes,
   faCheck,
-  faExclamationTriangle,
+  faExclamationTriangle
 } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
 import {
@@ -13,18 +13,16 @@ import {
   EImapResponseStatus,
   IImapResponse,
   IEmailFlags,
-  EComposePresetType,
+  EComposePresetType
 } from "interfaces";
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
 import { initateProgressBar } from "lib";
 
 export const View: React.FC = () => {
-  const { imapHelper, imapSocket, stateManager } =
-    useContext(DependenciesContext);
+  const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
 
   const [email, setEmail] = useState<IEmail | undefined>(undefined);
-  const [emailFlags, setEmailFlags] =
-    useState<IEmailFlags | undefined>(undefined);
+  const [emailFlags, setEmailFlags] = useState<IEmailFlags | undefined>(undefined);
 
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
@@ -34,9 +32,7 @@ export const View: React.FC = () => {
   const [showEmail, setShowEmail] = useState<boolean>(false);
 
   const [actionUid, setActionUid] = useState<number | undefined>(undefined);
-  const [actionType, setActionType] = useState<EViewActionType>(
-    EViewActionType.VIEW
-  );
+  const [actionType, setActionType] = useState<EViewActionType>(EViewActionType.VIEW);
   const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
   useEffect(() => {
@@ -56,9 +52,7 @@ export const View: React.FC = () => {
       stateManager.updateActiveKey("inbox");
     }
 
-    const selectResponse: IImapResponse = await imapSocket.imapRequest(
-      `SELECT "${folderId}"`
-    );
+    const selectResponse: IImapResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
       return;
@@ -72,8 +66,9 @@ export const View: React.FC = () => {
       return;
     }
 
-    const emailFlags: IEmailFlags | undefined =
-      imapHelper.formatFetchEmailFlagsResponse(fetchFlagsResponse.data);
+    const emailFlags: IEmailFlags | undefined = imapHelper.formatFetchEmailFlagsResponse(
+      fetchFlagsResponse.data
+    );
 
     if (!emailFlags) {
       return;
@@ -96,9 +91,7 @@ export const View: React.FC = () => {
       return;
     }
 
-    const email: IEmail = imapHelper.formatFetchEmailResponse(
-      fetchEmailResponse.data
-    );
+    const email: IEmail = imapHelper.formatFetchEmailResponse(fetchEmailResponse.data);
 
     setEmail(email);
   };
@@ -110,7 +103,7 @@ export const View: React.FC = () => {
 
     stateManager.setComposePresets({
       type: all ? EComposePresetType.ReplyAll : EComposePresetType.Reply,
-      email,
+      email
     });
 
     stateManager.updateActiveKey("compose");
@@ -123,7 +116,7 @@ export const View: React.FC = () => {
 
     stateManager.setComposePresets({
       type: EComposePresetType.Forward,
-      email,
+      email
     });
 
     stateManager.updateActiveKey("compose");
@@ -173,11 +166,7 @@ export const View: React.FC = () => {
           <Alert
             className={!message.length ? "d-none" : "d-block"}
             variant={
-              messageType === "info"
-                ? "success"
-                : messageType === "warning"
-                ? "warning"
-                : "danger"
+              messageType === "info" ? "success" : messageType === "warning" ? "warning" : "danger"
             }
           >
             <FontAwesomeIcon
@@ -185,8 +174,8 @@ export const View: React.FC = () => {
                 messageType === "info"
                   ? faCheck
                   : messageType === "warning"
-                  ? faExclamationTriangle
-                  : faTimes
+                    ? faExclamationTriangle
+                    : faTimes
               }
             />{" "}
             {message}
@@ -198,12 +187,12 @@ export const View: React.FC = () => {
               className="email-body"
               frameBorder="0"
               onLoad={() => {
-                const emailBodyFrame: HTMLIFrameElement =
-                  document.getElementById("emailBody") as HTMLIFrameElement;
+                const emailBodyFrame: HTMLIFrameElement = document.getElementById(
+                  "emailBody"
+                ) as HTMLIFrameElement;
 
                 emailBodyFrame.style.height =
-                  emailBodyFrame.contentWindow!.document.documentElement
-                    .scrollHeight + "px";
+                  emailBodyFrame.contentWindow!.document.documentElement.scrollHeight + "px";
               }}
               srcDoc={email.bodyHtml}
               referrerPolicy="no-referrer"

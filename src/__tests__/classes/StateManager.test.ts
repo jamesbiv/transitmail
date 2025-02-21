@@ -13,8 +13,7 @@ describe("Testing the StateManager class", () => {
 
       stateManager.setActiveUid(mockUid);
 
-      const getActiveUidResponse: number | undefined =
-        stateManager.getActiveUid();
+      const getActiveUidResponse: number | undefined = stateManager.getActiveUid();
 
       expect(getActiveUidResponse).toEqual(mockUid);
     });
@@ -26,8 +25,7 @@ describe("Testing the StateManager class", () => {
 
       stateManager.setFolderId(mockFolderId);
 
-      const getFolderIdResponse: string | undefined =
-        stateManager.getFolderId();
+      const getFolderIdResponse: string | undefined = stateManager.getFolderId();
 
       expect(getFolderIdResponse).toEqual(mockFolderId);
     });
@@ -46,8 +44,8 @@ describe("Testing the StateManager class", () => {
           ref: "",
           flags: "",
           hasAttachment: false,
-          selected: true,
-        },
+          selected: true
+        }
       ];
 
       const mockFolderEmailsReponse: any = {
@@ -62,16 +60,15 @@ describe("Testing the StateManager class", () => {
             ref: "",
             selected: true,
             subject: "",
-            uid: 1,
-          },
+            uid: 1
+          }
         ],
-        latestUid: "1",
+        latestUid: "1"
       };
 
       stateManager.updateCurrentFolder(mockFolderEmails, "1");
 
-      const updateCurrentFolderResponse: any | undefined =
-        stateManager.getCurrentFolder();
+      const updateCurrentFolderResponse: any | undefined = stateManager.getCurrentFolder();
 
       expect(updateCurrentFolderResponse).toEqual(mockFolderEmailsReponse);
     });

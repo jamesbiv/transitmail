@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import { Container, Row, Col, Card, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk } from "@fortawesome/free-solid-svg-icons";
-import {
-  ISettings,
-  ISettingsSecondaryEmail,
-  ISettingsValidationCondition,
-} from "interfaces";
+import { ISettings, ISettingsSecondaryEmail, ISettingsValidationCondition } from "interfaces";
 import { SettingsSecondaryEmails, SettingsFormFolders } from ".";
 
 interface ISettingsFormProps {
@@ -22,11 +18,9 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
   validationConditions,
   displayFormFolders,
   setSettings,
-  setDisplayFormFolders,
+  setDisplayFormFolders
 }) => {
-  const [errorMessage, setErrorMessage] = useState<
-    Partial<ISettings> | undefined
-  >(undefined);
+  const [errorMessage, setErrorMessage] = useState<Partial<ISettings> | undefined>(undefined);
 
   const setSettingValue = (
     settingName: keyof ISettings,
@@ -41,27 +35,28 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
       return;
     }
 
-    const updatedErrorMessage: Partial<ISettings> | undefined =
-      settingsCondition.constraint(settingValue)
-        ? { ...errorMessage, [settingName]: undefined }
-        : {
-            ...errorMessage,
-            [settingName]: settingsCondition.message,
-          };
+    const updatedErrorMessage: Partial<ISettings> | undefined = settingsCondition.constraint(
+      settingValue
+    )
+      ? { ...errorMessage, [settingName]: undefined }
+      : {
+          ...errorMessage,
+          [settingName]: settingsCondition.message
+        };
 
     setErrorMessage(updatedErrorMessage);
 
     const updatedSettings: ISettings = {
       ...settings,
-      [settingName]: settingValue,
+      [settingName]: settingValue
     };
 
     setSettings(updatedSettings);
   };
 
-  const updateSecondaryEmails: (
+  const updateSecondaryEmails: (secondaryEmails?: ISettingsSecondaryEmail[]) => void = (
     secondaryEmails?: ISettingsSecondaryEmail[]
-  ) => void = (secondaryEmails?: ISettingsSecondaryEmail[]): void => {
+  ): void => {
     settings.secondaryEmails = secondaryEmails;
   };
 
@@ -69,12 +64,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
     <React.Fragment>
       <Form.Group controlId="formDisplayName">
         <Form.Label>
-          Display name{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
+          Display name <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </Form.Label>
         <Form.Control
           type="text"
@@ -88,18 +78,11 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
         <Form.Text className="text-muted">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
         </Form.Text>
-        <Form.Control.Feedback type="invalid">
-          {errorMessage?.name}
-        </Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid">{errorMessage?.name}</Form.Control.Feedback>
       </Form.Group>
       <Form.Group controlId="formEmailAddress">
         <Form.Label>
-          Email address{" "}
-          <FontAwesomeIcon
-            icon={faAsterisk}
-            size="xs"
-            className="text-danger mb-1"
-          />
+          Email address <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </Form.Label>
         <Form.Control
           type="email"
@@ -113,9 +96,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
         <Form.Text className="text-muted">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
         </Form.Text>
-        <Form.Control.Feedback type="invalid">
-          {errorMessage?.email}
-        </Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid">{errorMessage?.email}</Form.Control.Feedback>
       </Form.Group>
       <Form.Group controlId="formEmailSignature">
         <Form.Label>Email signature</Form.Label>
@@ -129,9 +110,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
             setSettingValue("signature", event.target.value);
           }}
         />
-        <Form.Control.Feedback type="invalid">
-          {errorMessage?.signature}
-        </Form.Control.Feedback>
+        <Form.Control.Feedback type="invalid">{errorMessage?.signature}</Form.Control.Feedback>
       </Form.Group>
       <Form.Group controlId="formEmailAutoLogin">
         <Form.Check
@@ -160,11 +139,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formIncommingHost">
                   <Form.Label>
                     Incomming mail host{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="text"
@@ -182,11 +157,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formIncommingPort">
                   <Form.Label>
                     Incomming mail port{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="text"
@@ -204,11 +175,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formIncommingUser">
                   <Form.Label>
                     Incomming mail username{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="text"
@@ -226,11 +193,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formIncommingPassword">
                   <Form.Label>
                     Incomming mail password{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="password"
@@ -255,11 +218,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formOutgoingHost">
                   <Form.Label>
                     Outgoing mail host{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="text"
@@ -277,11 +236,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formOutgoingPort">
                   <Form.Label>
                     Outgoing mail port{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="text"
@@ -299,11 +254,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formOutgoingUser">
                   <Form.Label>
                     Outgoing mail username{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="text"
@@ -321,11 +272,7 @@ export const SettingsForm: React.FC<ISettingsFormProps> = ({
                 <Form.Group controlId="formOutgoingPassword">
                   <Form.Label>
                     Outgoing mail password{" "}
-                    <FontAwesomeIcon
-                      icon={faAsterisk}
-                      size="xs"
-                      className="text-danger mb-1"
-                    />
+                    <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </Form.Label>
                   <Form.Control
                     type="password"

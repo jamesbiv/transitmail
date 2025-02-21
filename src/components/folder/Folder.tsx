@@ -1,19 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import { DependenciesContext } from "contexts";
-import {
-  EComposePresetType,
-  EImapResponseStatus,
-  IFolderEmail,
-  IImapResponse,
-} from "interfaces";
+import { EComposePresetType, EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
 import { Card, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
-import {
-  FolderEmailActions,
-  EFolderEmailActionType,
-  FolderCardHeader,
-} from ".";
+import { FolderEmailActions, EFolderEmailActionType, FolderCardHeader } from ".";
 import { FolderScrollContainer } from "./FolderScrollContainer";
 
 interface IFolderEmailActionState {
@@ -23,22 +14,18 @@ interface IFolderEmailActionState {
 }
 
 export const Folder: React.FC = () => {
-  const { imapHelper, imapSocket, stateManager } =
-    useContext(DependenciesContext);
+  const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
 
-  const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(
-    undefined
-  );
+  const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(undefined);
 
   const [displayCardHeader, setDisplayCardHeader] = useState<boolean>(true);
   const [folderSpinner, setFolderSpinner] = useState<boolean>(true);
 
-  const [folderEmailActionState, setFolderEmailActionState] =
-    useState<IFolderEmailActionState>({
-      actionUids: undefined,
-      actionType: EFolderEmailActionType.COPY,
-      showActionModal: false,
-    });
+  const [folderEmailActionState, setFolderEmailActionState] = useState<IFolderEmailActionState>({
+    actionUids: undefined,
+    actionType: EFolderEmailActionType.COPY,
+    showActionModal: false
+  });
 
   let initalizeFoldersRun: boolean = false;
 
@@ -77,8 +64,7 @@ export const Folder: React.FC = () => {
       latestEmails.shift();
     }
 
-    const currentEmails: IFolderEmail[] =
-      stateManager.getCurrentFolder()?.emails ?? [];
+    const currentEmails: IFolderEmail[] = stateManager.getCurrentFolder()?.emails ?? [];
 
     const allCurrentEmails: IFolderEmail[] = latestEmails
       ? [...latestEmails, ...currentEmails]
@@ -90,14 +76,10 @@ export const Folder: React.FC = () => {
     stateManager.updateCurrentFolder(allCurrentEmails);
   };
 
-  const getLatestEmails = async (
-    lastUid?: number
-  ): Promise<IFolderEmail[] | undefined> => {
+  const getLatestEmails = async (lastUid?: number): Promise<IFolderEmail[] | undefined> => {
     const folderId: string | undefined = stateManager.getFolderId();
 
-    const selectResponse: IImapResponse = await imapSocket.imapRequest(
-      `SELECT "${folderId}"`
-    );
+    const selectResponse: IImapResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
       return undefined;
@@ -113,8 +95,9 @@ export const Folder: React.FC = () => {
       return undefined;
     }
 
-    const latestEmails: IFolderEmail[] =
-      imapHelper.formatFetchFolderEmailsResponse(fetchResponse.data);
+    const latestEmails: IFolderEmail[] = imapHelper.formatFetchFolderEmailsResponse(
+      fetchResponse.data
+    );
 
     latestEmails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
 
@@ -124,8 +107,7 @@ export const Folder: React.FC = () => {
   const searchEmails = (searchQuery: string): void => {
     const searchQueryLowercase: string = searchQuery.toLowerCase();
 
-    const currentEmails: IFolderEmail[] =
-      stateManager.getCurrentFolder()?.emails ?? [];
+    const currentEmails: IFolderEmail[] = stateManager.getCurrentFolder()?.emails ?? [];
 
     const filteredEmails: IFolderEmail[] = !searchQuery.length
       ? currentEmails
@@ -155,13 +137,13 @@ export const Folder: React.FC = () => {
     setFolderEmailActionState({
       actionUids: [emailUid],
       actionType: EFolderEmailActionType.DELETE,
-      showActionModal: true,
+      showActionModal: true
     });
 
   const replyToEmail = async (emailUid: number): Promise<void> => {
     stateManager.setComposePresets({
       type: EComposePresetType.Reply,
-      uid: emailUid,
+      uid: emailUid
     });
 
     stateManager.updateActiveKey("compose");
@@ -170,7 +152,7 @@ export const Folder: React.FC = () => {
   const forwardEmail = async (emailUid: number): Promise<void> => {
     stateManager.setComposePresets({
       type: EComposePresetType.Forward,
-      uid: emailUid,
+      uid: emailUid
     });
 
     stateManager.updateActiveKey("compose");
@@ -191,7 +173,7 @@ export const Folder: React.FC = () => {
     setFolderEmailActionState({
       actionType: actionType,
       actionUids: actionUids,
-      showActionModal: true,
+      showActionModal: true
     });
   };
 
@@ -203,7 +185,7 @@ export const Folder: React.FC = () => {
     setFolderEmailActionState({
       actionType: folderEmailActionState.actionType,
       actionUids: [],
-      showActionModal: false,
+      showActionModal: false
     });
   };
 
@@ -219,11 +201,7 @@ export const Folder: React.FC = () => {
           />
         )}
         {!folderEmails ? (
-          <Spinner
-            className="mt-3 mb-3 ms-auto me-auto"
-            animation="grow"
-            variant="dark"
-          />
+          <Spinner className="mt-3 mb-3 ms-auto me-auto" animation="grow" variant="dark" />
         ) : !folderEmails.length ? (
           <Card.Body className="text-center text-secondary">
             <FontAwesomeIcon icon={faFolderOpen} size="lg" />
@@ -239,7 +217,7 @@ export const Folder: React.FC = () => {
               viewEmail,
               deleteEmail,
               replyToEmail,
-              forwardEmail,
+              forwardEmail
             }}
           />
         )}

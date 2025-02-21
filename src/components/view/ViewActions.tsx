@@ -8,7 +8,7 @@ import {
   faCopy,
   faEdit,
   faCode,
-  IconDefinition,
+  IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
 import {
   IEmail,
@@ -16,7 +16,7 @@ import {
   IEmailFlagType,
   IFoldersEntry,
   IFoldersSubEntry,
-  IImapResponse,
+  IImapResponse
 } from "interfaces";
 import { DependenciesContext } from "contexts";
 import {
@@ -25,7 +25,7 @@ import {
   deleteEmailFromFolder,
   getFlagString,
   updateFlags,
-  setFlagDefaults,
+  setFlagDefaults
 } from "lib";
 
 interface IViewActionsProps {
@@ -42,7 +42,7 @@ export enum EViewActionType {
   COPY = 1,
   FLAG = 2,
   VIEW = 3,
-  DELETE = 4,
+  DELETE = 4
 }
 
 interface IViewActionComponents {
@@ -62,7 +62,7 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
   email,
   emailFlags,
   showActionModal,
-  onHide,
+  onHide
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
 
@@ -72,13 +72,9 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
   useEffect(() => {
     if (showActionModal && folders.length == 0) {
       (async () => {
-        const listResponse: IImapResponse = await imapSocket.imapRequest(
-          `LIST "" "*"`
-        );
+        const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
-        const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(
-          listResponse.data
-        );
+        const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
         updateFolders(folders);
       })();
@@ -91,41 +87,36 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
     [EViewActionType.MOVE]: {
       label: "Move email",
       icon: faEdit,
-      element: ViewActionMove,
+      element: ViewActionMove
     },
     [EViewActionType.COPY]: {
       label: "Copy email",
       icon: faCopy,
-      element: ViewActionCopy,
+      element: ViewActionCopy
     },
     [EViewActionType.FLAG]: {
       label: "Flag email",
       icon: faFlag,
-      element: ViewActionFlag,
+      element: ViewActionFlag
     },
     [EViewActionType.VIEW]: {
       label: "View source",
       icon: faCode,
       element: ViewActionView,
-      hideSubmit: true,
+      hideSubmit: true
     },
     [EViewActionType.DELETE]: {
       label: "Delete email",
       icon: faEdit,
-      element: ViewActionDelete,
-    },
+      element: ViewActionDelete
+    }
   };
 
   return (
-    <Modal
-      show={showActionModal}
-      centered={true}
-      aria-labelledby="contained-modal-title-vcenter"
-    >
+    <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
       <Modal.Header closeButton onClick={() => onHide()}>
         <Modal.Title id="contained-modal-title-vcenter">
-          <FontAwesomeIcon icon={ViewAction[actionType].icon} />{" "}
-          {ViewAction[actionType].label}
+          <FontAwesomeIcon icon={ViewAction[actionType].icon} /> {ViewAction[actionType].label}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -136,7 +127,7 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
           emailFlags,
           submit,
           changeSubmit,
-          successfulSubmit,
+          successfulSubmit
         })}
       </Modal.Body>
       <Modal.Footer>
@@ -172,10 +163,9 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   folders,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
-  const [destinationFolder, setDestinationFolder] =
-    useState<string | undefined>(undefined);
+  const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -197,12 +187,7 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   return (
     <Form.Group controlId="formDisplayName">
       <Form.Label>
-        Copy folder to{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
+        Copy folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </Form.Label>
       <Form.Control
         as="select"
@@ -216,10 +201,7 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
               {folder.name}
             </option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option
-                key={subFolder.id}
-                value={`${folder.name}/${subFolder.name}`}
-              >
+              <option key={subFolder.id} value={`${folder.name}/${subFolder.name}`}>
                 &nbsp;{subFolder.name}
               </option>
             ))}
@@ -235,10 +217,9 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   folders,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
-  const [destinationFolder, setDestinationFolder] =
-    useState<string | undefined>(undefined);
+  const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (submit) {
@@ -260,12 +241,7 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   return (
     <Form.Group controlId="formDisplayName">
       <Form.Label>
-        Move folder to{" "}
-        <FontAwesomeIcon
-          icon={faAsterisk}
-          size="xs"
-          className="text-danger mb-1"
-        />
+        Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </Form.Label>
       <Form.Control
         as="select"
@@ -279,10 +255,7 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
               {folder.name}
             </option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
-              <option
-                key={subFolder.id}
-                value={`${folder.name}/${subFolder.name}`}
-              >
+              <option key={subFolder.id} value={`${folder.name}/${subFolder.name}`}>
                 &nbsp;{subFolder.name}
               </option>
             ))}
@@ -298,11 +271,9 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
   emailFlags,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
-  const [flags, setFlags] = useState<IEmailFlagType[]>(
-    setFlagDefaults(emailFlags.flags)
-  );
+  const [flags, setFlags] = useState<IEmailFlagType[]>(setFlagDefaults(emailFlags.flags));
 
   useEffect(() => {
     if (submit) {
@@ -359,7 +330,7 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
   actionUid,
   submit,
   changeSubmit,
-  successfulSubmit,
+  successfulSubmit
 }) => {
   useEffect(() => {
     if (submit) {
@@ -378,8 +349,7 @@ export const ViewActionDelete: React.FC<IViewActionProps> = ({
 
   return (
     <Alert variant="danger">
-      <FontAwesomeIcon icon={faExclamationTriangle} /> Are you sure you want to
-      delete this email?
+      <FontAwesomeIcon icon={faExclamationTriangle} /> Are you sure you want to delete this email?
     </Alert>
   );
 };

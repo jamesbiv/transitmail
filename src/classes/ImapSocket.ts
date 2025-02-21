@@ -3,7 +3,7 @@ import {
   IImapResponse,
   IImapResponseData,
   IImapSession,
-  IImapSettings,
+  IImapSettings
 } from "interfaces";
 
 type TImapCallback = (event: IImapResponseData | Event) => void;
@@ -28,7 +28,7 @@ export class ImapSocket {
       host: host ?? "", // IMAP WebSocket host
       port: port ?? 8143, // IMAP WebSocket port
       username: username ?? "", // IMAP account username
-      password: password ?? "", // IMAP account password
+      password: password ?? "" // IMAP account password
     };
 
     // Session variables
@@ -44,7 +44,7 @@ export class ImapSocket {
       responseContent: "", // the response being processed
       streamCumlative: 0, // download count of entire session
       stream: 0, // download count of last request
-      lock: true, // locking asynchronous messages
+      lock: true // locking asynchronous messages
     };
   }
 
@@ -83,7 +83,7 @@ export class ImapSocket {
         request: "",
         ok: () => {},
         no: () => {},
-        bad: () => {},
+        bad: () => {}
       });
 
       this.session.lock = false;
@@ -153,25 +153,23 @@ export class ImapSocket {
   public async imapRequest(request: string): Promise<IImapResponse> {
     let status: EImapResponseStatus | undefined;
 
-    const responsePayload: Promise<IImapResponseData> = new Promise(
-      (fulfilled, rejected) => {
-        this.imapProcessRequest(
-          request,
-          (event: IImapResponseData | Event) => {
-            fulfilled(event as IImapResponseData);
-            status = EImapResponseStatus.OK;
-          },
-          (event: IImapResponseData | Event) => {
-            fulfilled(event as IImapResponseData);
-            status = EImapResponseStatus.NO;
-          },
-          (event: IImapResponseData | Event) => {
-            fulfilled(event as IImapResponseData);
-            status = EImapResponseStatus.BAD;
-          }
-        );
-      }
-    );
+    const responsePayload: Promise<IImapResponseData> = new Promise((fulfilled, rejected) => {
+      this.imapProcessRequest(
+        request,
+        (event: IImapResponseData | Event) => {
+          fulfilled(event as IImapResponseData);
+          status = EImapResponseStatus.OK;
+        },
+        (event: IImapResponseData | Event) => {
+          fulfilled(event as IImapResponseData);
+          status = EImapResponseStatus.NO;
+        },
+        (event: IImapResponseData | Event) => {
+          fulfilled(event as IImapResponseData);
+          status = EImapResponseStatus.BAD;
+        }
+      );
+    });
 
     const resolvedResponsePayload = await responsePayload;
 
@@ -214,7 +212,7 @@ export class ImapSocket {
       request: request,
       ok: ok,
       no: no,
-      bad: bad,
+      bad: bad
     });
 
     this.session.stream = 0;
@@ -242,10 +240,7 @@ export class ImapSocket {
 
       let result: string[] = [];
 
-      if (
-        responseCols[0] === "*" ||
-        responseCols[0] === this.session.request[index].id
-      ) {
+      if (responseCols[0] === "*" || responseCols[0] === this.session.request[index].id) {
         if (this.session.responseContent.length) {
           if (this.session.responseContent !== "\r\n") {
             this.session.responseQueue.push([this.session.responseContent]);
@@ -272,10 +267,7 @@ export class ImapSocket {
         }
       }
 
-      if (
-        Array.isArray(result) &&
-        result[0] === this.session.request[index].id
-      ) {
+      if (Array.isArray(result) && result[0] === this.session.request[index].id) {
         const request: IImapResponseData = this.session.request[index];
 
         if (request) {
@@ -313,9 +305,7 @@ export class ImapSocket {
    * @returns Promise<IImapResponse>
    */
   public async imapAuthorise(): Promise<IImapResponse> {
-    return await this.imapRequest(
-      "LOGIN " + this.settings.username + " " + this.settings.password
-    );
+    return await this.imapRequest("LOGIN " + this.settings.username + " " + this.settings.password);
   }
 
   /**
@@ -336,9 +326,7 @@ export class ImapSocket {
    * @returns number
    */
   public getStreamAmount(cumlative = false): number {
-    return cumlative === true
-      ? this.session.streamCumlative
-      : this.session.stream;
+    return cumlative === true ? this.session.streamCumlative : this.session.stream;
   }
 
   /**

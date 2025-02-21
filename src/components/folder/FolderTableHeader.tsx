@@ -1,10 +1,7 @@
 import React from "react";
 import { Row, Col, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faLongArrowAltUp,
-  faLongArrowAltDown,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLongArrowAltUp, faLongArrowAltDown } from "@fortawesome/free-solid-svg-icons";
 import { IFolderEmail } from "interfaces";
 
 interface IFolderTableHeaderProps {
@@ -18,20 +15,13 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
   folderEmails,
   toggleSelectionAll,
   toggleSelection,
-  updateVisibleEmails,
+  updateVisibleEmails
 }) => {
-  const sortFolder: (field: string, direction?: string) => void = (
-    field,
-    direction = "asc"
-  ) => {
+  const sortFolder: (field: string, direction?: string) => void = (field, direction = "asc") => {
     if (direction === "asc") {
-      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) =>
-        a[field] > b[field] ? 1 : -1
-      );
+      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] > b[field] ? 1 : -1));
     } else {
-      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) =>
-        a[field] < b[field] ? 1 : -1
-      );
+      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] < b[field] ? 1 : -1));
     }
 
     updateVisibleEmails();
@@ -39,13 +29,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
 
   return (
     <Row className="border-bottom p-2 font-weight-bold bg-light g-0">
-      <Col
-        xs={0}
-        sm={0}
-        md={1}
-        lg={1}
-        className="d-none d-sm-block me-3 folder-checkbox"
-      >
+      <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
         <Form.Check
           type="checkbox"
           id=""
@@ -88,13 +72,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
           className="text-secondary pointer"
         />
       </Col>
-      <Col
-        xs={0}
-        sm={4}
-        md={4}
-        lg={5}
-        className="d-none d-sm-block text-nowrap"
-      >
+      <Col xs={0} sm={4} md={4} lg={5} className="d-none d-sm-block text-nowrap">
         Subject{" "}
         <FontAwesomeIcon
           onClick={() => sortFolder("subject", "asc")}
@@ -109,13 +87,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
           className="text-secondary pointer"
         />
       </Col>
-      <Col
-        xs={3}
-        sm={3}
-        md={3}
-        lg={2}
-        className="d-none d-sm-block ms-auto text-end"
-      >
+      <Col xs={3} sm={3} md={3} lg={2} className="d-none d-sm-block ms-auto text-end">
         Actions
       </Col>
     </Row>

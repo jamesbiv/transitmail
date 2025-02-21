@@ -1,11 +1,5 @@
 import { createContext } from "react";
-import {
-  ImapHelper,
-  ImapSocket,
-  SecureStorage,
-  SmtpSocket,
-  StateManager,
-} from "classes";
+import { ImapHelper, ImapSocket, SecureStorage, SmtpSocket, StateManager } from "classes";
 
 export interface IDependencies {
   imapHelper: ImapHelper;
@@ -20,7 +14,7 @@ const dependencies: IDependencies = {
   imapSocket: new ImapSocket(),
   smtpSocket: new SmtpSocket(),
   secureStorage: new SecureStorage(),
-  stateManager: new StateManager(),
+  stateManager: new StateManager()
 };
 
 export const directAccessToDependencies = () => dependencies;

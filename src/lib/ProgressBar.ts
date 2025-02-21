@@ -53,13 +53,9 @@ export const checkProgressBar = (
 
   setProgressBarNow(progressBar.now);
 
-  const progressBarThreshold: number =
-    progressBar.maxBytes - (progressBar.maxBytes * 5) / 100;
+  const progressBarThreshold: number = progressBar.maxBytes - (progressBar.maxBytes * 5) / 100;
 
-  if (
-    progressBarThreshold > progressBar.currentBytes &&
-    setTimeoutFallback < setTimeoutMaxMs
-  ) {
+  if (progressBarThreshold > progressBar.currentBytes && setTimeoutFallback < setTimeoutMaxMs) {
     setTimeout(() => {
       setTimeoutFallback += 10;
 

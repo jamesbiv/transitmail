@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Button,
-  Modal,
-  ModalHeader,
-  ModalTitle,
-  ModalBody,
-  ModalFooter,
-} from "react-bootstrap";
+import { Button, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { IMessageModalState } from "interfaces";
@@ -16,10 +9,7 @@ interface IMessageModalProps {
   onHide: () => void;
 }
 
-export const MessageModal: React.FC<IMessageModalProps> = ({
-  messageModalState,
-  onHide,
-}) => {
+export const MessageModal: React.FC<IMessageModalProps> = ({ messageModalState, onHide }) => {
   return (
     <Modal
       show={messageModalState.show}
@@ -28,8 +18,7 @@ export const MessageModal: React.FC<IMessageModalProps> = ({
     >
       <ModalHeader closeButton>
         <ModalTitle id="contained-modal-title-vcenter">
-          <FontAwesomeIcon icon={faExclamationTriangle} />{" "}
-          {messageModalState.title}
+          <FontAwesomeIcon icon={faExclamationTriangle} /> {messageModalState.title}
         </ModalTitle>
       </ModalHeader>
       <ModalBody>{messageModalState.content}</ModalBody>

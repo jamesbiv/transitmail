@@ -5,7 +5,7 @@ jest.mock("contexts/DependenciesContext");
 const mockEmailRaw: any = {};
 
 const imapSocket = new ImapSocket({
-  host: "test-host",
+  host: "test-host"
 });
 
 describe("Testing the ImapSocket class", () => {

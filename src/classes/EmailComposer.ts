@@ -1,10 +1,6 @@
 import { EditorState, convertToRaw } from "draft-js";
 import { stateToHTML } from "draft-js-export-html";
-import {
-  IComposeRecipient,
-  IComposeAttachment,
-  IComposedEmail,
-} from "interfaces";
+import { IComposeRecipient, IComposeAttachment, IComposedEmail } from "interfaces";
 
 interface IEmailData {
   editorState: EditorState;
@@ -22,7 +18,7 @@ export class EmailComposer {
    */
   public composeEmail(emailData: IEmailData): IComposedEmail {
     const composedEmail: IComposedEmail = {
-      boundaryid: Math.random().toString(36).substring(5),
+      boundaryid: Math.random().toString(36).substring(5)
     };
 
     composedEmail.subject = emailData.subject;
@@ -54,15 +50,11 @@ export class EmailComposer {
 
     composedEmail.contentText = "";
 
-    [...convertToRaw(emailData.editorState.getCurrentContent()).blocks].forEach(
-      (contentRow) => {
-        composedEmail.contentText += contentRow.text + "\r\n";
-      }
-    );
+    [...convertToRaw(emailData.editorState.getCurrentContent()).blocks].forEach((contentRow) => {
+      composedEmail.contentText += contentRow.text + "\r\n";
+    });
 
-    composedEmail.contentHTML = stateToHTML(
-      emailData.editorState.getCurrentContent()
-    );
+    composedEmail.contentHTML = stateToHTML(emailData.editorState.getCurrentContent());
 
     if (emailData.attachments) {
       composedEmail.attachmentsEncoded = "";

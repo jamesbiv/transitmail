@@ -1,19 +1,13 @@
 import React from "react";
 import { Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faExclamationTriangle,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faExclamationTriangle, faTimes } from "@fortawesome/free-solid-svg-icons";
 
 interface ISettingsValidationProps {
   validation?: { message: string; type: string };
 }
 
-export const SettingsValidation: React.FC<ISettingsValidationProps> = ({
-  validation,
-}) => {
+export const SettingsValidation: React.FC<ISettingsValidationProps> = ({ validation }) => {
   return (
     <Alert
       className={!validation ? "d-none" : "d-block"}
@@ -21,8 +15,8 @@ export const SettingsValidation: React.FC<ISettingsValidationProps> = ({
         validation?.type === "info"
           ? "success"
           : validation?.type === "warning"
-          ? "warning"
-          : "danger"
+            ? "warning"
+            : "danger"
       }
     >
       <FontAwesomeIcon
@@ -30,13 +24,13 @@ export const SettingsValidation: React.FC<ISettingsValidationProps> = ({
           validation?.type === "info"
             ? faCheck
             : validation?.type === "warning"
-            ? faExclamationTriangle
-            : faTimes
+              ? faExclamationTriangle
+              : faTimes
         }
       />{" "}
       <span
         dangerouslySetInnerHTML={{
-          __html: validation?.message ?? "",
+          __html: validation?.message ?? ""
         }}
       />
     </Alert>

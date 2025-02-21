@@ -3,7 +3,7 @@ import { IEmail } from "./IEmail";
 export enum EComposePresetType {
   Reply,
   ReplyAll,
-  Forward,
+  Forward
 }
 
 export interface IComposePresets {

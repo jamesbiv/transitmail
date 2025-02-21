@@ -24,13 +24,7 @@ const infiniteScroll = new InfiniteScroll(
   "container-main",
   "topObserver",
   "bottomObserver",
-  ({
-    minIndex,
-    maxIndex,
-    folderPlaceholder,
-    folderScrollSpinner,
-    callback,
-  }) => {},
+  ({ minIndex, maxIndex, folderPlaceholder, folderScrollSpinner, callback }) => {},
   1
 );
 
@@ -73,7 +67,7 @@ describe("Testing the InfiniteScroll class", () => {
 
       expect(getCurrentSliceResponse).toEqual({
         maxIndex: 15,
-        minIndex: 0,
+        minIndex: 0
       });
     });
   });

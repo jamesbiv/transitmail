@@ -5,5 +5,5 @@ export interface ISmtpResponse {
 
 export enum ESmtpResponseStatus {
   Success,
-  Failure,
+  Failure
 }

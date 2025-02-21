@@ -7,34 +7,27 @@ describe("Testing the MimeTools class", () => {
 
       const mockParseMimeWordsResponse: string = "test quoted printable";
 
-      const parseMimeWordsResponse = MimeTools.parseMimeWords(
-        mockParseMimeWordsContent
-      );
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(mockParseMimeWordsContent);
 
       expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
     });
 
     test("With valid bas64 string content", () => {
-      const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?="
+      const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?=";
 
       const mockParseMimeWordsResponse: string = "test base64";
 
-      const parseMimeWordsResponse = MimeTools.parseMimeWords(
-        mockParseMimeWordsContent
-      );
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(mockParseMimeWordsContent);
 
       expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
     });
-
 
     test("With joinable content", () => {
       const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCA=?==?UTF-8?B?YmFzZTY0?=";
 
       const mockParseMimeWordsResponse: string = "test base64";
 
-      const parseMimeWordsResponse = MimeTools.parseMimeWords(
-        mockParseMimeWordsContent
-      );
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(mockParseMimeWordsContent);
 
       expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
     });
@@ -46,10 +39,7 @@ describe("Testing the MimeTools class", () => {
 
       const mockBase64toBlobResponse: Blob = new Blob();
 
-      const base64toBlobResponse = MimeTools.base64toBlob(
-        mockBase64toBlobsContent,
-        ""
-      );
+      const base64toBlobResponse = MimeTools.base64toBlob(mockBase64toBlobsContent, "");
 
       expect(base64toBlobResponse).toEqual(mockBase64toBlobResponse);
     });
@@ -61,10 +51,7 @@ describe("Testing the MimeTools class", () => {
 
       const mockBinaryStringToBlobResponse: Blob = new Blob();
 
-      const base64toBlobResponse = MimeTools.binaryStringToBlob(
-        mockBinaryStringToBlobContent,
-        ""
-      );
+      const base64toBlobResponse = MimeTools.binaryStringToBlob(mockBinaryStringToBlobContent, "");
 
       expect(base64toBlobResponse).toEqual(mockBinaryStringToBlobResponse);
     });

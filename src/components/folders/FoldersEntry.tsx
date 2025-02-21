@@ -7,7 +7,7 @@ import {
   Col,
   useAccordionButton,
   AccordionCollapse,
-  ListGroupItem,
+  ListGroupItem
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,7 +15,7 @@ import {
   faPlus,
   faMinus,
   faFolderPlus,
-  faFolder,
+  faFolder
 } from "@fortawesome/free-solid-svg-icons";
 import { IFoldersEntry, IFoldersSubEntry } from "interfaces";
 import { FoldersEntryOptions, EFolderEntryActionType } from ".";
@@ -23,10 +23,7 @@ import { FoldersEntryOptions, EFolderEntryActionType } from ".";
 interface IFoldersEntryProps {
   activeFolderId?: string;
   folderEntry: IFoldersEntry;
-  toggleActionModal: (
-    actionType: EFolderEntryActionType,
-    actionFolderId?: string
-  ) => void;
+  toggleActionModal: (actionType: EFolderEntryActionType, actionFolderId?: string) => void;
   updateActiveKeyFolderId: (activeKey: string, folderId: string) => void;
   toggleAccordionActiveKey: (eventKey: string) => void;
 }
@@ -36,7 +33,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
   activeFolderId,
   toggleActionModal,
   updateActiveKeyFolderId,
-  toggleAccordionActiveKey,
+  toggleAccordionActiveKey
 }) => {
   return !folderEntry.folders.length ? (
     <ListGroupItem
@@ -46,16 +43,11 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
     >
       <Row>
         <Col xs={6} className="text-truncate">
-          <FontAwesomeIcon
-            icon={folderEntry.icon ? folderEntry.icon : faFolder}
-          />{" "}
+          <FontAwesomeIcon icon={folderEntry.icon ? folderEntry.icon : faFolder} />{" "}
           {folderEntry.name}
         </Col>
         <Col xs={6} className="text-end text-nowrap pe-1">
-          <FoldersEntryOptions
-            folderId={folderEntry.ref}
-            toggleActionModal={toggleActionModal}
-          />
+          <FoldersEntryOptions folderId={folderEntry.ref} toggleActionModal={toggleActionModal} />
           <Button
             onClick={() => updateActiveKeyFolderId("folder", folderEntry.ref)}
             size="sm"
@@ -79,19 +71,12 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           <Col xs={6} className="text-truncate">
             <FontAwesomeIcon
               className="me-2"
-              icon={
-                activeFolderId && Number(activeFolderId) === folderEntry.id
-                  ? faMinus
-                  : faPlus
-              }
+              icon={activeFolderId && Number(activeFolderId) === folderEntry.id ? faMinus : faPlus}
             />
             <FontAwesomeIcon icon={faFolderPlus} /> {folderEntry.name}
           </Col>
           <Col xs={6} className="text-end text-nowrap pe-1">
-            <FoldersEntryOptions
-              folderId={folderEntry.ref}
-              toggleActionModal={toggleActionModal}
-            />
+            <FoldersEntryOptions folderId={folderEntry.ref} toggleActionModal={toggleActionModal} />
             <Button
               onClick={() => updateActiveKeyFolderId("folder", folderEntry.ref)}
               size="sm"
@@ -105,28 +90,19 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
           </Col>
         </Row>
       </ListGroup.Item>
-      <AccordionCollapse
-        eventKey={folderEntry.id.toString()}
-        as={ListGroup.Item}
-        className="p-0"
-      >
+      <AccordionCollapse eventKey={folderEntry.id.toString()} as={ListGroup.Item} className="p-0">
         <ListGroup variant="flush">
           {folderEntry.folders.map((folderSubEntry: IFoldersSubEntry) => (
             <ListGroup.Item
               key={folderSubEntry.id}
               onClick={() =>
-                updateActiveKeyFolderId(
-                  "folder",
-                  `${folderEntry.ref}/${folderSubEntry.ref}`
-                )
+                updateActiveKeyFolderId("folder", `${folderEntry.ref}/${folderSubEntry.ref}`)
               }
               className="ps-sm-5 pointer"
             >
               <Row>
                 <Col xs={6} className="text-truncate">
-                  <FontAwesomeIcon
-                    icon={folderSubEntry.icon ? folderSubEntry.icon : faFolder}
-                  />{" "}
+                  <FontAwesomeIcon icon={folderSubEntry.icon ? folderSubEntry.icon : faFolder} />{" "}
                   {folderSubEntry.name}
                 </Col>
                 <Col xs={6} className="text-end text-nowrap pe-1">
@@ -136,10 +112,7 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                   />
                   <Button
                     onClick={() =>
-                      updateActiveKeyFolderId(
-                        "folder",
-                        `${folderEntry.ref}/${folderSubEntry.ref}`
-                      )
+                      updateActiveKeyFolderId("folder", `${folderEntry.ref}/${folderSubEntry.ref}`)
                     }
                     size="sm"
                     variant="primary"

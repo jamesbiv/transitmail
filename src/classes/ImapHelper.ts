@@ -8,14 +8,10 @@ export class ImapHelper extends EmailParser {
    * @param {string[][]} fetchData
    * @returns {flagData}
    */
-  public formatFetchEmailFlagsResponse(
-    fetchData: string[][]
-  ): IEmailFlags | undefined {
+  public formatFetchEmailFlagsResponse(fetchData: string[][]): IEmailFlags | undefined {
     const flagDataRaw: string = fetchData[0][2];
     const flagData: RegExpMatchArray | [] | undefined =
-      flagDataRaw.match(
-        /.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/
-      ) ?? undefined;
+      flagDataRaw.match(/.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/) ?? undefined;
 
     if (flagData?.length !== 4) {
       return undefined;
@@ -25,7 +21,7 @@ export class ImapHelper extends EmailParser {
       size: parseInt(flagData[2]),
       flags: flagData[3],
       deleted: /\\Deleted/.test(flagData[3]),
-      seen: /\\Seen/.test(flagData[3]),
+      seen: /\\Seen/.test(flagData[3])
     };
   }
 
@@ -49,9 +45,7 @@ export class ImapHelper extends EmailParser {
    * @param {string[][]} folderData
    * @returns IFolderEmail[]
    */
-  public formatFetchFolderEmailsResponse(
-    folderData: string[][]
-  ): IFolderEmail[] {
+  public formatFetchFolderEmailsResponse(folderData: string[][]): IFolderEmail[] {
     const emails: IFolderEmail[] = [];
 
     for (let i: number = 1; i < folderData.length - 1; i = i + 2) {
@@ -91,7 +85,7 @@ export class ImapHelper extends EmailParser {
           ref: emailFlags[3],
           flags: emailFlags[2],
           hasAttachment: /attachment/i.test(emailBodyStructure),
-          selected: false,
+          selected: false
         });
       }
     }
@@ -113,10 +107,7 @@ export class ImapHelper extends EmailParser {
         const rawFolder: RegExpMatchArray | [] | undefined =
           folderDataRow[2].match(/\((.*)\) "(.*)" (.*)/) ?? undefined;
 
-        const santatisedRawfolder: string | undefined = rawFolder?.[3].replace(
-          /"/g,
-          ""
-        );
+        const santatisedRawfolder: string | undefined = rawFolder?.[3].replace(/"/g, "");
 
         if (santatisedRawfolder) {
           rawFolders.push(santatisedRawfolder);
@@ -143,7 +134,7 @@ export class ImapHelper extends EmailParser {
           id: id++,
           name: rawFolderRow,
           ref: rawFolderRow,
-          folders: [],
+          folders: []
         });
       }
     });
