@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { DependenciesContext } from "contexts";
 import { EComposePresetType, EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
-import { Card, Spinner } from "react-bootstrap";
+import { Card, CardBody, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { FolderEmailActions, EFolderEmailActionType, FolderCardHeader } from ".";
@@ -33,15 +33,19 @@ export const Folder: React.FC = () => {
     if (!initalizeFoldersRun) {
       initalizeFoldersRun = true;
 
-      initalizeFolders();
+      if (imapSocket.getReadyState() !== 1) {
+        try {
+          imapSocket.imapConnect();
+        } catch (error: unknown) {
+          throw new Error(`Websockets: ${(error as Error).message}`);
+        }
+      }
+
+      updateFolder();
     }
   }, []);
 
-  const initalizeFolders = async (): Promise<void> => {
-    if (imapSocket.getReadyState() !== 1) {
-      imapSocket.imapConnect();
-    }
-
+  const updateFolder = async (): Promise<void> => {
     setFolderSpinner(true);
 
     const currentFolder: IFolderEmail[] | undefined =
@@ -203,11 +207,11 @@ export const Folder: React.FC = () => {
         {!folderEmails ? (
           <Spinner className="mt-3 mb-3 ms-auto me-auto" animation="grow" variant="dark" />
         ) : !folderEmails.length ? (
-          <Card.Body className="text-center text-secondary">
+          <CardBody className="text-center text-secondary">
             <FontAwesomeIcon icon={faFolderOpen} size="lg" />
             <br />
             <em>Folder empty</em>
-          </Card.Body>
+          </CardBody>
         ) : (
           <FolderScrollContainer
             folderEmails={folderEmails}

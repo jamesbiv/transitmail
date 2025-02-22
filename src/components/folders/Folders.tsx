@@ -34,17 +34,17 @@ export const Folders: React.FC = () => {
     if (!initalizeFolderRun) {
       initalizeFolderRun = true;
 
-      initalizeFolder();
+      if (imapSocket.getReadyState() !== 1) {
+        try {
+          imapSocket.imapConnect();
+        } catch (error: unknown) {
+          throw new Error(`Websockets: ${(error as Error).message}`);
+        }
+      }
+
+      updateFolders();
     }
   }, []);
-
-  const initalizeFolder = async (): Promise<void> => {
-    if (imapSocket.getReadyState() !== 1) {
-      imapSocket.imapConnect();
-    }
-
-    await updateFolders();
-  };
 
   const updateFolders = async (): Promise<void> => {
     const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
