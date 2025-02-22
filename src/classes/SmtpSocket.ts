@@ -284,13 +284,16 @@ export class SmtpSocket {
       return ehloResponse;
     }
 
-    const authResponse: ISmtpResponse = await this.smtpRequest("AUTH LOGIN", 250);
+    const authResponse: ISmtpResponse = await this.smtpRequest("AUTH LOGIN", [235, 250, 334]);
 
     if (authResponse.status !== ESmtpResponseStatus.Success) {
       return authResponse;
     }
 
-    const userResponse: ISmtpResponse = await this.smtpRequest(btoa(this.settings.username), 334);
+    const userResponse: ISmtpResponse = await this.smtpRequest(
+      btoa(this.settings.username),
+      [235, 250, 334]
+    );
 
     if (userResponse.status !== ESmtpResponseStatus.Success) {
       return userResponse;
