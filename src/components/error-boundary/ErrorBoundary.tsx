@@ -1,48 +1,91 @@
-import React, { ErrorInfo, ReactNode } from "react";
-import { StateManager } from "classes";
-import { DependenciesContext } from "contexts";
-import Spinner from "react-bootstrap/Spinner";
+import React, { ErrorInfo, Fragment, PureComponent, ReactNode, useCallback, useState } from "react";
+import { Spinner } from "react-bootstrap";
 
+import { StateManager } from "classes";
+import { DependenciesContext, IDependencies } from "contexts";
+
+/**
+ * @interface IErrorBoundaryProps
+ * @property {ReactNode} children
+ */
 interface IErrorBoundaryProps {
   children: ReactNode;
 }
 
+/**
+ * @interface IErrorBoundaryState
+ * @property {boolean} hasError
+ */
 interface IErrorBoundaryState {
   hasError: boolean;
 }
 
-export class ErrorBoundary extends React.PureComponent<IErrorBoundaryProps, IErrorBoundaryState> {
+/**
+ * @class ErrorBoundary
+ * @extends PureComponent
+ * @param {IErrorBoundaryProps} props
+ * @param {IErrorBoundaryState} state
+ */
+export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoundaryState> {
   /**
-   * @var {DependenciesContext} contextType
+   * @static {DependenciesContext} contextType
    */
   static contextType = DependenciesContext;
 
   /**
-   * @var {StateManager} stateManager
+   * @declare {ContextType<typeof DependenciesContext>} context
+   */
+  context!: IDependencies;
+
+  /**
+   * @protected {StateManager} stateManager
    */
   protected stateManager!: StateManager;
 
+  /**
+   * @protected {string} previousHash
+   */
+  protected previousHash?: string;
+
+  /**
+   * @constructor
+   * @param {IErrorBoundaryProps} props
+   */
   constructor(props: IErrorBoundaryProps) {
     super(props);
-
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  /**
+   * getDerivedStateFromError
+   * @param {Error} error
+   * @returns IErrorBoundaryState
+   */
+  static getDerivedStateFromError(error: Error): IErrorBoundaryState {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    if (error.message.includes("WebSocket")) {
+  /**
+   * componentDidCatch
+   * @param {Error} error
+   * @param {errorInfo} errorInfo
+   * @returns void
+   */
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    this.stateManager = this.context.stateManager;
+
+    this.previousHash = window.location.hash;
+
+    if (error.message.includes("Websockets")) {
       const MessageModalState = {
         title: "Invalid connection settings",
         content: (
-          <>
-            <p>Your connection settings for are invalid or not responding.</p>
+          <Fragment>
+            <p>Your connection settings are invalid or not responding.</p>
             <p>
               Please visit <strong>Settings</strong> to change these settings before proceeding.
             </p>
-          </>
+          </Fragment>
         ),
         action: () => this.stateManager.updateActiveKey("settings")
       };
@@ -51,7 +94,21 @@ export class ErrorBoundary extends React.PureComponent<IErrorBoundaryProps, IErr
     }
   }
 
-  render() {
+  /**
+   * componentDidUpdate
+   * @returns void
+   */
+  componentDidUpdate(): void {
+    if (this.previousHash !== window.location.hash) {
+      this.setState({ hasError: false });
+    }
+  }
+
+  /**
+   * render
+   * @returns ReactNode
+   */
+  render(): ReactNode {
     if (this.state.hasError) {
       return (
         <div style={{ textAlign: "center" }}>
