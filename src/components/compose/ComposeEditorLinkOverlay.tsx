@@ -1,10 +1,8 @@
-import React from "react";
-import { ContentState, EditorState, RichUtils, SelectionState } from "draft-js";
+import React, { ChangeEvent, FunctionComponent, RefObject, SyntheticEvent } from "react";
 import {
   Button,
   Overlay,
   Popover,
-  Form,
   Row,
   Col,
   PopoverBody,
@@ -15,44 +13,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
 
 interface IComposeEditorLinkOverlayProps {
-  editorState: EditorState;
-  showLinkOverlay: boolean;
-  overlayTarget: React.RefObject<HTMLButtonElement | null>;
-  toggleLinkOverlay: React.Dispatch<boolean>;
-  setEditorState: React.Dispatch<EditorState>;
+  showLinkOverlay?: boolean;
+  overlayTarget: RefObject<HTMLButtonElement | undefined>;
 }
 
-export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> = ({
-  editorState,
+export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverlayProps> = ({
   showLinkOverlay,
-  overlayTarget,
-  toggleLinkOverlay,
-  setEditorState
+  overlayTarget
 }) => {
-  const updateLink: (url: string) => void = (url) => {
-    const contentState: ContentState = editorState.getCurrentContent();
-    const contentStateWithEntity: ContentState = contentState.createEntity("LINK", "MUTABLE", {
-      url
-    });
-    const entityKey: string = contentStateWithEntity.getLastCreatedEntityKey();
-    const newEditorState: EditorState = EditorState.set(editorState, {
-      currentContent: contentStateWithEntity
-    });
+  const updateLink: (url: string) => void = (url) => {};
 
-    setEditorState(RichUtils.toggleLink(newEditorState, newEditorState.getSelection(), entityKey));
-  };
-
-  const removeLink: () => void = () => {
-    const selection: SelectionState = editorState.getSelection();
-
-    if (!selection.isCollapsed()) {
-      setEditorState(RichUtils.toggleLink(editorState, selection, null));
-    }
-  };
+  const removeLink: () => void = () => {};
 
   return (
     <Overlay
-      target={overlayTarget.current}
+      target={overlayTarget.current!}
       show={showLinkOverlay}
       placement="bottom"
       transition={false}
@@ -68,7 +43,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 type="text"
                 placeholder="Link address"
                 defaultValue=""
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => event.preventDefault()}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => event.preventDefault()}
               />
             </Col>
             <Col xs={4} className="text-nowrap">
@@ -77,12 +52,12 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 className="me-1"
                 variant="outline-dark"
                 type="button"
-                onMouseDown={(event: React.SyntheticEvent) => {
+                onMouseDown={(event: SyntheticEvent) => {
                   event.preventDefault();
 
                   updateLink((document.getElementById("linkUrl") as HTMLInputElement).value);
 
-                  toggleLinkOverlay(false);
+                  //toggleLinkOverlay(false);
                 }}
               >
                 <FontAwesomeIcon icon={faPen} />
@@ -91,11 +66,11 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 size="sm"
                 variant="danger"
                 type="button"
-                onMouseDown={(event: React.SyntheticEvent) => {
+                onMouseDown={(event: SyntheticEvent) => {
                   event.preventDefault();
 
                   removeLink();
-                  toggleLinkOverlay(false);
+                  //toggleLinkOverlay(false);
                 }}
               >
                 <FontAwesomeIcon icon={faTrash} />

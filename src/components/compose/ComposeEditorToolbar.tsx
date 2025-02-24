@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { FunctionComponent, RefObject, SyntheticEvent, useRef, useState } from "react";
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap/";
-import { EditorState, RichUtils } from "draft-js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSave,
@@ -21,56 +20,30 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ComposeEditorLinkOverlay } from ".";
 
-interface IComposeEditorToolbarProps {
-  editorState: EditorState;
-  setEditorState: React.Dispatch<EditorState>;
-  saveEmail: () => void;
-  deleteEmail: () => void;
-}
+interface IComposeEditorToolbarProps {}
 
-export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
-  editorState,
-  setEditorState,
-  saveEmail,
-  deleteEmail
-}) => {
-  const linkButtonTarget: React.RefObject<HTMLButtonElement | null> =
-    React.useRef<HTMLButtonElement>(null);
+export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps> = () => {
+  const linkButtonTarget: RefObject<HTMLButtonElement | undefined> = useRef<
+    HTMLButtonElement | undefined
+  >(undefined);
 
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
-  const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
-  };
+  const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {};
 
-  const toggleBlockType: (blockType: string) => void = (blockType) => {
-    setEditorState(RichUtils.toggleBlockType(editorState, blockType));
-  };
+  const toggleBlockType: (blockType: string) => void = (blockType) => {};
 
   const checkBlockType: (blockType: string) => boolean = (blockType) => {
-    if (
-      editorState
-        .getCurrentContent()
-        .getBlockForKey(editorState.getSelection().getStartKey())
-        .getType() === blockType
-    ) {
-      return true;
-    }
-
     return false;
   };
 
   const checkInlineStyle: (inlineStyle: string) => boolean = (inlineStyle) => {
-    return editorState.getCurrentInlineStyle().has(inlineStyle);
+    return false;
   };
 
-  const undoClick: () => void = () => {
-    setEditorState(EditorState.undo(editorState));
-  };
+  const undoClick: () => void = () => {};
 
-  const redoClick: () => void = () => {
-    setEditorState(EditorState.redo(editorState));
-  };
+  const redoClick: () => void = () => {};
 
   return (
     <ButtonToolbar aria-label="" className="ps-2">
@@ -78,7 +51,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleInlineStyle("BOLD");
@@ -90,7 +63,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleInlineStyle("ITALIC");
@@ -102,7 +75,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleInlineStyle("UNDERLINE");
@@ -116,7 +89,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleBlockType("text-start");
@@ -128,7 +101,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleBlockType("text-center");
@@ -140,7 +113,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleBlockType("text-end");
@@ -152,7 +125,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleBlockType("text-indent");
@@ -166,7 +139,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleBlockType("unordered-list-item");
@@ -178,7 +151,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleBlockType("ordered-list-item");
@@ -192,7 +165,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             (document.getElementById("attachmentInput") as HTMLElement).click();
@@ -201,10 +174,10 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faPaperclip} />
         </Button>
         <Button
-          ref={linkButtonTarget}
+          // ref={linkButtonTarget}
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleLinkOverlay(showLinkOverlay ? false : true);
@@ -214,17 +187,17 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         </Button>
         <ComposeEditorLinkOverlay
           showLinkOverlay={showLinkOverlay}
-          toggleLinkOverlay={toggleLinkOverlay}
           overlayTarget={linkButtonTarget}
-          setEditorState={setEditorState}
-          editorState={editorState}
+          // toggleLinkOverlay={toggleLinkOverlay}
+          // setEditorState={setEditorState}
+          // editorState={editorState}
         />
       </ButtonGroup>
       <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             undoClick();
@@ -235,7 +208,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             redoClick();
@@ -248,10 +221,10 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            saveEmail();
+            // saveEmail();
           }}
         >
           <FontAwesomeIcon icon={faSave} />
@@ -261,10 +234,10 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="danger"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            deleteEmail();
+            // deleteEmail();
           }}
         >
           <FontAwesomeIcon icon={faTrash} />

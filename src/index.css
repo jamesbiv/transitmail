@@ -72,11 +72,6 @@ pre {
   width: 100%;
 }
 
-.public-DraftEditor-content {
-  min-height: 300px;
-  overflow: auto;
-}
-
 .inner-shaddow {
   box-shadow: inset 7px 7px 9px -7px rgba(0, 0, 0, 0.4);
 }

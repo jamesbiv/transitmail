@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { Fragment, FunctionComponent, useContext, useEffect, useRef, useState } from "react";
 import {
   Card,
   Alert,
@@ -20,17 +20,7 @@ import {
   faTimes,
   faTrash
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  CharacterMetadata,
-  CompositeDecorator,
-  ContentBlock,
-  ContentState,
-  DraftHandleValue,
-  Editor,
-  EditorState,
-  RichUtils
-} from "draft-js";
-import { stateFromHTML } from "draft-js-import-html";
+
 import {
   ComposeAttachments,
   ComposeRecipientDetails,
@@ -55,10 +45,20 @@ import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { EmailComposer } from "classes";
 import { convertAttachments, initateProgressBar } from "lib";
+import { ComposeEditor } from "./ComposeEditor";
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  $insertNodes,
+  LexicalEditor
+} from "lexical";
+
+import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html";
 
 const emailComposer = new EmailComposer();
 
-export const Compose: React.FC = () => {
+export const Compose: FunctionComponent = () => {
   const { imapHelper, imapSocket, secureStorage, stateManager, smtpSocket } =
     useContext(DependenciesContext);
 
@@ -75,6 +75,8 @@ export const Compose: React.FC = () => {
     { id: 1, type: "To", value: "" }
   ]);
 
+  const [body, setBody] = useState<string | undefined>(undefined);
+
   const [attachments, setAttachments] = useState<IComposeAttachment[]>([]);
 
   const [message, setMessage] = useState<string | undefined>(undefined);
@@ -82,131 +84,122 @@ export const Compose: React.FC = () => {
 
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
+  const composeEditorReference = useRef<LexicalEditor | undefined>(undefined);
+
   const composePresets: IComposePresets | undefined = stateManager.getComposePresets();
 
   const emailSignature: string = secureStorage.getSetting("signature") ?? "";
 
   const secondaryEmails: ISettingsSecondaryEmail[] = secureStorage.getSetting("secondaryEmails");
 
-  const findLinkEntities = (
-    contentBlock: ContentBlock,
-    callback: (start: number, end: number) => void,
-    contentState: ContentState
-  ) => {
-    contentBlock.findEntityRanges((entityRange: CharacterMetadata) => {
-      const entityKey = entityRange.getEntity();
-
-      return entityKey !== null && contentState.getEntity(entityKey).getType() === "LINK";
-    }, callback);
-  };
-
-  const Link = (props: { contentState: ContentState; entityKey: string; children: string }) => {
-    return (
-      <a
-        href={props.contentState.getEntity(props.entityKey).getData()}
-        style={{ color: "#0000FF", textDecoration: "underline" }}
-      >
-        {props.children}
-      </a>
-    );
-  };
-
-  const [editorState, setEditorState] = useState<EditorState>(
-    EditorState.createWithContent(
-      /<\/?[a-z][\s\S]*>/i.test(emailSignature)
-        ? stateFromHTML(emailSignature)
-        : ContentState.createFromText(emailSignature),
-      new CompositeDecorator([
-        {
-          strategy: findLinkEntities,
-          component: Link
-        }
-      ])
-    )
-  );
-
   const [showComposer, setShowComposer] = useState<boolean>(composePresets?.uid === undefined);
 
   useEffect(() => {
     (async () => {
       if (composePresets) {
-        let presetEmail: IEmail | undefined;
+        const presetEmail: IEmail | undefined = composePresets.uid
+          ? await downloadEmail(composePresets)
+          : composePresets.email;
 
-        if (composePresets.uid) {
-          const fetchFlagsResponse: IImapResponse = await imapSocket.imapRequest(
-            `UID FETCH ${composePresets.uid} (RFC822.SIZE FLAGS)`
-          );
-
-          if (fetchFlagsResponse.status !== EImapResponseStatus.OK) {
-            return;
-          }
-
-          const emailFlags: IEmailFlags | undefined = imapHelper.formatFetchEmailFlagsResponse(
-            fetchFlagsResponse.data
-          );
-
-          if (!emailFlags) {
-            return;
-          }
-
-          initateProgressBar(
-            emailFlags.size,
-            setProgressBarNow,
-            () => imapSocket.getStreamAmount(),
-            () => setShowComposer(true)
-          );
-
-          const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
-            `UID FETCH ${composePresets.uid} RFC822`
-          );
-
-          if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
-            return;
-          }
-
-          presetEmail = imapHelper.formatFetchEmailResponse(fetchEmailResponse.data);
-        } else {
-          presetEmail = composePresets.email;
+        if (!presetEmail) {
+          // throw an error here
+          return;
         }
 
-        if (presetEmail) {
-          const convertedAttachments: IComposeAttachment[] | undefined = await convertAttachments(
-            presetEmail.attachments
-          );
+        const convertedAttachments: IComposeAttachment[] | undefined = await convertAttachments(
+          presetEmail.attachments
+        );
 
-          setEditorState(
-            EditorState.createWithContent(
-              presetEmail.bodyHtml
-                ? stateFromHTML(presetEmail.bodyHtml)
-                : ContentState.createFromText(presetEmail.bodyText ?? "")
-            )
-          );
+        updateComposeEditor(presetEmail);
 
-          switch (composePresets.type) {
-            case EComposePresetType.Reply:
-              setRecipients([{ id: 1, type: "To", value: presetEmail.from }]);
-              break;
+        switch (composePresets.type) {
+          case EComposePresetType.Reply:
+            setRecipients([{ id: 1, type: "To", value: presetEmail.from }]);
+            break;
 
-            case EComposePresetType.ReplyAll:
-              // Add functionality
-              break;
+          case EComposePresetType.ReplyAll:
+            // Add functionality
+            break;
 
-            default:
-            case EComposePresetType.Forward:
-              break;
-          }
-
-          setSubject("RE: " + (presetEmail.subject ?? "(no subject)"));
-
-          if (convertedAttachments) {
-            setAttachments(convertedAttachments);
-          }
-
-          stateManager.setComposePresets();
+          default:
+          case EComposePresetType.Forward:
+            break;
         }
+
+        setSubject("RE: " + (presetEmail.subject ?? "(no subject)"));
+
+        if (convertedAttachments) {
+          setAttachments(convertedAttachments);
+        }
+
+        stateManager.setComposePresets();
       }
     })();
   }, []);
+
+  const downloadEmail = async (composePresets: IComposePresets) => {
+    const fetchFlagsResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID FETCH ${composePresets.uid} (RFC822.SIZE FLAGS)`
+    );
+
+    if (fetchFlagsResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const emailFlags: IEmailFlags | undefined = imapHelper.formatFetchEmailFlagsResponse(
+      fetchFlagsResponse.data
+    );
+
+    if (!emailFlags) {
+      return;
+    }
+
+    initateProgressBar(
+      emailFlags.size,
+      setProgressBarNow,
+      () => imapSocket.getStreamAmount(),
+      () => setShowComposer(true)
+    );
+
+    const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
+      `UID FETCH ${composePresets.uid} RFC822`
+    );
+
+    if (fetchEmailResponse.status !== EImapResponseStatus.OK) {
+      return;
+    }
+
+    const formattedEmailResponse: IEmail = imapHelper.formatFetchEmailResponse(
+      fetchEmailResponse.data
+    );
+
+    return formattedEmailResponse;
+  };
+
+  const updateComposeEditor = (email: IEmail) => {
+    const editor: LexicalEditor = composeEditorReference.current!;
+
+    editor.update(() => {
+      if (email.bodyHtml) {
+        const htmlString: string = email.bodyHtml;
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(htmlString, "text/html");
+
+        const nodes = $generateNodesFromDOM(editor, dom);
+
+        $getRoot().clear();
+
+        $insertNodes(nodes);
+      } else {
+        const bodyText: string = email.bodyHtml!;
+
+        const textNode = $createTextNode(bodyText);
+        const paragraphNode = $createParagraphNode().append(textNode);
+
+        $getRoot().clear().append(paragraphNode);
+      }
+    });
+  };
 
   let lockSendEmail: boolean = false;
 
@@ -229,19 +222,19 @@ export const Compose: React.FC = () => {
 
     smtpSocket.smtpClose();
 
-    if (emailResponse.status === ESmtpResponseStatus.Success) {
-      stateManager.showMessageModal({
-        title: "Your email has been sent",
-        content: "Your email has been sent successfully!",
-        action: () => {}
-      });
-    } else {
-      stateManager.showMessageModal({
-        title: "Unable to send email",
-        content: emailResponse.data[0].join(),
-        action: () => {}
-      });
-    }
+    stateManager.showMessageModal(
+      emailResponse.status === ESmtpResponseStatus.Success
+        ? {
+            title: "Your email has been sent",
+            content: "Your email has been sent successfully!",
+            action: () => {}
+          }
+        : {
+            title: "Unable to send email",
+            content: emailResponse.data[0].join(),
+            action: () => {}
+          }
+    );
 
     lockSendEmail = false;
 
@@ -249,12 +242,19 @@ export const Compose: React.FC = () => {
   };
 
   const sendEmailRequest = async (): Promise<ISmtpResponse> => {
+    const editor: LexicalEditor = composeEditorReference.current!;
+
+    editor.read(() => {
+      const htmlString: string = $generateHtmlFromNodes(editor);
+      setBody(htmlString);
+    });
+
     const emailData: IComposedEmail = emailComposer.composeEmail({
-      editorState: editorState,
       from: `"${from.displayName}" <${from.email}>`,
       subject: subject,
       recipients: recipients,
-      attachments: attachments
+      attachments: attachments,
+      body: body
     });
 
     const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
@@ -295,38 +295,6 @@ export const Compose: React.FC = () => {
     return quitResponse;
   };
 
-  const handleKeyCommand = (command: string, editorState: EditorState): DraftHandleValue => {
-    const newEditorState: EditorState | undefined =
-      RichUtils.handleKeyCommand(editorState, command) ?? undefined;
-
-    if (newEditorState) {
-      // updateEditorState(newEditorState);
-
-      return "handled";
-    }
-
-    return "not-handled";
-  };
-
-  const blockStyleFn = (contentBlock: ContentBlock): string => {
-    switch (contentBlock.getType()) {
-      case "text-start":
-        return "text-start";
-
-      case "text-center":
-        return "text-center";
-
-      case "text-end":
-        return "text-end";
-
-      case "text-indent":
-        return "text-indent";
-
-      default:
-        return "";
-    }
-  };
-
   const updateSenderDetails = (secondaryEmailKey?: number): void => {
     const secondaryEmail = secondaryEmails[secondaryEmailKey ?? NaN];
 
@@ -345,19 +313,18 @@ export const Compose: React.FC = () => {
   };
 
   const deleteEmail: () => void = () => {
-    setEditorState(EditorState.createEmpty());
-
-    setRecipients([{ id: 1, type: "To", value: "" }]);
-    setSubject(undefined);
-    setAttachments([]);
+    //setEditorState(EditorState.createEmpty());
+    //setRecipients([{ id: 1, type: "To", value: "" }]);
+    //setSubject(undefined);
+    //setAttachments([]);
   };
 
   return !showComposer ? (
     <Card className="mt-0 mt-sm-3">
       <CardBody>
-        <React.Fragment>
+        <Fragment>
           <ProgressBar className="mb-2" now={progressBarNow} />
-        </React.Fragment>
+        </Fragment>
       </CardBody>
     </Card>
   ) : (
@@ -424,25 +391,9 @@ export const Compose: React.FC = () => {
           />
         </CardBody>
         <div className="border-top border-gray">
-          <ComposeEditorToolbar
-            editorState={editorState}
-            setEditorState={setEditorState}
-            saveEmail={saveEmail}
-            deleteEmail={deleteEmail}
-          />
+          <ComposeEditorToolbar />
           <div className="mt-2 ms-2 me-2 mb-2 p-3 border rounded inner-shaddow">
-            <Editor
-              customStyleMap={{
-                link: {
-                  color: "#ff0000",
-                  textDecoration: "underline"
-                }
-              }}
-              editorState={editorState}
-              handleKeyCommand={handleKeyCommand}
-              blockStyleFn={blockStyleFn}
-              onChange={setEditorState}
-            />
+            <ComposeEditor composeEditorReference={composeEditorReference} />
           </div>
           <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
         </div>

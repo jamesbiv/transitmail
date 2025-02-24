@@ -1,4 +1,4 @@
-import React, { JSX } from "react";
+import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent, JSX } from "react";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,14 +15,14 @@ import { MimeTools } from "lib";
 
 interface IComposeAttachmentProps {
   attachments: IComposeAttachment[];
-  setAttachments: React.Dispatch<IComposeAttachment[]>;
+  setAttachments: Dispatch<IComposeAttachment[]>;
 }
 
-export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
+export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
   attachments,
   setAttachments
 }) => {
-  const loadAttachments: (event: React.ChangeEvent<HTMLInputElement>) => void = (event) => {
+  const loadAttachments: (event: ChangeEvent<HTMLInputElement>) => void = (event) => {
     const fileList: FileList | undefined = event.target.files ?? undefined;
     const files: File[] = Array.from(fileList ?? []);
 
@@ -79,12 +79,12 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
       name="files[]"
       hidden
       multiple
-      onChange={(event: React.ChangeEvent<HTMLInputElement> & Event) => loadAttachments(event)}
+      onChange={(event: ChangeEvent<HTMLInputElement> & Event) => loadAttachments(event)}
     />
   );
 
   return (
-    <React.Fragment>
+    <Fragment>
       <AttachmentInput />
       {attachments.length > 0 && (
         <div className="mt-2 mb-2 ps-2 pt-2 border-top overflow-hidden">
@@ -137,6 +137,6 @@ export const ComposeAttachments: React.FC<IComposeAttachmentProps> = ({
           ))}
         </div>
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };
