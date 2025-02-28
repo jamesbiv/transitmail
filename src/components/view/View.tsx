@@ -16,7 +16,7 @@ import {
   EComposePresetType
 } from "interfaces";
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
-import { initateProgressBar } from "lib";
+import { initiateProgressBar } from "lib";
 
 export const View: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
@@ -76,7 +76,7 @@ export const View: React.FC = () => {
 
     setEmailFlags(emailFlags);
 
-    initateProgressBar(
+    initiateProgressBar(
       emailFlags.size,
       setProgressBarNow,
       () => imapSocket.getStreamAmount(),

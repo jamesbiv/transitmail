@@ -1,4 +1,12 @@
-import React, { FunctionComponent, RefObject, SyntheticEvent, useRef, useState } from "react";
+import React, {
+  FunctionComponent,
+  RefObject,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap/";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -19,34 +27,143 @@ import {
   faRedo
 } from "@fortawesome/free-solid-svg-icons";
 import { ComposeEditorLinkOverlay } from ".";
+import {
+  $getSelection,
+  $isBlockElementNode,
+  $isRangeSelection,
+  BaseSelection,
+  ElementNode,
+  FORMAT_ELEMENT_COMMAND,
+  FORMAT_TEXT_COMMAND,
+  INDENT_CONTENT_COMMAND,
+  OUTDENT_CONTENT_COMMAND,
+  REDO_COMMAND,
+  SELECTION_CHANGE_COMMAND,
+  UNDO_COMMAND
+} from "lexical";
+import {
+  $insertList,
+  $isListNode,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  REMOVE_LIST_COMMAND
+} from "@lexical/list";
+import { $isLinkNode } from "@lexical/link";
 
-interface IComposeEditorToolbarProps {}
+import { mergeRegister } from "@lexical/utils";
+
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+
+interface IComposeEditorToolbarProps {
+  // nothing
+}
 
 export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps> = () => {
+  const [editor] = useLexicalComposerContext();
+
+  const [isBold, setIsBold] = useState<boolean>(false);
+  const [isItalic, setIsItalic] = useState<boolean>(false);
+  const [isUnderline, setIsUnderline] = useState<boolean>(false);
+
+  const [isLeftJustified, setIsLeftJustified] = useState<boolean>(false);
+  const [isCenterAligned, setIsCenterAligned] = useState<boolean>(false);
+  const [isRightJustified, setIsRightJustified] = useState<boolean>(false);
+  const [isIndent, setIsIndent] = useState<boolean>(false);
+
+  const [isUnorderedList, setIsUnorderedList] = useState<boolean>(false);
+  const [isOrderedList, setIsOrderedList] = useState<boolean>(false);
+
+  const [linkUrl, setLinkUrl] = useState<string | undefined>(undefined);
+
   const linkButtonTarget: RefObject<HTMLButtonElement | undefined> = useRef<
     HTMLButtonElement | undefined
   >(undefined);
 
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
-  const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {};
+  const updateToolbar = useCallback(() => {
+    const selection: BaseSelection | undefined = $getSelection() ?? undefined;
 
-  const toggleBlockType: (blockType: string) => void = (blockType) => {};
+    if (!$isRangeSelection(selection)) {
+      return;
+    }
+    
+    const topLevelNode: ElementNode | undefined =
+      selection.anchor.getNode()?.getTopLevelElement() ?? undefined;
 
-  const checkBlockType: (blockType: string) => boolean = (blockType) => {
-    return false;
-  };
+    setIsBold(selection.hasFormat("bold"));
+    setIsItalic(selection.hasFormat("italic"));
+    setIsUnderline(selection.hasFormat("underline"));
 
-  const checkInlineStyle: (inlineStyle: string) => boolean = (inlineStyle) => {
-    return false;
-  };
+    if ($isBlockElementNode(topLevelNode)) {
+      setIsLeftJustified(topLevelNode.getFormatType() === "left");
+      setIsCenterAligned(topLevelNode.getFormatType() === "center");
+      setIsRightJustified(topLevelNode.getFormatType() === "right");
+      setIsIndent(topLevelNode.getIndent() > 0);
+    } else {
+      setIsLeftJustified(false);
+      setIsCenterAligned(false);
+      setIsRightJustified(false);
+      setIsIndent(false);
+    }
 
-  const undoClick: () => void = () => {};
+    if ($isListNode(topLevelNode)) {
+      setIsUnorderedList(topLevelNode.getListType() === "bullet");
+      setIsOrderedList(topLevelNode.getListType() === "number");
+    } else {
+      setIsUnorderedList(false);
+      setIsOrderedList(false);
+    }
 
-  const redoClick: () => void = () => {};
+    const getParentNode: ElementNode | undefined =
+      selection.anchor.getNode().getParent() ?? undefined;
+
+    if ($isLinkNode(getParentNode)) {
+      setLinkUrl(getParentNode.getURL());
+    } else {
+      setLinkUrl(undefined);
+    }
+  }, [editor]);
+
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerUpdateListener(({ editorState }) => {
+        editorState.read(() => {
+          updateToolbar();
+        });
+      }),
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        (_payload, newEditor) => {
+          updateToolbar();
+
+          return false;
+        },
+        1
+      ),
+      editor.registerCommand(
+        INSERT_UNORDERED_LIST_COMMAND,
+        () => {
+          $insertList("bullet");
+
+          return true;
+        },
+        1
+      ),
+      editor.registerCommand(
+        INSERT_ORDERED_LIST_COMMAND,
+        () => {
+          $insertList("number");
+
+          return true;
+        },
+        1
+      )
+    );
+  }, [editor, updateToolbar]);
 
   return (
-    <ButtonToolbar aria-label="" className="ps-2">
+    <ButtonToolbar aria-label="" className="">
       <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
@@ -54,9 +171,9 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleInlineStyle("BOLD");
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
           }}
-          className={checkInlineStyle("BOLD") ? "active" : ""}
+          className={isBold ? "active" : ""}
         >
           <FontAwesomeIcon icon={faBold} />
         </Button>
@@ -66,9 +183,9 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleInlineStyle("ITALIC");
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
           }}
-          className={checkInlineStyle("ITALIC") ? "active" : ""}
+          className={isItalic ? "active" : ""}
         >
           <FontAwesomeIcon icon={faItalic} />
         </Button>
@@ -78,9 +195,9 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleInlineStyle("UNDERLINE");
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
           }}
-          className={checkInlineStyle("UNDERLINE") ? "active" : ""}
+          className={isUnderline ? "active" : ""}
         >
           <FontAwesomeIcon icon={faUnderline} />
         </Button>
@@ -92,9 +209,11 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-start");
+            !isLeftJustified
+              ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left")
+              : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
           }}
-          className={checkBlockType("text-start") ? "active" : ""}
+          className={isLeftJustified ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignLeft} />
         </Button>
@@ -104,9 +223,11 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-center");
+            !isCenterAligned
+              ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center")
+              : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
           }}
-          className={checkBlockType("text-center") ? "active" : ""}
+          className={isCenterAligned ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignCenter} />
         </Button>
@@ -116,9 +237,11 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-end");
+            !isRightJustified
+              ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right")
+              : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
           }}
-          className={checkBlockType("text-end") ? "active" : ""}
+          className={isRightJustified ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignRight} />
         </Button>
@@ -128,9 +251,11 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-indent");
+            !isIndent
+              ? editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
+              : editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
           }}
-          className={checkBlockType("text-indent") ? "active" : ""}
+          className={isIndent ? "active" : ""}
         >
           <FontAwesomeIcon icon={faIndent} />
         </Button>
@@ -142,9 +267,11 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("unordered-list-item");
+            !isUnorderedList
+              ? editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
+              : editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
           }}
-          className={checkBlockType("unordered-list-item") ? "active" : ""}
+          className={isUnorderedList ? "active" : ""}
         >
           <FontAwesomeIcon icon={faList} />
         </Button>
@@ -154,9 +281,11 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("ordered-list-item");
+            !isOrderedList
+              ? editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
+              : editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
           }}
-          className={checkBlockType("ordered-list-item") ? "active" : ""}
+          className={isOrderedList ? "active" : ""}
         >
           <FontAwesomeIcon icon={faListOl} />
         </Button>
@@ -174,7 +303,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           <FontAwesomeIcon icon={faPaperclip} />
         </Button>
         <Button
-          // ref={linkButtonTarget}
+          ref={linkButtonTarget as RefObject<HTMLButtonElement>}
           variant="outline-dark"
           type="button"
           onMouseDown={(event: SyntheticEvent) => {
@@ -182,15 +311,15 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
 
             toggleLinkOverlay(showLinkOverlay ? false : true);
           }}
+          className={linkUrl ? "active" : ""}
         >
           <FontAwesomeIcon icon={faLink} />
         </Button>
         <ComposeEditorLinkOverlay
+          linkUrl={linkUrl}
           showLinkOverlay={showLinkOverlay}
           overlayTarget={linkButtonTarget}
-          // toggleLinkOverlay={toggleLinkOverlay}
-          // setEditorState={setEditorState}
-          // editorState={editorState}
+          toggleLinkOverlay={toggleLinkOverlay}
         />
       </ButtonGroup>
       <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
@@ -200,7 +329,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            undoClick();
+            editor.dispatchCommand(UNDO_COMMAND, undefined);
           }}
         >
           <FontAwesomeIcon icon={faUndo} />
@@ -211,7 +340,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            redoClick();
+            editor.dispatchCommand(REDO_COMMAND, undefined);
           }}
         >
           <FontAwesomeIcon icon={faRedo} />

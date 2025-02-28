@@ -34,6 +34,23 @@ pre {
   white-space: pre-wrap;
 }
 
+#compose-editor .content-editable {
+  min-height: 300px;
+  overflow: auto;
+}
+
+#compose-editor .text-bold {
+  font-weight: bold;
+}
+
+#compose-editor .text-italic {
+  font-style: italic;
+}
+
+#compose-editor .text-underline {
+  text-decoration: underline;
+}
+
 .folder-sticky-top {
   position: sticky !important;
   top: 0px;

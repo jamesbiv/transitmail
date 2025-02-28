@@ -20,11 +20,10 @@ import {
   faTimes,
   faTrash
 } from "@fortawesome/free-solid-svg-icons";
-
 import {
   ComposeAttachments,
+  ComposeEditor,
   ComposeRecipientDetails,
-  ComposeEditorToolbar,
   ComposeSecondaryEmail
 } from ".";
 import {
@@ -44,14 +43,16 @@ import {
 import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { EmailComposer } from "classes";
-import { convertAttachments, initateProgressBar } from "lib";
-import { ComposeEditor } from "./ComposeEditor";
+import { convertAttachments, initiateProgressBar } from "lib";
 import {
   $createParagraphNode,
   $createTextNode,
   $getRoot,
   $insertNodes,
-  LexicalEditor
+  LexicalEditor,
+  LexicalNode,
+  ParagraphNode,
+  TextNode
 } from "lexical";
 
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html";
@@ -137,7 +138,7 @@ export const Compose: FunctionComponent = () => {
     })();
   }, []);
 
-  const downloadEmail = async (composePresets: IComposePresets) => {
+  const downloadEmail = async (composePresets: IComposePresets): Promise<IEmail | undefined> => {
     const fetchFlagsResponse: IImapResponse = await imapSocket.imapRequest(
       `UID FETCH ${composePresets.uid} (RFC822.SIZE FLAGS)`
     );
@@ -154,7 +155,7 @@ export const Compose: FunctionComponent = () => {
       return;
     }
 
-    initateProgressBar(
+    initiateProgressBar(
       emailFlags.size,
       setProgressBarNow,
       () => imapSocket.getStreamAmount(),
@@ -176,16 +177,19 @@ export const Compose: FunctionComponent = () => {
     return formattedEmailResponse;
   };
 
-  const updateComposeEditor = (email: IEmail) => {
+  /**
+   * Need to refactor to deal with email signature
+   */
+  const updateComposeEditor = (email: IEmail): void => {
     const editor: LexicalEditor = composeEditorReference.current!;
 
     editor.update(() => {
       if (email.bodyHtml) {
         const htmlString: string = email.bodyHtml;
-        const parser = new DOMParser();
-        const dom = parser.parseFromString(htmlString, "text/html");
 
-        const nodes = $generateNodesFromDOM(editor, dom);
+        const parser = new DOMParser();
+        const dom: Document = parser.parseFromString(htmlString, "text/html");
+        const nodes: LexicalNode[] = $generateNodesFromDOM(editor, dom);
 
         $getRoot().clear();
 
@@ -193,8 +197,8 @@ export const Compose: FunctionComponent = () => {
       } else {
         const bodyText: string = email.bodyHtml!;
 
-        const textNode = $createTextNode(bodyText);
-        const paragraphNode = $createParagraphNode().append(textNode);
+        const textNode: TextNode = $createTextNode(bodyText);
+        const paragraphNode: ParagraphNode = $createParagraphNode().append(textNode);
 
         $getRoot().clear().append(paragraphNode);
       }
@@ -241,13 +245,20 @@ export const Compose: FunctionComponent = () => {
     return;
   };
 
-  const sendEmailRequest = async (): Promise<ISmtpResponse> => {
+  const getEmailHtmlBodyFromEditor: () => string | undefined = () => {
     const editor: LexicalEditor = composeEditorReference.current!;
 
+    let htmlString: string | undefined;
+
     editor.read(() => {
-      const htmlString: string = $generateHtmlFromNodes(editor);
-      setBody(htmlString);
+      htmlString = $generateHtmlFromNodes(editor);
     });
+
+    return htmlString;
+  };
+
+  const sendEmailRequest = async (): Promise<ISmtpResponse> => {
+    const body = getEmailHtmlBodyFromEditor();
 
     const emailData: IComposedEmail = emailComposer.composeEmail({
       from: `"${from.displayName}" <${from.email}>`,
@@ -259,7 +270,7 @@ export const Compose: FunctionComponent = () => {
 
     const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `MAIL from: ${from.email}`,
-      [235, 250]
+      [235, 250, 334]
     );
 
     if (mailResponse.status !== ESmtpResponseStatus.Success) {
@@ -268,7 +279,7 @@ export const Compose: FunctionComponent = () => {
 
     const rcptResponse: ISmtpResponse = await smtpSocket.smtpRequest(
       `RCPT to: ${emailData.to}`,
-      [235, 250]
+      [235, 250, 334]
     );
 
     if (rcptResponse.status !== ESmtpResponseStatus.Success) {
@@ -313,10 +324,15 @@ export const Compose: FunctionComponent = () => {
   };
 
   const deleteEmail: () => void = () => {
-    //setEditorState(EditorState.createEmpty());
-    //setRecipients([{ id: 1, type: "To", value: "" }]);
-    //setSubject(undefined);
-    //setAttachments([]);
+    const editor: LexicalEditor = composeEditorReference.current!;
+
+    editor.update(() => {
+      $getRoot().clear();
+    });
+
+    setRecipients([{ id: 1, type: "To", value: "" }]);
+    setSubject(undefined);
+    setAttachments([]);
   };
 
   return !showComposer ? (
@@ -389,14 +405,10 @@ export const Compose: FunctionComponent = () => {
             setRecipients={setRecipients}
             setSubject={setSubject}
           />
-        </CardBody>
-        <div className="border-top border-gray">
-          <ComposeEditorToolbar />
-          <div className="mt-2 ms-2 me-2 mb-2 p-3 border rounded inner-shaddow">
-            <ComposeEditor composeEditorReference={composeEditorReference} />
-          </div>
+          <ComposeEditor composeEditorReference={composeEditorReference} />
           <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
-        </div>
+        </CardBody>
+
         <CardFooter className="d-block d-sm-none">
           <Button onClick={() => sendEmail()} variant="primary" type="button">
             <FontAwesomeIcon icon={faPaperPlane} /> Send

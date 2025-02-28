@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FunctionComponent, RefObject, SyntheticEvent } from "react";
+import React, { ChangeEvent, Dispatch, FunctionComponent, RefObject, SyntheticEvent } from "react";
 import {
   Button,
   Overlay,
@@ -11,19 +11,66 @@ import {
 } from "react-bootstrap/";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $isLinkNode, $toggleLink, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { $getSelection, $isRangeSelection, BaseSelection, LexicalNode } from "lexical";
+import { $findMatchingParent } from "@lexical/utils";
 
 interface IComposeEditorLinkOverlayProps {
-  showLinkOverlay?: boolean;
+  linkUrl: string | undefined;
+  showLinkOverlay: boolean;
   overlayTarget: RefObject<HTMLButtonElement | undefined>;
+  toggleLinkOverlay: Dispatch<boolean>;
 }
 
 export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverlayProps> = ({
+  linkUrl,
   showLinkOverlay,
-  overlayTarget
+  overlayTarget,
+  toggleLinkOverlay
 }) => {
-  const updateLink: (url: string) => void = (url) => {};
+  const [editor] = useLexicalComposerContext();
 
-  const removeLink: () => void = () => {};
+  const updateLink: (url: string) => void = (url) => {
+    editor.update(() => {
+      const selection: BaseSelection | undefined = $getSelection() ?? undefined;
+
+      if (!$isRangeSelection(selection)) {
+        return;
+      }
+
+      $toggleLink(url);
+    });
+  };
+
+  const removeLink: () => void = () => {
+    editor.update(() => {
+      const selection: BaseSelection | undefined = $getSelection() ?? undefined;
+
+      if (!$isRangeSelection(selection)) {
+        return;
+      }
+
+      const extractedNodesFromSelection = selection.extract();
+
+      extractedNodesFromSelection.forEach((extractedNode) => {
+        const parentLink = $findMatchingParent(extractedNode, (parentNode) =>
+          $isLinkNode(parentNode)
+        );
+
+        if (!parentLink) {
+          return;
+        }
+
+        const childrenNodes: LexicalNode[] = parentLink.getChildren();
+        childrenNodes.forEach((childNode) => parentLink.insertBefore(childNode));
+
+        parentLink.remove();
+      });
+
+      return;
+    });
+  };
 
   return (
     <Overlay
@@ -42,7 +89,7 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
                 size="sm"
                 type="text"
                 placeholder="Link address"
-                defaultValue=""
+                defaultValue={linkUrl}
                 onChange={(event: ChangeEvent<HTMLInputElement>) => event.preventDefault()}
               />
             </Col>
@@ -57,7 +104,7 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
 
                   updateLink((document.getElementById("linkUrl") as HTMLInputElement).value);
 
-                  //toggleLinkOverlay(false);
+                  toggleLinkOverlay(false);
                 }}
               >
                 <FontAwesomeIcon icon={faPen} />
@@ -70,7 +117,8 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
                   event.preventDefault();
 
                   removeLink();
-                  //toggleLinkOverlay(false);
+
+                  toggleLinkOverlay(false);
                 }}
               >
                 <FontAwesomeIcon icon={faTrash} />
