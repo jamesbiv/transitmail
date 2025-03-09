@@ -1,7 +1,6 @@
-import React from "react";
+import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent } from "react";
 import {
   Button,
-  Form,
   Row,
   Col,
   InputGroup,
@@ -18,11 +17,11 @@ import { IComposeRecipient } from "interfaces";
 interface IComposeRecipientDetailsProps {
   recipients: IComposeRecipient[];
   subject?: string;
-  setRecipients: React.Dispatch<IComposeRecipient[]>;
-  setSubject: React.Dispatch<string | undefined>;
+  setRecipients: Dispatch<IComposeRecipient[]>;
+  setSubject: Dispatch<string | undefined>;
 }
 
-export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = ({
+export const ComposeRecipientDetails: FunctionComponent<IComposeRecipientDetailsProps> = ({
   recipients,
   subject,
   setRecipients,
@@ -76,7 +75,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
   };
 
   return (
-    <React.Fragment>
+    <Fragment>
       {recipients.map((recipient: IComposeRecipient, recipientKey: number) => (
         <FormGroup as={Row} key={recipientKey} controlId="formComposeTo" className="mt-1 mb-0">
           <FormLabel column xs={4} sm={2} className="pt-0">
@@ -103,7 +102,7 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
                 type="text"
                 placeholder="Enter email address"
                 defaultValue={recipient.value}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(event: ChangeEvent<HTMLInputElement>) =>
                   updateRecipientValue(event.target.value, recipientKey)
                 }
               />
@@ -147,12 +146,10 @@ export const ComposeRecipientDetails: React.FC<IComposeRecipientDetailsProps> = 
             type="text"
             defaultValue={subject}
             placeholder="Enter email subject"
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              setSubject(event.target.value)
-            }
+            onChange={(event: ChangeEvent<HTMLInputElement>) => setSubject(event.target.value)}
           />
         </Col>
       </FormGroup>
-    </React.Fragment>
+    </Fragment>
   );
 };

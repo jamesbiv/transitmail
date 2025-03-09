@@ -1,10 +1,8 @@
-import React from "react";
-import { ContentState, EditorState, RichUtils, SelectionState } from "draft-js";
+import React, { ChangeEvent, Dispatch, FunctionComponent, RefObject, SyntheticEvent } from "react";
 import {
   Button,
   Overlay,
   Popover,
-  Form,
   Row,
   Col,
   PopoverBody,
@@ -13,46 +11,70 @@ import {
 } from "react-bootstrap/";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $isLinkNode, $toggleLink, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { $getSelection, $isRangeSelection, BaseSelection, LexicalNode } from "lexical";
+import { $findMatchingParent } from "@lexical/utils";
 
 interface IComposeEditorLinkOverlayProps {
-  editorState: EditorState;
+  linkUrl: string | undefined;
   showLinkOverlay: boolean;
-  overlayTarget: React.RefObject<HTMLButtonElement | null>;
-  toggleLinkOverlay: React.Dispatch<boolean>;
-  setEditorState: React.Dispatch<EditorState>;
+  overlayTarget: RefObject<HTMLButtonElement | undefined>;
+  toggleLinkOverlay: Dispatch<boolean>;
 }
 
-export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> = ({
-  editorState,
+export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverlayProps> = ({
+  linkUrl,
   showLinkOverlay,
   overlayTarget,
-  toggleLinkOverlay,
-  setEditorState
+  toggleLinkOverlay
 }) => {
-  const updateLink: (url: string) => void = (url) => {
-    const contentState: ContentState = editorState.getCurrentContent();
-    const contentStateWithEntity: ContentState = contentState.createEntity("LINK", "MUTABLE", {
-      url
-    });
-    const entityKey: string = contentStateWithEntity.getLastCreatedEntityKey();
-    const newEditorState: EditorState = EditorState.set(editorState, {
-      currentContent: contentStateWithEntity
-    });
+  const [editor] = useLexicalComposerContext();
 
-    setEditorState(RichUtils.toggleLink(newEditorState, newEditorState.getSelection(), entityKey));
+  const updateLink: (url: string) => void = (url) => {
+    editor.update(() => {
+      const selection: BaseSelection | undefined = $getSelection() ?? undefined;
+
+      if (!$isRangeSelection(selection)) {
+        return;
+      }
+
+      $toggleLink(url);
+    });
   };
 
   const removeLink: () => void = () => {
-    const selection: SelectionState = editorState.getSelection();
+    editor.update(() => {
+      const selection: BaseSelection | undefined = $getSelection() ?? undefined;
 
-    if (!selection.isCollapsed()) {
-      setEditorState(RichUtils.toggleLink(editorState, selection, null));
-    }
+      if (!$isRangeSelection(selection)) {
+        return;
+      }
+
+      const extractedNodesFromSelection = selection.extract();
+
+      extractedNodesFromSelection.forEach((extractedNode) => {
+        const parentLink = $findMatchingParent(extractedNode, (parentNode) =>
+          $isLinkNode(parentNode)
+        );
+
+        if (!parentLink) {
+          return;
+        }
+
+        const childrenNodes: LexicalNode[] = parentLink.getChildren();
+        childrenNodes.forEach((childNode) => parentLink.insertBefore(childNode));
+
+        parentLink.remove();
+      });
+
+      return;
+    });
   };
 
   return (
     <Overlay
-      target={overlayTarget.current}
+      target={overlayTarget.current!}
       show={showLinkOverlay}
       placement="bottom"
       transition={false}
@@ -67,8 +89,8 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 size="sm"
                 type="text"
                 placeholder="Link address"
-                defaultValue=""
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) => event.preventDefault()}
+                defaultValue={linkUrl}
+                onChange={(event: ChangeEvent<HTMLInputElement>) => event.preventDefault()}
               />
             </Col>
             <Col xs={4} className="text-nowrap">
@@ -77,7 +99,7 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 className="me-1"
                 variant="outline-dark"
                 type="button"
-                onMouseDown={(event: React.SyntheticEvent) => {
+                onMouseDown={(event: SyntheticEvent) => {
                   event.preventDefault();
 
                   updateLink((document.getElementById("linkUrl") as HTMLInputElement).value);
@@ -91,10 +113,11 @@ export const ComposeEditorLinkOverlay: React.FC<IComposeEditorLinkOverlayProps> 
                 size="sm"
                 variant="danger"
                 type="button"
-                onMouseDown={(event: React.SyntheticEvent) => {
+                onMouseDown={(event: SyntheticEvent) => {
                   event.preventDefault();
 
                   removeLink();
+
                   toggleLinkOverlay(false);
                 }}
               >

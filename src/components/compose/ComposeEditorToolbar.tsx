@@ -1,6 +1,13 @@
-import React, { useState } from "react";
+import React, {
+  FunctionComponent,
+  RefObject,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState
+} from "react";
 import { Button, ButtonGroup, ButtonToolbar } from "react-bootstrap/";
-import { EditorState, RichUtils } from "draft-js";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSave,
@@ -20,94 +27,204 @@ import {
   faRedo
 } from "@fortawesome/free-solid-svg-icons";
 import { ComposeEditorLinkOverlay } from ".";
+import {
+  $getSelection,
+  $isBlockElementNode,
+  $isRangeSelection,
+  BaseSelection,
+  ElementNode,
+  FORMAT_ELEMENT_COMMAND,
+  FORMAT_TEXT_COMMAND,
+  INDENT_CONTENT_COMMAND,
+  OUTDENT_CONTENT_COMMAND,
+  PointType,
+  RangeSelection,
+  REDO_COMMAND,
+  SELECTION_CHANGE_COMMAND,
+  TextNode,
+  UNDO_COMMAND
+} from "lexical";
+import { $isAtNodeEnd } from "@lexical/selection";
+import {
+  $insertList,
+  $isListNode,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  REMOVE_LIST_COMMAND
+} from "@lexical/list";
+import { $isLinkNode } from "@lexical/link";
+import { mergeRegister } from "@lexical/utils";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-interface IComposeEditorToolbarProps {
-  editorState: EditorState;
-  setEditorState: React.Dispatch<EditorState>;
-  saveEmail: () => void;
-  deleteEmail: () => void;
-}
+/**
+ * getRangeSelectedNode
+ * @param {RangeSelection} selection
+ * @returns TextNode | ElementNode
+ */
+const getRangeSelectedNode = (selection: RangeSelection): TextNode | ElementNode => {
+  const anchor: PointType = selection.anchor;
+  const focus: PointType = selection.focus;
 
-export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
-  editorState,
-  setEditorState,
-  saveEmail,
-  deleteEmail
-}) => {
-  const linkButtonTarget: React.RefObject<HTMLButtonElement | null> =
-    React.useRef<HTMLButtonElement>(null);
+  const anchorNode: TextNode | ElementNode = selection.anchor.getNode();
+  const focusNode: TextNode | ElementNode = selection.focus.getNode();
+
+  if (anchorNode === focusNode) {
+    return anchorNode;
+  }
+
+  const isBackward: boolean = selection.isBackward();
+
+  if (isBackward) {
+    return $isAtNodeEnd(focus) ? anchorNode : focusNode;
+  }
+
+  return $isAtNodeEnd(anchor) ? focusNode : anchorNode;
+};
+
+/**
+ * ComposeEditorToolbar
+ * @returns FunctionComponent
+ */
+export const ComposeEditorToolbar: FunctionComponent = () => {
+  const [editor] = useLexicalComposerContext();
+
+  const [isBold, setIsBold] = useState<boolean>(false);
+  const [isItalic, setIsItalic] = useState<boolean>(false);
+  const [isUnderline, setIsUnderline] = useState<boolean>(false);
+
+  const [isLeftJustified, setIsLeftJustified] = useState<boolean>(false);
+  const [isCenterAligned, setIsCenterAligned] = useState<boolean>(false);
+  const [isRightJustified, setIsRightJustified] = useState<boolean>(false);
+  const [isIndent, setIsIndent] = useState<boolean>(false);
+
+  const [isUnorderedList, setIsUnorderedList] = useState<boolean>(false);
+  const [isOrderedList, setIsOrderedList] = useState<boolean>(false);
+
+  const [linkUrl, setLinkUrl] = useState<string | undefined>(undefined);
+
+  const linkButtonTarget: RefObject<HTMLButtonElement | undefined> = useRef<
+    HTMLButtonElement | undefined
+  >(undefined);
 
   const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
 
-  const toggleInlineStyle: (inlineStyle: string) => void = (inlineStyle) => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
-  };
+  const updateToolbar = useCallback(() => {
+    const selection: BaseSelection | undefined = $getSelection() ?? undefined;
 
-  const toggleBlockType: (blockType: string) => void = (blockType) => {
-    setEditorState(RichUtils.toggleBlockType(editorState, blockType));
-  };
-
-  const checkBlockType: (blockType: string) => boolean = (blockType) => {
-    if (
-      editorState
-        .getCurrentContent()
-        .getBlockForKey(editorState.getSelection().getStartKey())
-        .getType() === blockType
-    ) {
-      return true;
+    if (!$isRangeSelection(selection)) {
+      return;
     }
 
-    return false;
-  };
+    const topLevelNode: ElementNode | undefined =
+      getRangeSelectedNode(selection).getTopLevelElement() ?? undefined;
 
-  const checkInlineStyle: (inlineStyle: string) => boolean = (inlineStyle) => {
-    return editorState.getCurrentInlineStyle().has(inlineStyle);
-  };
+    setIsBold(selection.hasFormat("bold"));
+    setIsItalic(selection.hasFormat("italic"));
+    setIsUnderline(selection.hasFormat("underline"));
 
-  const undoClick: () => void = () => {
-    setEditorState(EditorState.undo(editorState));
-  };
+    if ($isBlockElementNode(topLevelNode)) {
+      setIsLeftJustified(topLevelNode.getFormatType() === "left");
+      setIsCenterAligned(topLevelNode.getFormatType() === "center");
+      setIsRightJustified(topLevelNode.getFormatType() === "right");
+      setIsIndent(topLevelNode.getIndent() > 0);
+    } else {
+      setIsLeftJustified(false);
+      setIsCenterAligned(false);
+      setIsRightJustified(false);
+      setIsIndent(false);
+    }
 
-  const redoClick: () => void = () => {
-    setEditorState(EditorState.redo(editorState));
-  };
+    if ($isListNode(topLevelNode)) {
+      setIsUnorderedList(topLevelNode.getListType() === "bullet");
+      setIsOrderedList(topLevelNode.getListType() === "number");
+    } else {
+      setIsUnorderedList(false);
+      setIsOrderedList(false);
+    }
+
+    const getParentNode: ElementNode | undefined =
+      getRangeSelectedNode(selection).getParent() ?? undefined;
+
+    if ($isLinkNode(getParentNode)) {
+      setLinkUrl(getParentNode.getURL());
+    } else {
+      setLinkUrl(undefined);
+    }
+  }, [editor]);
+
+  useEffect(() => {
+    return mergeRegister(
+      editor.registerUpdateListener(({ editorState }) => {
+        editorState.read(() => {
+          updateToolbar();
+        });
+      }),
+      editor.registerCommand(
+        SELECTION_CHANGE_COMMAND,
+        (_payload, newEditor) => {
+          updateToolbar();
+
+          return false;
+        },
+        1
+      ),
+      editor.registerCommand(
+        INSERT_UNORDERED_LIST_COMMAND,
+        () => {
+          $insertList("bullet");
+
+          return true;
+        },
+        1
+      ),
+      editor.registerCommand(
+        INSERT_ORDERED_LIST_COMMAND,
+        () => {
+          $insertList("number");
+
+          return true;
+        },
+        1
+      )
+    );
+  }, [editor, updateToolbar]);
 
   return (
-    <ButtonToolbar aria-label="" className="ps-2">
+    <ButtonToolbar aria-label="" className="">
       <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleInlineStyle("BOLD");
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
           }}
-          className={checkInlineStyle("BOLD") ? "active" : ""}
+          className={isBold ? "active" : ""}
         >
           <FontAwesomeIcon icon={faBold} />
         </Button>
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleInlineStyle("ITALIC");
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
           }}
-          className={checkInlineStyle("ITALIC") ? "active" : ""}
+          className={isItalic ? "active" : ""}
         >
           <FontAwesomeIcon icon={faItalic} />
         </Button>
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleInlineStyle("UNDERLINE");
+            editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
           }}
-          className={checkInlineStyle("UNDERLINE") ? "active" : ""}
+          className={isUnderline ? "active" : ""}
         >
           <FontAwesomeIcon icon={faUnderline} />
         </Button>
@@ -116,48 +233,56 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-start");
+            !isLeftJustified
+              ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left")
+              : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
           }}
-          className={checkBlockType("text-start") ? "active" : ""}
+          className={isLeftJustified ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignLeft} />
         </Button>
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-center");
+            !isCenterAligned
+              ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center")
+              : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
           }}
-          className={checkBlockType("text-center") ? "active" : ""}
+          className={isCenterAligned ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignCenter} />
         </Button>
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-end");
+            !isRightJustified
+              ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right")
+              : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
           }}
-          className={checkBlockType("text-end") ? "active" : ""}
+          className={isRightJustified ? "active" : ""}
         >
           <FontAwesomeIcon icon={faAlignRight} />
         </Button>
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("text-indent");
+            !isIndent
+              ? editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
+              : editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
           }}
-          className={checkBlockType("text-indent") ? "active" : ""}
+          className={isIndent ? "active" : ""}
         >
           <FontAwesomeIcon icon={faIndent} />
         </Button>
@@ -166,24 +291,28 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("unordered-list-item");
+            !isUnorderedList
+              ? editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
+              : editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
           }}
-          className={checkBlockType("unordered-list-item") ? "active" : ""}
+          className={isUnorderedList ? "active" : ""}
         >
           <FontAwesomeIcon icon={faList} />
         </Button>
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleBlockType("ordered-list-item");
+            !isOrderedList
+              ? editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)
+              : editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
           }}
-          className={checkBlockType("ordered-list-item") ? "active" : ""}
+          className={isOrderedList ? "active" : ""}
         >
           <FontAwesomeIcon icon={faListOl} />
         </Button>
@@ -192,7 +321,7 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             (document.getElementById("attachmentInput") as HTMLElement).click();
@@ -201,33 +330,33 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
           <FontAwesomeIcon icon={faPaperclip} />
         </Button>
         <Button
-          ref={linkButtonTarget}
+          ref={linkButtonTarget as RefObject<HTMLButtonElement>}
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
             toggleLinkOverlay(showLinkOverlay ? false : true);
           }}
+          className={linkUrl ? "active" : ""}
         >
           <FontAwesomeIcon icon={faLink} />
         </Button>
         <ComposeEditorLinkOverlay
+          linkUrl={linkUrl}
           showLinkOverlay={showLinkOverlay}
-          toggleLinkOverlay={toggleLinkOverlay}
           overlayTarget={linkButtonTarget}
-          setEditorState={setEditorState}
-          editorState={editorState}
+          toggleLinkOverlay={toggleLinkOverlay}
         />
       </ButtonGroup>
       <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            undoClick();
+            editor.dispatchCommand(UNDO_COMMAND, undefined);
           }}
         >
           <FontAwesomeIcon icon={faUndo} />
@@ -235,10 +364,10 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            redoClick();
+            editor.dispatchCommand(REDO_COMMAND, undefined);
           }}
         >
           <FontAwesomeIcon icon={faRedo} />
@@ -248,10 +377,10 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="outline-dark"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            saveEmail();
+            // saveEmail();
           }}
         >
           <FontAwesomeIcon icon={faSave} />
@@ -261,10 +390,10 @@ export const ComposeEditorToolbar: React.FC<IComposeEditorToolbarProps> = ({
         <Button
           variant="danger"
           type="button"
-          onMouseDown={(event: React.SyntheticEvent) => {
+          onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            deleteEmail();
+            // deleteEmail();
           }}
         >
           <FontAwesomeIcon icon={faTrash} />
