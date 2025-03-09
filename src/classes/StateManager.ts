@@ -1,3 +1,4 @@
+import { Dispatch } from "react";
 import { IComposePresets, IFolderEmail, IMessageModalState, ISliderState } from "interfaces";
 
 interface IFolderEmails {
@@ -7,9 +8,9 @@ interface IFolderEmails {
 
 type TIndexState = {
   sliderState: ISliderState;
-  setSliderState: React.Dispatch<ISliderState>;
-  setActiveKey: React.Dispatch<string>;
-  setMessageModalState: React.Dispatch<IMessageModalState>;
+  setSliderState: Dispatch<ISliderState>;
+  setActiveKey: Dispatch<string>;
+  setMessageModalState: Dispatch<IMessageModalState>;
 };
 
 export class StateManager {

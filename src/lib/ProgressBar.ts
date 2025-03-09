@@ -1,5 +1,3 @@
-import { useCallback, useEffect, useState } from "react";
-
 interface IProgressBar {
   currentBytes: number;
   maxBytes: number;

@@ -1,7 +1,10 @@
 import { IComposeRecipient, IComposeAttachment, IComposedEmail } from "interfaces";
 
-interface IEmailData {
-  from: string;
+export interface IEmailData {
+  from: {
+    email: string;
+    displayName: string;
+  };
   subject?: string;
   recipients?: IComposeRecipient[];
   attachments?: IComposeAttachment[];
@@ -20,7 +23,7 @@ export class EmailComposer {
     };
 
     composedEmail.subject = emailData.subject;
-    composedEmail.from = emailData.from;
+    composedEmail.from = `"${emailData.from.displayName}" <${emailData.from.email}>`;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
       if (recipient.type === "To") {

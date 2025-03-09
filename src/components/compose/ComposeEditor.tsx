@@ -1,5 +1,14 @@
-import React, { RefObject, FunctionComponent } from "react";
-import { EditorThemeClasses, LexicalEditor } from "lexical";
+import React, { FunctionComponent, Dispatch, useEffect } from "react";
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  $insertNodes,
+  EditorThemeClasses,
+  LexicalNode,
+  ParagraphNode,
+  TextNode
+} from "lexical";
 
 import { InitialConfigType, LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -7,7 +16,6 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { EditorRefPlugin } from "@lexical/react/LexicalEditorRefPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
@@ -15,6 +23,8 @@ import { ListItemNode, ListNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
 
 import { ComposeEditorToolbar } from "./ComposeEditorToolbar";
+import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 const ComposerTheme: EditorThemeClasses = {
   link: "editor-link",
@@ -30,11 +40,15 @@ const ComposerTheme: EditorThemeClasses = {
 };
 
 interface IComposeEditorProps {
-  composeEditorReference: RefObject<LexicalEditor | undefined>;
+  bodyMimeType: string | undefined;
+  body: string | undefined;
+  setBody: Dispatch<string | undefined>;
 }
 
 export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
-  composeEditorReference
+  bodyMimeType,
+  body,
+  setBody
 }) => {
   const initialConfig: InitialConfigType = {
     theme: ComposerTheme,
@@ -47,7 +61,8 @@ export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <EditorRefPlugin editorRef={composeEditorReference} />
+      <ComposeUpdatePlugin bodyMimeType={bodyMimeType} body={body} setBody={setBody} />
+
       <div id="compose-editor" className="mt-2 mb-2">
         <ComposeEditorToolbar />
         <div className="mt-3 p-3 border rounded inner-shaddow">
@@ -63,4 +78,80 @@ export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
       </div>
     </LexicalComposer>
   );
+};
+
+interface IComposeUpdatePluginProps {
+  bodyMimeType: string | undefined;
+  body: string | undefined;
+  setBody: Dispatch<string | undefined>;
+}
+
+const ComposeUpdatePlugin: FunctionComponent<IComposeUpdatePluginProps> = ({
+  bodyMimeType,
+  body,
+  setBody
+}) => {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    editor.registerUpdateListener(() => {
+      editor.read(() => {
+        switch (bodyMimeType) {
+          case "text/html": {
+            const htmlString = $generateHtmlFromNodes(editor);
+
+            setBody(htmlString);
+
+            break;
+          }
+
+          case "text/plain": {
+            break;
+          }
+
+          default: {
+            // nothing
+          }
+        }
+      });
+    });
+
+    editor.update(() => {
+      if (!body) {
+        return;
+      }
+
+      switch (bodyMimeType) {
+        case "text/html": {
+          const parser = new DOMParser();
+          const htmlString: string = body;
+
+          const dom: Document = parser.parseFromString(htmlString, "text/html");
+          const nodes: LexicalNode[] = $generateNodesFromDOM(editor, dom);
+
+          $getRoot().clear();
+
+          $insertNodes(nodes);
+
+          break;
+        }
+
+        case "text/plain": {
+          const bodyText: string = body;
+
+          const textNode: TextNode = $createTextNode(bodyText);
+          const paragraphNode: ParagraphNode = $createParagraphNode().append(textNode);
+
+          $getRoot().clear().append(paragraphNode);
+
+          break;
+        }
+
+        default:
+        // nothing
+      }
+    });
+  }, [body]);
+
+  return undefined;
 };
