@@ -37,10 +37,14 @@ import {
   FORMAT_TEXT_COMMAND,
   INDENT_CONTENT_COMMAND,
   OUTDENT_CONTENT_COMMAND,
+  PointType,
+  RangeSelection,
   REDO_COMMAND,
   SELECTION_CHANGE_COMMAND,
+  TextNode,
   UNDO_COMMAND
 } from "lexical";
+import { $isAtNodeEnd } from "@lexical/selection";
 import {
   $insertList,
   $isListNode,
@@ -49,16 +53,39 @@ import {
   REMOVE_LIST_COMMAND
 } from "@lexical/list";
 import { $isLinkNode } from "@lexical/link";
-
 import { mergeRegister } from "@lexical/utils";
-
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-interface IComposeEditorToolbarProps {
-  // nothing
-}
+/**
+ * getRangeSelectedNode
+ * @param {RangeSelection} selection
+ * @returns TextNode | ElementNode
+ */
+const getRangeSelectedNode = (selection: RangeSelection): TextNode | ElementNode => {
+  const anchor: PointType = selection.anchor;
+  const focus: PointType = selection.focus;
 
-export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps> = () => {
+  const anchorNode: TextNode | ElementNode = selection.anchor.getNode();
+  const focusNode: TextNode | ElementNode = selection.focus.getNode();
+
+  if (anchorNode === focusNode) {
+    return anchorNode;
+  }
+
+  const isBackward: boolean = selection.isBackward();
+
+  if (isBackward) {
+    return $isAtNodeEnd(focus) ? anchorNode : focusNode;
+  }
+
+  return $isAtNodeEnd(anchor) ? focusNode : anchorNode;
+};
+
+/**
+ * ComposeEditorToolbar
+ * @returns FunctionComponent
+ */
+export const ComposeEditorToolbar: FunctionComponent = () => {
   const [editor] = useLexicalComposerContext();
 
   const [isBold, setIsBold] = useState<boolean>(false);
@@ -87,9 +114,9 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
     if (!$isRangeSelection(selection)) {
       return;
     }
-    
+
     const topLevelNode: ElementNode | undefined =
-      selection.anchor.getNode()?.getTopLevelElement() ?? undefined;
+      getRangeSelectedNode(selection).getTopLevelElement() ?? undefined;
 
     setIsBold(selection.hasFormat("bold"));
     setIsItalic(selection.hasFormat("italic"));
@@ -116,7 +143,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
     }
 
     const getParentNode: ElementNode | undefined =
-      selection.anchor.getNode().getParent() ?? undefined;
+      getRangeSelectedNode(selection).getParent() ?? undefined;
 
     if ($isLinkNode(getParentNode)) {
       setLinkUrl(getParentNode.getURL());

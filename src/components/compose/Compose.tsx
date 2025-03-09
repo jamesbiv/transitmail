@@ -57,6 +57,7 @@ export const Compose: FunctionComponent = () => {
   ]);
 
   const [body, setBody] = useState<string | undefined>(undefined);
+  const [bodyPlaceHolder, setBodyPlaceHolder] = useState<string | undefined>(undefined);
 
   const [bodyMimeType, setBodyMimeType] = useState<string | undefined>("text/html");
 
@@ -121,10 +122,10 @@ export const Compose: FunctionComponent = () => {
        */
       if (presetEmail.bodyHtml) {
         setBodyMimeType("text/html");
-        setBody(presetEmail.bodyHtml);
+        setBodyPlaceHolder(presetEmail.bodyHtml);
       } else {
         setBodyMimeType("text/plain");
-        setBody(presetEmail.bodyText);
+        setBodyPlaceHolder(presetEmail.bodyText);
       }
 
       stateManager.setComposePresets(undefined);
@@ -270,7 +271,11 @@ export const Compose: FunctionComponent = () => {
             setRecipients={setRecipients}
             setSubject={setSubject}
           />
-          <ComposeEditor bodyMimeType={bodyMimeType} body={body} setBody={setBody} />
+          <ComposeEditor
+            bodyMimeType={bodyMimeType}
+            bodyPlaceHolder={bodyPlaceHolder}
+            setBody={setBody}
+          />
           <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
         </CardBody>
 
