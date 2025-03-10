@@ -121,7 +121,7 @@ const ComposeEditorUpdatePlugin: FunctionComponent<IComposeEditorUpdatePluginPro
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    editor.registerUpdateListener(() => {
+    const removeUpdateListener: () => void = editor.registerUpdateListener(() => {
       editor.read(() => {
         switch (bodyMimeType) {
           case "text/html": {
@@ -146,6 +146,8 @@ const ComposeEditorUpdatePlugin: FunctionComponent<IComposeEditorUpdatePluginPro
         }
       });
     });
+
+    return () => removeUpdateListener();
   }, [editor]);
 
   useEffect(() => {
