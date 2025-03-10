@@ -1,14 +1,22 @@
-import React from "react";
-import { Form, Col, Row, FormGroup, FormLabel, FormControl } from "react-bootstrap";
+import React, { ChangeEvent, FunctionComponent } from "react";
+import { Col, Row, FormGroup, FormLabel, FormControl } from "react-bootstrap";
 import { IComposeSender, ISettingsSecondaryEmail } from "interfaces";
 
+/**
+ * @interface IComposeSecondaryEmailProps
+ */
 interface IComposeSecondaryEmailProps {
   defaultSender: IComposeSender;
   secondaryEmails?: ISettingsSecondaryEmail[];
   updateSenderDetails: (secondaryEmailKey: number) => void;
 }
 
-export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
+/**
+ * ComposeSecondaryEmail
+ * @param {IComposeSecondaryEmailProps} properties
+ * @returns FunctionComponent
+ */
+export const ComposeSecondaryEmail: FunctionComponent<IComposeSecondaryEmailProps> = ({
   defaultSender,
   secondaryEmails,
   updateSenderDetails
@@ -23,7 +31,7 @@ export const ComposeSecondaryEmail: React.FC<IComposeSecondaryEmailProps> = ({
           <FormControl
             size="sm"
             as="select"
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
               updateSenderDetails(Number(event.target.value) ?? undefined)
             }
           >

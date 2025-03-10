@@ -3,9 +3,6 @@ import { EmailComposer } from "classes";
 jest.mock("contexts/DependenciesContext");
 
 const mockEmailData: any = {
-  editorState: {
-    getCurrentContent: () => jest.fn()
-  },
   from: "sender@transitmail.org",
   subject: "Test Email",
   recipients: [
@@ -35,6 +32,7 @@ const mockEmailData: any = {
       value: "receiverbcc1@transitmail.org"
     }
   ],
+  body: "<p>Test Body</p>",
   attachments: [
     {
       data: "",
@@ -93,18 +91,6 @@ const mockContentBlocks: any = {
     }
   ]
 };
-
-jest.mock("draft-js", () => ({
-  convertToRaw: () => {
-    return mockContentBlocks;
-  }
-}));
-
-jest.mock("draft-js-export-html", () => ({
-  stateToHTML: () => {
-    return "<p>Test Body</p>";
-  }
-}));
 
 const emailParser = new EmailComposer();
 
