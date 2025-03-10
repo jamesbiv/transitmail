@@ -53,6 +53,7 @@ import {
   INSERT_UNORDERED_LIST_COMMAND,
   REMOVE_LIST_COMMAND
 } from "@lexical/list";
+
 import { $isLinkNode } from "@lexical/link";
 import { mergeRegister } from "@lexical/utils";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
@@ -141,6 +142,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
     setIsLeftJustified(topLevelNode.getFormatType() === "left");
     setIsCenterAligned(topLevelNode.getFormatType() === "center");
     setIsRightJustified(topLevelNode.getFormatType() === "right");
+
     setIsIndent(topLevelNode.getIndent() > 0);
 
     const isListNode = $isListNode(topLevelNode);
@@ -170,7 +172,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
       }),
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND,
-        (_payload, newEditor) => {
+        () => {
           updateToolbar();
 
           return false;
@@ -245,6 +247,14 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
+            if (isIndent) {
+              editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
+            }
+
+            if (isUnorderedList || isOrderedList) {
+              editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+            }
+
             !isLeftJustified
               ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left")
               : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
@@ -258,6 +268,14 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           type="button"
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
+
+            if (isIndent) {
+              editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
+            }
+
+            if (isUnorderedList || isOrderedList) {
+              editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+            }
 
             !isCenterAligned
               ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "center")
@@ -273,6 +291,14 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
+            if (isIndent) {
+              editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
+            }
+
+            if (isUnorderedList || isOrderedList) {
+              editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+            }
+
             !isRightJustified
               ? editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "right")
               : editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
@@ -286,6 +312,14 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           type="button"
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
+
+            if (isUnorderedList || isOrderedList) {
+              editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+            }
+
+            if (isLeftJustified || isCenterAligned || isRightJustified) {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
+            }
 
             !isIndent
               ? editor.dispatchCommand(INDENT_CONTENT_COMMAND, undefined)
@@ -303,6 +337,14 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
+            if (isIndent) {
+              editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
+            }
+
+            if (isLeftJustified || isCenterAligned || isRightJustified) {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
+            }
+
             !isUnorderedList
               ? editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)
               : editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
@@ -316,6 +358,14 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           type="button"
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
+
+            if (isIndent) {
+              editor.dispatchCommand(OUTDENT_CONTENT_COMMAND, undefined);
+            }
+
+            if (isLeftJustified || isCenterAligned || isRightJustified) {
+              editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "");
+            }
 
             !isOrderedList
               ? editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)

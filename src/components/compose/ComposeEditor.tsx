@@ -38,7 +38,8 @@ const ComposerTheme: EditorThemeClasses = {
   list: {
     ol: "ordered-list",
     ul: "unordered-list"
-  }
+  },
+  indent: "editor-indent"
 };
 
 /**
