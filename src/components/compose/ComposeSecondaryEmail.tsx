@@ -2,12 +2,20 @@ import React, { ChangeEvent, FunctionComponent } from "react";
 import { Col, Row, FormGroup, FormLabel, FormControl } from "react-bootstrap";
 import { IComposeSender, ISettingsSecondaryEmail } from "interfaces";
 
+/**
+ * @interface IComposeSecondaryEmailProps
+ */
 interface IComposeSecondaryEmailProps {
   defaultSender: IComposeSender;
   secondaryEmails?: ISettingsSecondaryEmail[];
   updateSenderDetails: (secondaryEmailKey: number) => void;
 }
 
+/**
+ * ComposeSecondaryEmail
+ * @param {IComposeSecondaryEmailProps} properties
+ * @returns FunctionComponent
+ */
 export const ComposeSecondaryEmail: FunctionComponent<IComposeSecondaryEmailProps> = ({
   defaultSender,
   secondaryEmails,

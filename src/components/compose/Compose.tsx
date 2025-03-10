@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useEffect, useRef, useState } from "react";
+import React, { FunctionComponent, useContext, useEffect, useState } from "react";
 import {
   Card,
   Alert,
@@ -40,6 +40,10 @@ import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { convertAttachments, downloadEmail, sendEmail } from "lib";
 
+/**
+ * Compose
+ * @returns FunctionComponent
+ */
 export const Compose: FunctionComponent = () => {
   const { secureStorage, stateManager } = useContext(DependenciesContext);
 
@@ -57,7 +61,7 @@ export const Compose: FunctionComponent = () => {
   ]);
 
   const [body, setBody] = useState<string | undefined>(undefined);
-  const [bodyPlaceHolder, setBodyPlaceHolder] = useState<string | undefined>(undefined);
+  const [bodyPlaceholder, setBodyPlaceholder] = useState<string | undefined>(undefined);
 
   const [bodyMimeType, setBodyMimeType] = useState<string | undefined>("text/html");
 
@@ -70,7 +74,7 @@ export const Compose: FunctionComponent = () => {
 
   const composerPresets: IComposePresets | undefined = stateManager.getComposePresets();
 
-  const emailSignature: string = secureStorage.getSetting("signature") ?? "";
+  const emailSignature: string | undefined = secureStorage.getSetting("signature");
 
   const secondaryEmails: ISettingsSecondaryEmail[] = secureStorage.getSetting("secondaryEmails");
 
@@ -83,7 +87,7 @@ export const Compose: FunctionComponent = () => {
       }
 
       const presetEmail: IEmail | undefined = composerPresets.uid
-        ? await downloadEmail(composerPresets, setShowComposer, setProgressBarNow)
+        ? await downloadEmail(composerPresets, setProgressBarNow, () => setShowComposer(true))
         : composerPresets.email;
 
       if (!presetEmail) {
@@ -122,10 +126,10 @@ export const Compose: FunctionComponent = () => {
        */
       if (presetEmail.bodyHtml) {
         setBodyMimeType("text/html");
-        setBodyPlaceHolder(presetEmail.bodyHtml);
+        setBodyPlaceholder(presetEmail.bodyHtml);
       } else {
         setBodyMimeType("text/plain");
-        setBodyPlaceHolder(presetEmail.bodyText);
+        setBodyPlaceholder(presetEmail.bodyText);
       }
 
       stateManager.setComposePresets(undefined);
@@ -273,8 +277,10 @@ export const Compose: FunctionComponent = () => {
           />
           <ComposeEditor
             bodyMimeType={bodyMimeType}
-            bodyPlaceHolder={bodyPlaceHolder}
+            bodyPlaceholder={bodyPlaceholder}
             setBody={setBody}
+            saveEmail={saveEmail}
+            clearComposer={clearComposer}
           />
           <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
         </CardBody>

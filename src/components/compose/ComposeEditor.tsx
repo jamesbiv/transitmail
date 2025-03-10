@@ -20,7 +20,6 @@ import { ClearEditorPlugin } from "@lexical/react/LexicalClearEditorPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { LinkNode } from "@lexical/link";
-import { mergeRegister } from "@lexical/utils";
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
@@ -47,8 +46,10 @@ const ComposerTheme: EditorThemeClasses = {
  */
 interface IComposeEditorProps {
   bodyMimeType?: string;
-  bodyPlaceHolder?: string;
+  bodyPlaceholder?: string;
   setBody: Dispatch<string | undefined>;
+  saveEmail: () => void;
+  clearComposer: () => void;
 }
 
 /**
@@ -58,8 +59,10 @@ interface IComposeEditorProps {
  */
 export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
   bodyMimeType,
-  bodyPlaceHolder,
-  setBody
+  bodyPlaceholder,
+  setBody,
+  saveEmail,
+  clearComposer
 }) => {
   const initialConfig: InitialConfigType = {
     theme: ComposerTheme,
@@ -72,14 +75,14 @@ export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <ComposeUpdatePlugin
+      <ComposeEditorUpdatePlugin
         bodyMimeType={bodyMimeType}
-        bodyPlaceHolder={bodyPlaceHolder}
+        bodyPlaceholder={bodyPlaceholder}
         setBody={setBody}
       />
 
       <div id="compose-editor" className="mt-2 mb-2">
-        <ComposeEditorToolbar />
+        <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
         <div className="mt-3 p-3 border rounded inner-shaddow">
           <RichTextPlugin
             contentEditable={<ContentEditable className="content-editable" />}
@@ -95,55 +98,65 @@ export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
   );
 };
 
-interface IComposeUpdatePluginProps {
+/**
+ * @interface IComposeEditorUpdatePluginProps
+ */
+interface IComposeEditorUpdatePluginProps {
   bodyMimeType?: string;
-  bodyPlaceHolder?: string;
+  bodyPlaceholder?: string;
   setBody: Dispatch<string | undefined>;
 }
 
-const ComposeUpdatePlugin: FunctionComponent<IComposeUpdatePluginProps> = ({
+/**
+ * ComposeEditorUpdatePlugin
+ * @param {IComposeEditorUpdatePluginProps} properties
+ * @returns FunctionComponent
+ */
+const ComposeEditorUpdatePlugin: FunctionComponent<IComposeEditorUpdatePluginProps> = ({
   bodyMimeType,
-  bodyPlaceHolder,
+  bodyPlaceholder,
   setBody
 }) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    return mergeRegister(
-      editor.registerUpdateListener(() => {
-        editor.read(() => {
-          switch (bodyMimeType) {
-            case "text/html": {
-              const htmlString = $generateHtmlFromNodes(editor);
+    editor.registerUpdateListener(() => {
+      editor.read(() => {
+        switch (bodyMimeType) {
+          case "text/html": {
+            const htmlString: string = $generateHtmlFromNodes(editor);
 
-              setBody(htmlString);
+            setBody(htmlString);
 
-              break;
-            }
-
-            case "text/plain": {
-              break;
-            }
-
-            default: {
-              // nothing
-            }
+            break;
           }
-        });
-      })
-    );
+
+          case "text/plain": {
+            const textString: string = $getRoot().getTextContent();
+
+            setBody(textString);
+
+            break;
+          }
+
+          default: {
+            // nothing
+          }
+        }
+      });
+    });
   }, [editor]);
 
   useEffect(() => {
     editor.update(() => {
-      if (!bodyPlaceHolder) {
+      if (!bodyPlaceholder) {
         return;
       }
 
       switch (bodyMimeType) {
         case "text/html": {
           const parser = new DOMParser();
-          const htmlString: string = bodyPlaceHolder;
+          const htmlString: string = bodyPlaceholder;
 
           const dom: Document = parser.parseFromString(htmlString, "text/html");
           const nodes: LexicalNode[] = $generateNodesFromDOM(editor, dom);
@@ -156,7 +169,7 @@ const ComposeUpdatePlugin: FunctionComponent<IComposeUpdatePluginProps> = ({
         }
 
         case "text/plain": {
-          const bodyText: string = bodyPlaceHolder;
+          const bodyText: string = bodyPlaceholder;
 
           const textNode: TextNode = $createTextNode(bodyText);
           const paragraphNode: ParagraphNode = $createParagraphNode().append(textNode);
@@ -170,7 +183,7 @@ const ComposeUpdatePlugin: FunctionComponent<IComposeUpdatePluginProps> = ({
         // nothing
       }
     });
-  }, [bodyPlaceHolder]);
+  }, [bodyPlaceholder]);
 
   return undefined;
 };

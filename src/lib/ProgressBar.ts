@@ -1,3 +1,5 @@
+import { Dispatch } from "react";
+
 interface IProgressBar {
   currentBytes: number;
   maxBytes: number;
@@ -17,7 +19,7 @@ const progressBar: IProgressBar = { currentBytes: 0, maxBytes: 0, now: 0 };
  */
 export const initiateProgressBar = (
   maxBytes: number,
-  setProgressBarNow: React.Dispatch<number>,
+  setProgressBarNow: Dispatch<number>,
   currentBytesFn: () => number,
   finalCallbackFn: () => void
 ): void => {
@@ -28,13 +30,13 @@ export const initiateProgressBar = (
 
 /**
  * @name checkProgressBar
- * @param {React.Dispatch<number>} setProgressBarNow
+ * @param {Dispatch<number>} setProgressBarNow
  * @param {() => number} currentBytesFn
  * @param {() => void} finalCallbackFn
  * @returns void
  */
 export const checkProgressBar = (
-  setProgressBarNow: React.Dispatch<number>,
+  setProgressBarNow: Dispatch<number>,
   currentBytesFn: () => number,
   finalCallbackFn: () => void
 ): void => {

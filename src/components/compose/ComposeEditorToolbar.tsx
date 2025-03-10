@@ -32,6 +32,7 @@ import {
   $isBlockElementNode,
   $isRangeSelection,
   BaseSelection,
+  COMMAND_PRIORITY_LOW,
   ElementNode,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
@@ -82,10 +83,21 @@ const getRangeSelectedNode = (selection: RangeSelection): TextNode | ElementNode
 };
 
 /**
+ * @interface IComposeEditorToolbarProps
+ */
+interface IComposeEditorToolbarProps {
+  saveEmail: () => void;
+  clearComposer: () => void;
+}
+
+/**
  * ComposeEditorToolbar
  * @returns FunctionComponent
  */
-export const ComposeEditorToolbar: FunctionComponent = () => {
+export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps> = ({
+  saveEmail,
+  clearComposer
+}) => {
   const [editor] = useLexicalComposerContext();
 
   const [isBold, setIsBold] = useState<boolean>(false);
@@ -115,41 +127,38 @@ export const ComposeEditorToolbar: FunctionComponent = () => {
       return;
     }
 
-    const topLevelNode: ElementNode | undefined =
-      getRangeSelectedNode(selection).getTopLevelElement() ?? undefined;
-
     setIsBold(selection.hasFormat("bold"));
     setIsItalic(selection.hasFormat("italic"));
     setIsUnderline(selection.hasFormat("underline"));
 
-    if ($isBlockElementNode(topLevelNode)) {
-      setIsLeftJustified(topLevelNode.getFormatType() === "left");
-      setIsCenterAligned(topLevelNode.getFormatType() === "center");
-      setIsRightJustified(topLevelNode.getFormatType() === "right");
-      setIsIndent(topLevelNode.getIndent() > 0);
-    } else {
-      setIsLeftJustified(false);
-      setIsCenterAligned(false);
-      setIsRightJustified(false);
-      setIsIndent(false);
+    const topLevelNode: ElementNode | undefined =
+      getRangeSelectedNode(selection).getTopLevelElement() ?? undefined;
+
+    if (!$isBlockElementNode(topLevelNode)) {
+      return;
     }
 
-    if ($isListNode(topLevelNode)) {
-      setIsUnorderedList(topLevelNode.getListType() === "bullet");
-      setIsOrderedList(topLevelNode.getListType() === "number");
-    } else {
-      setIsUnorderedList(false);
-      setIsOrderedList(false);
-    }
+    setIsLeftJustified(topLevelNode.getFormatType() === "left");
+    setIsCenterAligned(topLevelNode.getFormatType() === "center");
+    setIsRightJustified(topLevelNode.getFormatType() === "right");
+    setIsIndent(topLevelNode.getIndent() > 0);
+
+    const isListNode = $isListNode(topLevelNode);
+
+    const isUnorderedList: boolean = isListNode && topLevelNode.getListType() === "bullet";
+    const isOrderedList: boolean = isListNode && topLevelNode.getListType() === "number";
+
+    setIsUnorderedList(isUnorderedList);
+    setIsOrderedList(isOrderedList);
 
     const getParentNode: ElementNode | undefined =
       getRangeSelectedNode(selection).getParent() ?? undefined;
 
-    if ($isLinkNode(getParentNode)) {
-      setLinkUrl(getParentNode.getURL());
-    } else {
-      setLinkUrl(undefined);
-    }
+    const linkUrl: string | undefined = $isLinkNode(getParentNode)
+      ? getParentNode.getURL()
+      : undefined;
+
+    setLinkUrl(linkUrl);
   }, [editor]);
 
   useEffect(() => {
@@ -166,7 +175,7 @@ export const ComposeEditorToolbar: FunctionComponent = () => {
 
           return false;
         },
-        1
+        COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
         INSERT_UNORDERED_LIST_COMMAND,
@@ -175,7 +184,7 @@ export const ComposeEditorToolbar: FunctionComponent = () => {
 
           return true;
         },
-        1
+        COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
         INSERT_ORDERED_LIST_COMMAND,
@@ -184,7 +193,7 @@ export const ComposeEditorToolbar: FunctionComponent = () => {
 
           return true;
         },
-        1
+        COMMAND_PRIORITY_LOW
       )
     );
   }, [editor, updateToolbar]);
@@ -380,7 +389,7 @@ export const ComposeEditorToolbar: FunctionComponent = () => {
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            // saveEmail();
+            saveEmail();
           }}
         >
           <FontAwesomeIcon icon={faSave} />
@@ -393,7 +402,7 @@ export const ComposeEditorToolbar: FunctionComponent = () => {
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            // deleteEmail();
+            clearComposer();
           }}
         >
           <FontAwesomeIcon icon={faTrash} />

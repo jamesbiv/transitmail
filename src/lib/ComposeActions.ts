@@ -18,13 +18,13 @@ import { initiateProgressBar } from "lib";
  * downloadEmail
  * @param {IComposePresets} composePresets
  * @param {Dispatch<boolean>} setShowComposer
- * @param {Dispatch<number>} setProgressBarNow
+ * @param {() => void} progressBarCallbackFn
  * @returns Promise<IEmail | undefined>
  */
 export const downloadEmail = async (
   composePresets: IComposePresets,
-  setShowComposer: Dispatch<boolean>,
-  setProgressBarNow: Dispatch<number>
+  setProgressBarNow?: Dispatch<number>,
+  progressBarCallbackFn?: () => void
 ): Promise<IEmail | undefined> => {
   const { imapSocket, imapHelper } = directAccessToDependencies();
 
@@ -44,12 +44,14 @@ export const downloadEmail = async (
     return;
   }
 
-  initiateProgressBar(
-    emailFlags.size,
-    setProgressBarNow,
-    () => imapSocket.getStreamAmount(),
-    () => setShowComposer(true)
-  );
+  if (setProgressBarNow && progressBarCallbackFn) {
+    initiateProgressBar(
+      emailFlags.size,
+      setProgressBarNow,
+      () => imapSocket.getStreamAmount(),
+      progressBarCallbackFn
+    );
+  }
 
   const fetchEmailResponse: IImapResponse = await imapSocket.imapRequest(
     `UID FETCH ${composePresets.uid} RFC822`

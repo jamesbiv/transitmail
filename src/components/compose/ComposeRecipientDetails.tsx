@@ -14,6 +14,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { IComposeRecipient } from "interfaces";
 
+/**
+ * @interface IComposeRecipientDetailsProps
+ */
 interface IComposeRecipientDetailsProps {
   recipients: IComposeRecipient[];
   subject?: string;
@@ -21,6 +24,11 @@ interface IComposeRecipientDetailsProps {
   setSubject: Dispatch<string | undefined>;
 }
 
+/**
+ * ComposeRecipientDetails
+ * @param {IComposeRecipientDetailsProps} properties
+ * @returns FunctionComponent
+ */
 export const ComposeRecipientDetails: FunctionComponent<IComposeRecipientDetailsProps> = ({
   recipients,
   subject,

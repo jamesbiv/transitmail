@@ -12,10 +12,13 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faPen } from "@fortawesome/free-solid-svg-icons";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $isLinkNode, $toggleLink, TOGGLE_LINK_COMMAND } from "@lexical/link";
+import { $isLinkNode, $toggleLink } from "@lexical/link";
 import { $getSelection, $isRangeSelection, BaseSelection, LexicalNode } from "lexical";
 import { $findMatchingParent } from "@lexical/utils";
 
+/**
+ * @interface IComposeEditorLinkOverlayProps
+ */
 interface IComposeEditorLinkOverlayProps {
   linkUrl: string | undefined;
   showLinkOverlay: boolean;
@@ -23,6 +26,11 @@ interface IComposeEditorLinkOverlayProps {
   toggleLinkOverlay: Dispatch<boolean>;
 }
 
+/**
+ * ComposeEditorLinkOverlay
+ * @param {IComposeEditorLinkOverlayProps} properties
+ * @returns FunctionComponent
+ */
 export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverlayProps> = ({
   linkUrl,
   showLinkOverlay,
@@ -102,7 +110,11 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
                 onMouseDown={(event: SyntheticEvent) => {
                   event.preventDefault();
 
-                  updateLink((document.getElementById("linkUrl") as HTMLInputElement).value);
+                  const linkUrlFromElement: string = (
+                    document.getElementById("linkUrl") as HTMLInputElement
+                  ).value;
+
+                  updateLink(linkUrlFromElement);
 
                   toggleLinkOverlay(false);
                 }}

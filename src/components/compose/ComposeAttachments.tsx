@@ -13,11 +13,19 @@ import {
 import { IComposeAttachment } from "interfaces";
 import { MimeTools } from "lib";
 
+/**
+ * @interface IComposeAttachmentProps
+ */
 interface IComposeAttachmentProps {
   attachments: IComposeAttachment[];
   setAttachments: Dispatch<IComposeAttachment[]>;
 }
 
+/**
+ * ComposeAttachments
+ * @param {IComposeAttachmentProps} properties
+ * @returns FunctionComponent
+ */
 export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
   attachments,
   setAttachments
