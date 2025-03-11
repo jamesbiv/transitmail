@@ -137,7 +137,7 @@ export const View: FunctionComponent = () => {
   return !showEmail ? (
     <Card className="mt-0 mt-sm-3">
       <CardBody>
-        <ProgressBar className="mb-2" now={progressBarNow} />
+        <ProgressBar now={progressBarNow} />
       </CardBody>
     </Card>
   ) : (

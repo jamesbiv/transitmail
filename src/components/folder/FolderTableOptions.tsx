@@ -16,7 +16,7 @@ export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
   toggleActionModal
 }) => {
   return (
-    <Collapse in={displayTableOptions}>
+    <Collapse in={displayTableOptions} timeout={100}>
       <Row className="border-bottom g-0 ps-1 pe-1 pt-2 pb-2 folder-sticky-top bg-white">
         <Col className="ps-md-1">
           <span className="d-none d-md-inline-block">
