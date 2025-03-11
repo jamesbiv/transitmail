@@ -1,18 +1,5 @@
-import React, {
-  Dispatch,
-  Fragment,
-  FunctionComponent,
-  ReactNode,
-  useContext,
-  useState
-} from "react";
-import {
-  Button,
-  Accordion,
-  AccordionCollapse,
-  useAccordionButton,
-  AccordionContext
-} from "react-bootstrap";
+import React, { Fragment, FunctionComponent, useState } from "react";
+import { Button, Collapse } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFile,
@@ -23,38 +10,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmailAttachment } from "interfaces";
 import { MimeTools } from "lib";
-
-/**
- * @interface IAccordionHeaderProps
- */
-interface IAccordionHeaderProps {
-  children: ReactNode;
-  eventKey: string;
-  setAccordionCollapsed: Dispatch<boolean>;
-}
-
-/**
- * AccordionHeader
- * @param {IAccordionHeaderProps} properties
- * @returns FunctionComponent
- */
-const AccordionHeader: FunctionComponent<IAccordionHeaderProps> = ({
-  children,
-  eventKey,
-  setAccordionCollapsed
-}) => {
-  const { activeEventKey } = useContext(AccordionContext);
-
-  const decoratedOnClick = useAccordionButton(eventKey, () =>
-    setAccordionCollapsed(activeEventKey === eventKey)
-  );
-
-  return (
-    <div onClick={decoratedOnClick} className="pointer">
-      {children}
-    </div>
-  );
-};
 
 /**
  * @interface IViewAttachmentsProps
@@ -104,15 +59,18 @@ export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ atta
     document.body.removeChild(anchorElement);
   };
 
-  const [accordionCollapsed, setAccordionCollapsed] = useState<boolean>(true);
+  const [attachmentsCollapsed, setAttachmentsCollapsed] = useState<boolean>(false);
+
+  const toggleAttachmentsCollapsed: () => void = () =>
+    setAttachmentsCollapsed(!attachmentsCollapsed);
 
   return (
-    <Accordion defaultActiveKey="">
-      <AccordionHeader eventKey="0" setAccordionCollapsed={setAccordionCollapsed}>
-        <FontAwesomeIcon icon={accordionCollapsed ? faPlusSquare : faMinusSquare} /> Attachments
-      </AccordionHeader>
-      <AccordionCollapse eventKey="0" className="p-0 m-0 mt-3">
-        <Fragment>
+    <Fragment>
+      <div onClick={toggleAttachmentsCollapsed} className="pointer">
+        <FontAwesomeIcon icon={attachmentsCollapsed ? faPlusSquare : faMinusSquare} /> Attachments
+      </div>
+      <Collapse in={attachmentsCollapsed}>
+        <div className="p-0 m-0 mt-3">
           {attachments ? (
             attachments.map((attachment: IEmailAttachment, attachmentKey: number) => (
               <div
@@ -154,8 +112,8 @@ export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ atta
               <em>No attachments found</em>
             </p>
           )}
-        </Fragment>
-      </AccordionCollapse>
-    </Accordion>
+        </div>
+      </Collapse>
+    </Fragment>
   );
 };
