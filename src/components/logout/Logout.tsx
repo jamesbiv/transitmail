@@ -1,10 +1,10 @@
-import React, { useContext, useEffect } from "react";
+import React, { FunctionComponent, useContext, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Card, CardBody } from "react-bootstrap";
 import { DependenciesContext } from "contexts";
 
-export const Logout: React.FC = () => {
+export const Logout: FunctionComponent = () => {
   const { imapSocket, smtpSocket } = useContext(DependenciesContext);
 
   useEffect(() => {

@@ -1,13 +1,12 @@
-import React from "react";
+import React, { Fragment, FunctionComponent, ReactNode } from "react";
 import {
-  Accordion,
-  ListGroup,
   Button,
   Row,
   Col,
-  useAccordionButton,
   AccordionCollapse,
-  ListGroupItem
+  ListGroup,
+  ListGroupItem,
+  useAccordionButton
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,20 +19,52 @@ import {
 import { IFoldersEntry, IFoldersSubEntry } from "interfaces";
 import { FoldersEntryOptions, EFolderEntryActionType } from ".";
 
+/**
+ * @interface IAccordionListGroupItemProps
+ */
+interface IAccordionListGroupItemProps {
+  children: ReactNode;
+  eventKey: string;
+}
+
+/**
+ * AccordionListGroupItem
+ * @param {IAccordionListGroupItemProps} properties
+ * @returns FunctionComponent
+ */
+const AccordionListGroupItem: FunctionComponent<IAccordionListGroupItemProps> = ({
+  children,
+  eventKey
+}) => {
+  const accordionOnClick = useAccordionButton(eventKey);
+
+  return (
+    <ListGroupItem className="pointer" onClick={accordionOnClick}>
+      {children}
+    </ListGroupItem>
+  );
+};
+
+/**
+ * @interface IFoldersEntryProps
+ */
 interface IFoldersEntryProps {
   activeFolderId?: string;
   folderEntry: IFoldersEntry;
   toggleActionModal: (actionType: EFolderEntryActionType, actionFolderId?: string) => void;
   updateActiveKeyFolderId: (activeKey: string, folderId: string) => void;
-  toggleAccordionActiveKey: (eventKey: string) => void;
 }
 
-export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
+/**
+ * FoldersEntry
+ * @param {IFoldersEntryProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntry: FunctionComponent<IFoldersEntryProps> = ({
   folderEntry,
   activeFolderId,
   toggleActionModal,
-  updateActiveKeyFolderId,
-  toggleAccordionActiveKey
+  updateActiveKeyFolderId
 }) => {
   return !folderEntry.folders.length ? (
     <ListGroupItem
@@ -62,11 +93,8 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
       </Row>
     </ListGroupItem>
   ) : (
-    <React.Fragment>
-      <ListGroup.Item
-        onClick={() => toggleAccordionActiveKey(folderEntry.id.toString())}
-        className="pointer"
-      >
+    <Fragment>
+      <AccordionListGroupItem eventKey={folderEntry.id.toString()}>
         <Row>
           <Col xs={6} className="text-truncate">
             <FontAwesomeIcon
@@ -89,11 +117,11 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
             </Button>
           </Col>
         </Row>
-      </ListGroup.Item>
-      <AccordionCollapse eventKey={folderEntry.id.toString()} as={ListGroup.Item} className="p-0">
+      </AccordionListGroupItem>
+      <AccordionCollapse eventKey={folderEntry.id.toString()} as={ListGroupItem} className="p-0">
         <ListGroup variant="flush">
           {folderEntry.folders.map((folderSubEntry: IFoldersSubEntry) => (
-            <ListGroup.Item
+            <ListGroupItem
               key={folderSubEntry.id}
               onClick={() =>
                 updateActiveKeyFolderId("folder", `${folderEntry.ref}/${folderSubEntry.ref}`)
@@ -124,10 +152,10 @@ export const FoldersEntry: React.FC<IFoldersEntryProps> = ({
                   </Button>
                 </Col>
               </Row>
-            </ListGroup.Item>
+            </ListGroupItem>
           ))}
         </ListGroup>
       </AccordionCollapse>
-    </React.Fragment>
+    </Fragment>
   );
 };
