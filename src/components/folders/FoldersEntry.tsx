@@ -10,11 +10,10 @@ import {
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faFolder,
   faFolderOpen,
-  faPlus,
-  faMinus,
   faFolderPlus,
-  faFolder
+  faFolderMinus
 } from "@fortawesome/free-solid-svg-icons";
 import { IFoldersEntry, IFoldersSubEntry } from "interfaces";
 import { FoldersEntryOptions, EFolderEntryActionType } from ".";
@@ -98,10 +97,13 @@ export const FoldersEntry: FunctionComponent<IFoldersEntryProps> = ({
         <Row>
           <Col xs={6} className="text-truncate">
             <FontAwesomeIcon
-              className="me-2"
-              icon={activeFolderId && Number(activeFolderId) === folderEntry.id ? faMinus : faPlus}
-            />
-            <FontAwesomeIcon icon={faFolderPlus} /> {folderEntry.name}
+              icon={
+                activeFolderId && Number(activeFolderId) === folderEntry.id
+                  ? faFolderMinus
+                  : faFolderPlus
+              }
+            />{" "}
+            {folderEntry.name}
           </Col>
           <Col xs={6} className="text-end text-nowrap pe-1">
             <FoldersEntryOptions folderId={folderEntry.ref} toggleActionModal={toggleActionModal} />

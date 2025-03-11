@@ -67,7 +67,7 @@ export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ atta
   return (
     <Fragment>
       <div onClick={toggleAttachmentsCollapsed} className="pointer">
-        <FontAwesomeIcon icon={attachmentsCollapsed ? faPlusSquare : faMinusSquare} /> Attachments
+        <FontAwesomeIcon icon={attachmentsCollapsed ? faMinusSquare : faPlusSquare} /> Attachments
       </div>
       <Collapse in={attachmentsCollapsed} timeout={100}>
         <div className="p-0 m-0 mt-3">

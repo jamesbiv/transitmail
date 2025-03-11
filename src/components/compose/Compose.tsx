@@ -27,16 +27,16 @@ import {
   ComposeSecondaryEmail
 } from ".";
 import {
+  EComposePresetType,
+  ESmtpResponseStatus,
   IComposeRecipient,
   IComposeAttachment,
   ISmtpResponse,
   IComposePresets,
   ISettingsSecondaryEmail,
   IEmail,
-  EComposePresetType,
   IComposeSender
 } from "interfaces";
-import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { convertAttachments, downloadEmail, sendEmail } from "lib";
 

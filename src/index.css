@@ -67,12 +67,16 @@ pre {
 }
 
 .attachments {
-  width: 200px;
-  line-height: 10px;
+  width: 260px;
+
 }
-.attachments .btn {
-  line-height: 10px;
-  z-index: 1000000;
+
+.attachments .title {
+  width: 200px;
+}
+
+.attachments .buttons {
+  width: 40px
 }
 
 .text-indent {
