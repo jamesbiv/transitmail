@@ -50,7 +50,7 @@ import {
 } from "lib";
 
 /**
- * @nterface IViewActionsProps
+ * @interface IViewActionsProps
  */
 interface IViewActionsProps {
   actionUid?: number;
@@ -73,14 +73,14 @@ export enum EViewActionType {
 }
 
 /**
- * @nterface IViewActionComponents
+ * @interface IViewActionComponents
  */
 interface IViewActionComponents {
   [key: number]: IViewActionComponent;
 }
 
 /**
- * @nterface IViewActionComponent
+ * @interface IViewActionComponent
  */
 interface IViewActionComponent {
   label: string;
