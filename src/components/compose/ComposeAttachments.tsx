@@ -45,7 +45,7 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
           filename: file.name,
           size: file.size,
           mimeType: file.type,
-          data: reader.result
+          data: reader.result ?? undefined
         });
 
         if (files?.length === count) {

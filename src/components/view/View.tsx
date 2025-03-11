@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Card, ProgressBar, Alert } from "react-bootstrap";
+import React, { Fragment, FunctionComponent, useContext, useEffect, useState } from "react";
+import { Card, ProgressBar, Alert, CardBody, CardHeader } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEnvelopeOpen,
@@ -18,7 +18,11 @@ import {
 import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
 import { initiateProgressBar } from "lib";
 
-export const View: React.FC = () => {
+/**
+ * View
+ * @returns FunctionComponent
+ */
+export const View: FunctionComponent = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
 
   const [email, setEmail] = useState<IEmail | undefined>(undefined);
@@ -132,37 +136,35 @@ export const View: React.FC = () => {
 
   return !showEmail ? (
     <Card className="mt-0 mt-sm-3">
-      <Card.Body>
-        <React.Fragment>
-          <ProgressBar className="mb-2" now={progressBarNow} />
-        </React.Fragment>
-      </Card.Body>
+      <CardBody>
+        <ProgressBar className="mb-2" now={progressBarNow} />
+      </CardBody>
     </Card>
   ) : (
-    <React.Fragment>
+    <Fragment>
       <Card className="mt-0 mt-sm-3 mb-3">
-        <Card.Header>
+        <CardHeader>
           <h4 className="p-0 m-0 text-truncate">
             <FontAwesomeIcon icon={faEnvelopeOpen} />{" "}
             {email?.subject?.length ? email.subject : "(no subject)"}
           </h4>
-        </Card.Header>
-        <Card.Header>
+        </CardHeader>
+        <CardHeader>
           <ViewHeader
             toggleActionModal={toggleActionModal}
             replyToEmail={replyToEmail}
             forwardEmail={forwardEmail}
             email={email!}
           />
-        </Card.Header>
-        <Card.Body
+        </CardHeader>
+        <CardBody
           className={`border-bottom pt-2 pb-2 ps-3 pe-3 ${
             !email?.attachments?.length ? "d-none" : "d-block"
           }`}
         >
           <ViewAttachments attachments={email!.attachments} />
-        </Card.Body>
-        <Card.Body>
+        </CardBody>
+        <CardBody>
           <Alert
             className={!message.length ? "d-none" : "d-block"}
             variant={
@@ -200,7 +202,7 @@ export const View: React.FC = () => {
           ) : (
             <pre>{email?.bodyText}</pre>
           )}
-        </Card.Body>
+        </CardBody>
       </Card>
       <ViewActions
         actionUid={actionUid}
@@ -210,6 +212,6 @@ export const View: React.FC = () => {
         showActionModal={showActionModal}
         onHide={() => setShowActionModal(false)}
       />
-    </React.Fragment>
+    </Fragment>
   );
 };

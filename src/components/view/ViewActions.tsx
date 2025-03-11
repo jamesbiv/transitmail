@@ -1,5 +1,26 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Alert, Form, Modal, Button } from "react-bootstrap";
+import React, {
+  ChangeEvent,
+  createElement,
+  Dispatch,
+  Fragment,
+  FunctionComponent,
+  useContext,
+  useEffect,
+  useState
+} from "react";
+import {
+  Alert,
+  Modal,
+  Button,
+  ModalFooter,
+  ModalBody,
+  ModalHeader,
+  ModalTitle,
+  FormCheck,
+  FormGroup,
+  FormControl,
+  FormLabel
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faExclamationTriangle,
@@ -28,6 +49,9 @@ import {
   setFlagDefaults
 } from "lib";
 
+/**
+ * @nterface IViewActionsProps
+ */
 interface IViewActionsProps {
   actionUid?: number;
   actionType: EViewActionType;
@@ -37,6 +61,9 @@ interface IViewActionsProps {
   onHide: () => void;
 }
 
+/**
+ * @enum EViewActionType
+ */
 export enum EViewActionType {
   MOVE = 0,
   COPY = 1,
@@ -45,18 +72,29 @@ export enum EViewActionType {
   DELETE = 4
 }
 
+/**
+ * @nterface IViewActionComponents
+ */
 interface IViewActionComponents {
   [key: number]: IViewActionComponent;
 }
 
+/**
+ * @nterface IViewActionComponent
+ */
 interface IViewActionComponent {
   label: string;
   icon: IconDefinition;
-  element: React.FC<IViewActionProps>;
+  element: FunctionComponent<IViewActionProps>;
   hideSubmit?: boolean;
 }
 
-export const ViewActions: React.FC<IViewActionsProps> = ({
+/**
+ * ViewActions
+ * @param {IViewActionsProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewActions: FunctionComponent<IViewActionsProps> = ({
   actionUid,
   actionType,
   email,
@@ -114,13 +152,13 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <Modal.Header closeButton onClick={() => onHide()}>
-        <Modal.Title id="contained-modal-title-vcenter">
+      <ModalHeader closeButton onClick={() => onHide()}>
+        <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={ViewAction[actionType].icon} /> {ViewAction[actionType].label}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {React.createElement(ViewAction[actionType].element, {
+        </ModalTitle>
+      </ModalHeader>
+      <ModalBody>
+        {createElement(ViewAction[actionType].element, {
           actionUid,
           folders,
           email,
@@ -129,8 +167,8 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
           changeSubmit,
           successfulSubmit
         })}
-      </Modal.Body>
-      <Modal.Footer>
+      </ModalBody>
+      <ModalFooter>
         <Button
           className={`${ViewAction[actionType].hideSubmit && "d-none"}`}
           onClick={() => changeSubmit(true)}
@@ -143,22 +181,30 @@ export const ViewActions: React.FC<IViewActionsProps> = ({
         >
           Close
         </Button>
-      </Modal.Footer>
+      </ModalFooter>
     </Modal>
   );
 };
 
+/**
+ * @interface IViewActionProps
+ */
 interface IViewActionProps {
   actionUid?: number;
   folders: IFoldersEntry[];
   email: IEmail;
   emailFlags: IEmailFlags;
   submit: boolean;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  changeSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
-export const ViewActionMove: React.FC<IViewActionProps> = ({
+/**
+ * ViewActionMove
+ * @param {IViewActionProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewActionMove: FunctionComponent<IViewActionProps> = ({
   actionUid,
   folders,
   submit,
@@ -185,18 +231,18 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
         Copy folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
         }
       >
         {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
+          <Fragment key={folder.id}>
             <option key={folder.id} value={folder.name}>
               {folder.name}
             </option>
@@ -205,14 +251,19 @@ export const ViewActionMove: React.FC<IViewActionProps> = ({
                 &nbsp;{subFolder.name}
               </option>
             ))}
-          </React.Fragment>
+          </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
-export const ViewActionCopy: React.FC<IViewActionProps> = ({
+/**
+ * ViewActionCopy
+ * @param {IViewActionProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewActionCopy: FunctionComponent<IViewActionProps> = ({
   actionUid,
   folders,
   submit,
@@ -239,18 +290,18 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
         Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
         }
       >
         {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
+          <Fragment key={folder.id}>
             <option key={folder.id} value={folder.name}>
               {folder.name}
             </option>
@@ -259,14 +310,19 @@ export const ViewActionCopy: React.FC<IViewActionProps> = ({
                 &nbsp;{subFolder.name}
               </option>
             ))}
-          </React.Fragment>
+          </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
-export const ViewActionFlag: React.FC<IViewActionProps> = ({
+/**
+ * ViewActionFlag
+ * @param {IViewActionProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewActionFlag: FunctionComponent<IViewActionProps> = ({
   actionUid,
   emailFlags,
   submit,
@@ -293,11 +349,11 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
   };
 
   return (
-    <Form.Group controlId="formEmailAutoLogin">
+    <FormGroup controlId="formEmailAutoLogin">
       <ul>
         {flags.map((flag: IEmailFlagType, flagIndex: number) => (
           <li key={flagIndex}>
-            <Form.Check
+            <FormCheck
               type="switch"
               id={flags[flagIndex].name}
               label={flags[flagIndex].name}
@@ -314,11 +370,16 @@ export const ViewActionFlag: React.FC<IViewActionProps> = ({
           </li>
         ))}
       </ul>
-    </Form.Group>
+    </FormGroup>
   );
 };
 
-export const ViewActionView: React.FC<IViewActionProps> = ({ email }) => {
+/**
+ * ViewActionView
+ * @param {IViewActionProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewActionView: FunctionComponent<IViewActionProps> = ({ email }) => {
   return (
     <div className="overflow-auto" style={{ height: 300 }}>
       <pre>{email.emailRaw}</pre>
@@ -326,7 +387,12 @@ export const ViewActionView: React.FC<IViewActionProps> = ({ email }) => {
   );
 };
 
-export const ViewActionDelete: React.FC<IViewActionProps> = ({
+/**
+ * ViewActionDelete
+ * @param {IViewActionProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewActionDelete: FunctionComponent<IViewActionProps> = ({
   actionUid,
   submit,
   changeSubmit,

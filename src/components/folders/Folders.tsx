@@ -14,6 +14,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFolderOpen, faPlus, faSync } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
+import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
 
 export const Folders: React.FC = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
@@ -113,7 +114,7 @@ export const Folders: React.FC = () => {
         />
         <Accordion
           activeKey={displayAccordionActiveKey}
-          onSelect={(id: string | string[] | null | undefined) =>
+          onSelect={(id: AccordionEventKey) =>
             setActiveFolderId((id ?? undefined) as string | undefined)
           }
           className={!folders?.length ? "d-none" : ""}

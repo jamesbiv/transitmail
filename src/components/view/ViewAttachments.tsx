@@ -1,5 +1,18 @@
-import React, { useState } from "react";
-import { Button, Accordion, AccordionButton, AccordionCollapse } from "react-bootstrap";
+import React, {
+  Dispatch,
+  Fragment,
+  FunctionComponent,
+  ReactNode,
+  useContext,
+  useState
+} from "react";
+import {
+  Button,
+  Accordion,
+  AccordionCollapse,
+  useAccordionButton,
+  AccordionContext
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFile,
@@ -11,11 +24,51 @@ import {
 import { IEmailAttachment } from "interfaces";
 import { MimeTools } from "lib";
 
+/**
+ * @interface IAccordionHeaderProps
+ */
+interface IAccordionHeaderProps {
+  children: ReactNode;
+  eventKey: string;
+  setAccordionCollapsed: Dispatch<boolean>;
+}
+
+/**
+ * AccordionHeader
+ * @param {IAccordionHeaderProps} properties
+ * @returns FunctionComponent
+ */
+const AccordionHeader: FunctionComponent<IAccordionHeaderProps> = ({
+  children,
+  eventKey,
+  setAccordionCollapsed
+}) => {
+  const { activeEventKey } = useContext(AccordionContext);
+
+  const decoratedOnClick = useAccordionButton(eventKey, () =>
+    setAccordionCollapsed(activeEventKey === eventKey)
+  );
+
+  return (
+    <div onClick={decoratedOnClick} className="pointer">
+      {children}
+    </div>
+  );
+};
+
+/**
+ * @interface IViewAttachmentsProps
+ */
 interface IViewAttachmentsProps {
   attachments?: IEmailAttachment[];
 }
 
-export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }) => {
+/**
+ * ViewAttachments
+ * @param {IViewAttachmentsProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ attachments }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
@@ -51,24 +104,15 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }
     document.body.removeChild(anchorElement);
   };
 
-  const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(null);
+  const [accordionCollapsed, setAccordionCollapsed] = useState<boolean>(true);
 
   return (
-    <Accordion
-      onSelect={(eventKey: string | string[] | null | undefined) =>
-        setAttachmentEventKey(eventKey as null | string)
-      }
-    >
-      <AccordionButton
-        className="text-dark font-weight-bold text-decoration-none p-0 m-0"
-        as={Button}
-        variant="link"
-      >
-        <FontAwesomeIcon icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare} />{" "}
-        Attachments
-      </AccordionButton>
-      <AccordionCollapse eventKey="0" className="p-0 m-0 mt-2">
-        <>
+    <Accordion defaultActiveKey="">
+      <AccordionHeader eventKey="0" setAccordionCollapsed={setAccordionCollapsed}>
+        <FontAwesomeIcon icon={accordionCollapsed ? faPlusSquare : faMinusSquare} /> Attachments
+      </AccordionHeader>
+      <AccordionCollapse eventKey="0" className="p-0 m-0 mt-3">
+        <Fragment>
           {attachments ? (
             attachments.map((attachment: IEmailAttachment, attachmentKey: number) => (
               <div
@@ -110,7 +154,7 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }
               <em>No attachments found</em>
             </p>
           )}
-        </>
+        </Fragment>
       </AccordionCollapse>
     </Accordion>
   );
