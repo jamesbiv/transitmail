@@ -15,7 +15,7 @@ The key features of Transitmail as follows:
 <li>Easy to use, setup and deploy</li>
 </ul>
 
-The benefits of TransitMail are the combination of these services, SSL certificate negoitation happens at the WebSocket layer. Meaning that SMTPS and IMAP-SSL are not required, thereby, minimising complex mail server configurations, while at the same time maintaining secure communications.
+The benefits of Transitmail are the combination of these services, SSL certificate negoitation happens at the WebSocket layer. Meaning that SMTPS and IMAP-SSL are not required, thereby, minimising complex mail server configurations, while at the same time maintaining secure communications.
 
 # Transitmail Development Server
 
@@ -29,7 +29,6 @@ This configuration will give you all the tools needed to test and run a Transitm
 
 ```
 git clone https://github.com/jamesbiv/transitmail
-
 ```
 
 ### Run yarn install
@@ -58,7 +57,7 @@ yarn test
 
 ## Licence
 
-This project is licenced under GPL-2.0
+This project is licensed under GPL-2.0
 
 ## Further Information
 
