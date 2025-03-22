@@ -1,4 +1,4 @@
-import React, { FormEvent, useContext, useState } from "react";
+import React, { FormEvent, FunctionComponent, useContext, useState } from "react";
 import { SettingsForm, SettingsValidation, validationConditions } from ".";
 import { Row, Col, Card, Form, Button, CardHeader, CardBody, CardFooter } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,12 +15,19 @@ import {
 } from "interfaces";
 import { DependenciesContext } from "contexts";
 
+/**
+ * @interface ISettingsValidation
+ */
 interface ISettingsValidation {
   message: string;
   type: string;
 }
 
-export const Settings: React.FC = () => {
+/**
+ * Settings
+ * @returns FunctionComponent
+ */
+export const Settings: FunctionComponent = () => {
   const { imapHelper, imapSocket, smtpSocket, secureStorage, stateManager } =
     useContext(DependenciesContext);
 
@@ -66,8 +73,6 @@ export const Settings: React.FC = () => {
     secureStorage.setSettings(settings as Required<ISettings>);
 
     await createFolders(settings.folderSettings);
-
-    return;
   };
 
   const processValidationConditions = (): ISettingsErrors => {
@@ -134,7 +139,7 @@ export const Settings: React.FC = () => {
     smtpSocket.smtpConnect(false);
 
     let imapVerfied: boolean = false;
-    let smtpVerfied: boolean = true;
+    let smtpVerfied: boolean = false;
 
     const imapAuthroiseResponse: IImapResponse = await imapSocket.imapAuthorise();
 

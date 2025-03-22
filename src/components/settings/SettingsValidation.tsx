@@ -1,33 +1,49 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faExclamationTriangle, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faExclamationTriangle,
+  faTimes,
+  IconDefinition
+} from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * @interface ISettingsValidationProps
+ */
 interface ISettingsValidationProps {
   validation?: { message: string; type: string };
 }
 
-export const SettingsValidation: React.FC<ISettingsValidationProps> = ({ validation }) => {
+/**
+ * SettingsValidation
+ * @param {ISettingsValidationProps} properties
+ * @returns FunctionComponent
+ */
+export const SettingsValidation: FunctionComponent<ISettingsValidationProps> = ({ validation }) => {
+  let alertVariant: string;
+  let alertIcon: IconDefinition;
+
+  switch (validation?.type) {
+    case "info":
+      alertVariant = "success";
+      alertIcon = faCheck;
+      break;
+
+    case "warning":
+      alertVariant = "warning";
+      alertIcon = faExclamationTriangle;
+      break;
+
+    default:
+      alertVariant = "danger";
+      alertIcon = faTimes;
+      break;
+  }
+
   return (
-    <Alert
-      className={!validation ? "d-none" : "d-block"}
-      variant={
-        validation?.type === "info"
-          ? "success"
-          : validation?.type === "warning"
-            ? "warning"
-            : "danger"
-      }
-    >
-      <FontAwesomeIcon
-        icon={
-          validation?.type === "info"
-            ? faCheck
-            : validation?.type === "warning"
-              ? faExclamationTriangle
-              : faTimes
-        }
-      />{" "}
+    <Alert className={!validation ? "d-none" : "d-block"} variant={alertVariant}>
+      <FontAwesomeIcon icon={alertIcon} />{" "}
       <span
         dangerouslySetInnerHTML={{
           __html: validation?.message ?? ""
