@@ -3,8 +3,7 @@ import { ISettingsValidationCondition } from "interfaces";
 /**
  * @constant {RegExp} emailRegex
  */
-const emailRegex: RegExp =
-  /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * @constant {ISettingsValidationCondition[]} validationConditions
@@ -31,22 +30,22 @@ export const validationConditions: ISettingsValidationCondition[] = [
   {
     field: "imapHost",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an incomming mail host"
+    message: "Please specify an Incoming mail host"
   },
   {
     field: "imapPort",
     constraint: (value: unknown) => !isNaN(value as number),
-    message: "Please specify an incomming mail port"
+    message: "Please specify an Incoming mail port"
   },
   {
     field: "imapUsername",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an incomming mail username"
+    message: "Please specify an Incoming mail username"
   },
   {
     field: "imapPassword",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an incomming mail password"
+    message: "Please specify an Incoming mail password"
   },
   {
     field: "smtpHost",

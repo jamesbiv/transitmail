@@ -77,12 +77,14 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
   const updateSecondaryEmails: (secondaryEmails?: ISettingsSecondaryEmail[]) => void = (
     secondaryEmails?: ISettingsSecondaryEmail[]
   ): void => {
-    settings.secondaryEmails = secondaryEmails;
+    const updatedSettingsEmails: ISettings = { ...settings, secondaryEmails };
+
+    setSettings(updatedSettingsEmails);
   };
 
   return (
     <Fragment>
-      <FormGroup controlId="formDisplayName">
+      <FormGroup controlId="formDisplayName" className="mb-3">
         <FormLabel>
           Display name <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </FormLabel>
@@ -100,7 +102,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
         </FormText>
         <FormControl.Feedback type="invalid">{errorMessage?.name}</FormControl.Feedback>
       </FormGroup>
-      <FormGroup controlId="formEmailAddress">
+      <FormGroup controlId="formEmailAddress" className="mb-3">
         <FormLabel>
           Email address <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </FormLabel>
@@ -118,7 +120,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
         </FormText>
         <FormControl.Feedback type="invalid">{errorMessage?.email}</FormControl.Feedback>
       </FormGroup>
-      <FormGroup controlId="formEmailSignature">
+      <FormGroup controlId="formEmailSignature" className="mb-3">
         <FormLabel>Email signature</FormLabel>
         <FormControl
           as="textarea"
@@ -154,16 +156,16 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
         <Row>
           <Col md={12} lg={6}>
             <Card>
-              <CardHeader>Incomming settings (IMAP)</CardHeader>
+              <CardHeader>Incoming settings (IMAP)</CardHeader>
               <CardBody>
-                <FormGroup controlId="formIncommingHost">
+                <FormGroup controlId="formIncomingHost" className="mb-3">
                   <FormLabel>
-                    Incomming mail host{" "}
+                    Incoming mail host{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </FormLabel>
                   <FormControl
                     type="text"
-                    placeholder="Incomming mail host"
+                    placeholder="Incoming mail host"
                     isInvalid={!!errorMessage?.imapHost}
                     defaultValue={settings.imapHost}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -174,14 +176,14 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                     {errorMessage?.imapHost}
                   </FormControl.Feedback>
                 </FormGroup>
-                <FormGroup controlId="formIncommingPort">
+                <FormGroup controlId="formIncomingPort" className="mb-3">
                   <FormLabel>
-                    Incomming mail port{" "}
+                    Incoming mail port{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </FormLabel>
                   <FormControl
                     type="text"
-                    placeholder="Incomming mail port"
+                    placeholder="Incoming mail port"
                     isInvalid={!!errorMessage?.imapPort}
                     defaultValue={settings.imapPort}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -192,14 +194,14 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                     {errorMessage?.imapPort}
                   </FormControl.Feedback>
                 </FormGroup>
-                <FormGroup controlId="formIncommingUser">
+                <FormGroup controlId="formIncomingUser" className="mb-3">
                   <FormLabel>
-                    Incomming mail username{" "}
+                    Incoming mail username{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </FormLabel>
                   <FormControl
                     type="text"
-                    placeholder="Incomming mail username"
+                    placeholder="Incoming mail username"
                     isInvalid={!!errorMessage?.imapUsername}
                     defaultValue={settings.imapUsername}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -210,14 +212,14 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                     {errorMessage?.imapUsername}
                   </FormControl.Feedback>
                 </FormGroup>
-                <FormGroup controlId="formIncommingPassword">
+                <FormGroup controlId="formIncomingPassword">
                   <FormLabel>
-                    Incomming mail password{" "}
+                    Incoming mail password{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
                   </FormLabel>
                   <FormControl
                     type="password"
-                    placeholder="Incomming mail password"
+                    placeholder="Incoming mail password"
                     isInvalid={!!errorMessage?.imapPassword}
                     defaultValue={settings.imapPassword}
                     onChange={(event: ChangeEvent<HTMLInputElement>) =>
@@ -235,7 +237,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
             <Card>
               <CardHeader>Outgoing settings (SMTP)</CardHeader>
               <CardBody>
-                <FormGroup controlId="formOutgoingHost">
+                <FormGroup controlId="formOutgoingHost" className="mb-3">
                   <FormLabel>
                     Outgoing mail host{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -253,7 +255,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                     {errorMessage?.smtpHost}
                   </FormControl.Feedback>
                 </FormGroup>
-                <FormGroup controlId="formOutgoingPort">
+                <FormGroup controlId="formOutgoingPort" className="mb-3">
                   <FormLabel>
                     Outgoing mail port{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -271,7 +273,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                     {errorMessage?.smtpPort}
                   </FormControl.Feedback>
                 </FormGroup>
-                <FormGroup controlId="formOutgoingUser">
+                <FormGroup controlId="formOutgoingUser" className="mb-3">
                   <FormLabel>
                     Outgoing mail username{" "}
                     <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />

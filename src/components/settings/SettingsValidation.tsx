@@ -25,9 +25,9 @@ export const SettingsValidation: FunctionComponent<ISettingsValidationProps> = (
   let alertIcon: IconDefinition;
 
   switch (validation?.type) {
-    case "info":
-      alertVariant = "success";
-      alertIcon = faCheck;
+    case "error":
+      alertVariant = "danger";
+      alertIcon = faTimes;
       break;
 
     case "warning":
@@ -35,20 +35,17 @@ export const SettingsValidation: FunctionComponent<ISettingsValidationProps> = (
       alertIcon = faExclamationTriangle;
       break;
 
+    case "info":
     default:
-      alertVariant = "danger";
-      alertIcon = faTimes;
+      alertVariant = "success";
+      alertIcon = faCheck;
       break;
   }
 
   return (
     <Alert className={!validation ? "d-none" : "d-block"} variant={alertVariant}>
       <FontAwesomeIcon icon={alertIcon} />{" "}
-      <span
-        dangerouslySetInnerHTML={{
-          __html: validation?.message ?? ""
-        }}
-      />
+      <span dangerouslySetInnerHTML={{ __html: validation?.message ?? "" }} />
     </Alert>
   );
 };

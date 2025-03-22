@@ -216,7 +216,7 @@ export const Settings: FunctionComponent = () => {
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
           event.preventDefault();
 
-          const containerElement = document.getElementById("container-main") as HTMLElement;
+          const containerElement: HTMLElement = document.getElementById("container-main")!;
 
           containerElement.scroll(0, 0);
 

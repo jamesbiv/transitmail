@@ -40,7 +40,7 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
   secondaryEmails,
   updateSecondaryEmails
 }) => {
-  const [showModal, setShowModal] = useState<boolean>(false);
+  const [showSecondaryEmailModal, setShowSecondaryEmailModal] = useState<boolean>(false);
 
   const [secondaryEmail, setSecondaryEmail] = useState<ISettingsSecondaryEmail>({
     name: "",
@@ -58,8 +58,7 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
     });
 
     setSecondaryEmailKey(undefined);
-
-    setShowModal(true);
+    setShowSecondaryEmailModal(true);
   };
 
   const editSecondaryEmail: (emailKey: number) => void = (emailKey) => {
@@ -70,7 +69,7 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
     setSecondaryEmail(secondaryEmails?.[emailKey]);
     setSecondaryEmailKey(emailKey);
 
-    setShowModal(true);
+    setShowSecondaryEmailModal(true);
   };
 
   const updateSecondaryEmail: () => void = () => {
@@ -107,8 +106,7 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
         <CardHeader>
           <Row>
             <Col xs={12} sm={6}>
-              <FontAwesomeIcon className="me-2" icon={faEnvelope} />
-              Secondary email accounts
+              <FontAwesomeIcon className="me-2" icon={faEnvelope} /> Secondary email accounts
             </Col>
             <Col className="text-end text-sm-end text-nowrap mt-3 mt-sm-0" xs={12} sm={6}>
               <Button
@@ -159,8 +157,8 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
         secondaryEmailKey={secondaryEmailKey}
         updateSecondaryEmail={updateSecondaryEmail}
         updateSecondaryEmailSetting={updateSecondaryEmailSetting}
-        showModal={showModal}
-        onHide={() => setShowModal(false)}
+        showModal={showSecondaryEmailModal}
+        onHide={() => setShowSecondaryEmailModal(false)}
       />
     </Fragment>
   );
@@ -197,26 +195,27 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
     undefined
   );
 
-  const submitSecondaryEmail = async () => {
-    const emailRegex: RegExp =
-      /^(([^<>()\\.,;:\s@"]+(\.[^<>()\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const submitSecondaryEmail: () => void = () => {
+    const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     const errors: ISettingsErrors = {};
 
     if (secondaryEmail.name === "") {
       errors.name = "Please specify a valid display name";
     }
+
     if (!emailRegex.test(secondaryEmail.email) || secondaryEmail.email === "") {
       errors.email = "Please specify a valid email address";
     }
+
     if (secondaryEmail.signature?.length > 1000) {
       errors.signature = "Signature must have a maximum of 1000 characters";
     }
 
     if (Object.keys(errors).length) {
-      const errorMessages = `<ul> ${Object.keys(errors).reduce(
+      const errorMessages = `<ul>${Object.keys(errors).reduce(
         (errorResponse: string, key: string): string => {
-          errorResponse += "<li>" + errors[key] + "</li>";
+          errorResponse += `<li>${errors[key] as string}</li>`;
 
           return errorResponse;
         },
@@ -237,9 +236,15 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
     onHide();
   };
 
+  const closeSecondaryEmailModal: () => void = () => {
+    setValidation(undefined);
+
+    onHide();
+  };
+
   return (
     <Modal show={showModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <ModalHeader closeButton onClick={() => onHide()}>
+      <ModalHeader closeButton onClick={() => closeSecondaryEmailModal()}>
         <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={faEnvelope} />{" "}
           {secondaryEmailKey ? "Edit secondary email" : "Add new secondary email"}
@@ -247,7 +252,7 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
       </ModalHeader>
       <ModalBody>
         <SettingsValidation validation={validation} />
-        <FormGroup controlId="formSecondaryEmailDisplayName">
+        <FormGroup controlId="formSecondaryEmailDisplayName" className="mb-3">
           <FormLabel>
             Display name{" "}
             <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -265,7 +270,7 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
           </FormText>
           <FormControl.Feedback type="invalid"> </FormControl.Feedback>
         </FormGroup>
-        <FormGroup controlId="formSecondaryEmailEmailAddress">
+        <FormGroup controlId="formSecondaryEmailEmailAddress" className="mb-3">
           <FormLabel>
             Email address{" "}
             <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -299,7 +304,7 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
       </ModalBody>
       <ModalFooter>
         <Button onClick={() => submitSecondaryEmail()}>Ok</Button>
-        <Button onClick={() => onHide()}>Close</Button>
+        <Button onClick={() => closeSecondaryEmailModal()}>Close</Button>
       </ModalFooter>
     </Modal>
   );
