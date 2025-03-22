@@ -11,6 +11,9 @@
 # production
 /build
 
+# sonar
+/.scannerwork
+
 # misc
 .DS_Store
 .env.local
