@@ -27,16 +27,16 @@ import {
   ComposeSecondaryEmail
 } from ".";
 import {
+  EComposePresetType,
+  ESmtpResponseStatus,
   IComposeRecipient,
   IComposeAttachment,
   ISmtpResponse,
   IComposePresets,
   ISettingsSecondaryEmail,
   IEmail,
-  EComposePresetType,
   IComposeSender
 } from "interfaces";
-import { ESmtpResponseStatus } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { convertAttachments, downloadEmail, sendEmail } from "lib";
 
@@ -205,7 +205,7 @@ export const Compose: FunctionComponent = () => {
   return !showComposer ? (
     <Card className="mt-0 mt-sm-3">
       <CardBody>
-        <ProgressBar className="mb-2" now={progressBarNow} />
+        <ProgressBar now={progressBarNow} />
       </CardBody>
     </Card>
   ) : (

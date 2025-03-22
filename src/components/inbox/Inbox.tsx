@@ -1,8 +1,8 @@
+import React, { FunctionComponent, useContext } from "react";
 import { DependenciesContext } from "contexts";
-import React, { useContext } from "react";
 import { Folder } from "../folder";
 
-export const Inbox: React.FC = () => {
+export const Inbox: FunctionComponent = () => {
   const { stateManager } = useContext(DependenciesContext);
 
   stateManager.setFolderId("INBOX");

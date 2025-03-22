@@ -1,5 +1,24 @@
-import React, { useEffect, useState } from "react";
-import { Alert, Form, Modal, Button } from "react-bootstrap";
+import React, {
+  ChangeEvent,
+  createElement,
+  Dispatch,
+  Fragment,
+  FunctionComponent,
+  useEffect,
+  useState
+} from "react";
+import {
+  Alert,
+  Modal,
+  Button,
+  ModalFooter,
+  ModalBody,
+  ModalHeader,
+  ModalTitle,
+  FormGroup,
+  FormLabel,
+  FormControl
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faExclamationTriangle,
@@ -14,6 +33,9 @@ import {
 import { IFoldersEntry, EImapResponseStatus, IImapResponse } from "interfaces";
 import { ImapSocket } from "classes";
 
+/**
+ * @interface IFoldersEntryActionsProps
+ */
 interface IFoldersEntryActionsProps {
   folderId?: string;
   folders?: IFoldersEntry[];
@@ -24,6 +46,9 @@ interface IFoldersEntryActionsProps {
   onHide: () => void;
 }
 
+/**
+ * @enum EFolderEntryActionType
+ */
 export enum EFolderEntryActionType {
   ADD = 0,
   COPY = 1,
@@ -32,17 +57,28 @@ export enum EFolderEntryActionType {
   DELETE = 4
 }
 
+/**
+ * @interface IFolderEntryActionComponents
+ */
 interface IFolderEntryActionComponents {
   [key: number]: IFolderEntryActionComponent;
 }
 
+/**
+ * @interface IFolderEntryActionComponent
+ */
 interface IFolderEntryActionComponent {
   label: string;
   icon: IconDefinition;
-  element: React.FC<IFoldersEntryActionProps>;
+  element: FunctionComponent<IFoldersEntryActionProps>;
 }
 
-export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
+/**
+ * FoldersEntryActions
+ * @param {IFoldersEntryActionsProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntryActions: FunctionComponent<IFoldersEntryActionsProps> = ({
   folderId,
   folders,
   actionType,
@@ -88,14 +124,14 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <Modal.Header closeButton onClick={() => onHide()}>
-        <Modal.Title id="contained-modal-title-vcenter">
+      <ModalHeader closeButton onClick={() => onHide()}>
+        <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={folderEntryAction[actionType].icon} />{" "}
           {folderEntryAction[actionType].label}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {React.createElement(folderEntryAction[actionType].element, {
+        </ModalTitle>
+      </ModalHeader>
+      <ModalBody>
+        {createElement(folderEntryAction[actionType].element, {
           folderId,
           folders,
           submit,
@@ -103,25 +139,33 @@ export const FoldersEntryActions: React.FC<IFoldersEntryActionsProps> = ({
           changeSubmit,
           successfulSubmit
         })}
-      </Modal.Body>
-      <Modal.Footer>
+      </ModalBody>
+      <ModalFooter>
         <Button onClick={() => changeSubmit(true)}>Ok</Button>
         <Button onClick={() => onHide()}>Close</Button>
-      </Modal.Footer>
+      </ModalFooter>
     </Modal>
   );
 };
 
+/**
+ * @interface IFoldersEntryActionProps
+ */
 interface IFoldersEntryActionProps {
   folderId?: string;
   folders?: IFoldersEntry[];
   submit: boolean;
   imapSocket: ImapSocket;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  changeSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
-export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
+/**
+ * FoldersEntryActionAdd
+ * @param {IFoldersEntryActionProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionProps> = ({
   folders,
   submit,
   imapSocket,
@@ -151,45 +195,46 @@ export const FoldersEntryActionAdd: React.FC<IFoldersEntryActionProps> = ({
   };
 
   return (
-    <React.Fragment>
-      <Form.Group controlId="formDisplayName">
-        <Form.Label>
+    <Fragment>
+      <FormGroup controlId="formDisplayName">
+        <FormLabel>
           Add new folder{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-        </Form.Label>
-        <Form.Control
+        </FormLabel>
+        <FormControl
           type="text"
           placeholder="Enter new folder name"
           defaultValue={folderName}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            setFolderName(event.target.value)
-          }
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setFolderName(event.target.value)}
         />
-      </Form.Group>
-      <Form.Group controlId="formDisplayName">
-        <Form.Label>
+      </FormGroup>
+      <FormGroup controlId="formDisplayName">
+        <FormLabel>
           Add to a sub folder{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-        </Form.Label>
-        <Form.Control
+        </FormLabel>
+        <FormControl
           as="select"
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            setSubFolder(event.target.value)
-          }
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setSubFolder(event.target.value)}
         >
           <option>(root)</option>
           {folders?.map((folder: IFoldersEntry) => (
-            <React.Fragment key={folder.id}>
+            <Fragment key={folder.id}>
               <option key={folder.id}>{folder.name}</option>
-            </React.Fragment>
+            </Fragment>
           ))}
-        </Form.Control>
-      </Form.Group>
-    </React.Fragment>
+        </FormControl>
+      </FormGroup>
+    </Fragment>
   );
 };
 
-export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
+/**
+ * FoldersEntryActionCopy
+ * @param {IFoldersEntryActionProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionProps> = ({
   folderId,
   folders,
   submit,
@@ -236,45 +281,48 @@ export const FoldersEntryActionCopy: React.FC<IFoldersEntryActionProps> = ({
   };
 
   return (
-    <React.Fragment>
-      <Form.Group controlId="formDisplayName">
-        <Form.Label>
+    <Fragment>
+      <FormGroup controlId="formDisplayName">
+        <FormLabel>
           Copy folder as{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-        </Form.Label>
-        <Form.Control
+        </FormLabel>
+        <FormControl
           type="text"
           placeholder="Enter new folder name"
           defaultValue={newFolderName}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-            setNewFolderName(event.target.value)
-          }
+          onChange={(event: ChangeEvent<HTMLInputElement>) => setNewFolderName(event.target.value)}
         />
-      </Form.Group>
-      <Form.Group controlId="formDisplayName">
-        <Form.Label>
+      </FormGroup>
+      <FormGroup controlId="formDisplayName">
+        <FormLabel>
           Copy folder to{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-        </Form.Label>
-        <Form.Control
+        </FormLabel>
+        <FormControl
           as="select"
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
             setDestinationSubFolder(event.target.value)
           }
         >
           <option>(root)</option>
           {folders?.map((folder: IFoldersEntry) => (
-            <React.Fragment key={folder.id}>
+            <Fragment key={folder.id}>
               <option key={folder.id}>{folder.name}</option>
-            </React.Fragment>
+            </Fragment>
           ))}
-        </Form.Control>
-      </Form.Group>
-    </React.Fragment>
+        </FormControl>
+      </FormGroup>
+    </Fragment>
   );
 };
 
-export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
+/**
+ * FoldersEntryActionMove
+ * @param {IFoldersEntryActionProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionProps> = ({
   folderId,
   folders,
   submit,
@@ -308,28 +356,33 @@ export const FoldersEntryActionMove: React.FC<IFoldersEntryActionProps> = ({
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
         Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
         }
       >
         <option>(root)</option>
         {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
+          <Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
-          </React.Fragment>
+          </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
-export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
+/**
+ * FoldersEntryActionRename
+ * @param {IFoldersEntryActionProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionProps> = ({
   folderId,
   submit,
   imapSocket,
@@ -358,24 +411,27 @@ export const FoldersEntryActionRename: React.FC<IFoldersEntryActionProps> = ({
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
         Rename folder as{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
         type="text"
         placeholder="Enter new folder name"
         defaultValue={newFolderName}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-          setNewFolderName(event.target.value)
-        }
+        onChange={(event: ChangeEvent<HTMLInputElement>) => setNewFolderName(event.target.value)}
       />
-    </Form.Group>
+    </FormGroup>
   );
 };
 
-export const FoldersEntryActionDelete: React.FC<IFoldersEntryActionProps> = ({
+/**
+ * FoldersEntryActionDelete
+ * @param {IFoldersEntryActionProps} properties
+ * @returns FunctionComponent
+ */
+export const FoldersEntryActionDelete: FunctionComponent<IFoldersEntryActionProps> = ({
   folderId,
   submit,
   imapSocket,

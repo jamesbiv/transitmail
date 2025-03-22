@@ -3,5 +3,5 @@ export interface IComposeAttachment {
   filename: string;
   size: number;
   mimeType: string;
-  data: string | ArrayBuffer | null;
+  data?: string | ArrayBuffer;
 }

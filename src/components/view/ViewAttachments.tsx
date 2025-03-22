@@ -1,21 +1,33 @@
-import React, { useState } from "react";
-import { Button, Accordion, AccordionButton, AccordionCollapse } from "react-bootstrap";
+import React, { Fragment, FunctionComponent, useState } from "react";
+import { Button, Collapse } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFile,
   faDownload,
   faEye,
   faPlusSquare,
-  faMinusSquare
+  faMinusSquare,
+  faFileImage,
+  faFilePdf,
+  faFileWord,
+  faFileExcel
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmailAttachment } from "interfaces";
 import { MimeTools } from "lib";
 
+/**
+ * @interface IViewAttachmentsProps
+ */
 interface IViewAttachmentsProps {
   attachments?: IEmailAttachment[];
 }
 
-export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }) => {
+/**
+ * ViewAttachments
+ * @param {IViewAttachmentsProps} properties
+ * @returns FunctionComponent
+ */
+export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ attachments }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {
     const content: string = attachment.content.trim();
 
@@ -51,58 +63,66 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }
     document.body.removeChild(anchorElement);
   };
 
-  const [attachmentEventKey, setAttachmentEventKey] = useState<null | string>(null);
+  const [attachmentsCollapsed, setAttachmentsCollapsed] = useState<boolean>(false);
+
+  const toggleAttachmentsCollapsed: () => void = () =>
+    setAttachmentsCollapsed(!attachmentsCollapsed);
 
   return (
-    <Accordion
-      onSelect={(eventKey: string | string[] | null | undefined) =>
-        setAttachmentEventKey(eventKey as null | string)
-      }
-    >
-      <AccordionButton
-        className="text-dark font-weight-bold text-decoration-none p-0 m-0"
-        as={Button}
-        variant="link"
-      >
-        <FontAwesomeIcon icon={attachmentEventKey === "0" ? faMinusSquare : faPlusSquare} />{" "}
-        Attachments
-      </AccordionButton>
-      <AccordionCollapse eventKey="0" className="p-0 m-0 mt-2">
-        <>
+    <Fragment>
+      <div onClick={toggleAttachmentsCollapsed} className="pointer">
+        <FontAwesomeIcon icon={attachmentsCollapsed ? faMinusSquare : faPlusSquare} /> Attachments
+      </div>
+      <Collapse in={attachmentsCollapsed} timeout={100}>
+        <div className="p-0 m-0">
           {attachments ? (
             attachments.map((attachment: IEmailAttachment, attachmentKey: number) => (
               <div
                 key={attachmentKey}
-                className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
+                className="attachment float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-3"
               >
-                <Button
-                  variant="light"
-                  size="sm"
-                  style={{ zIndex: 20000 }}
-                  className="float-end p-0 ms-2"
-                  onClick={() => downloadAttachment(attachment)}
-                >
-                  <FontAwesomeIcon icon={faDownload} />
-                </Button>
-                <Button
-                  variant="light"
-                  size="sm"
-                  style={{ zIndex: 20000 }}
-                  className="float-end p-0 ms-2"
-                  onClick={() => viewAttachment(attachment)}
-                >
-                  <FontAwesomeIcon icon={faEye} />
-                </Button>
-                <FontAwesomeIcon
-                  className="me-1"
-                  icon={(() => {
-                    switch (attachment.mimeType) {
-                      default:
-                        return faFile;
-                    }
-                  })()}
-                />{" "}
-                {attachment.filename}
+                <div className="title text-truncate float-start">
+                  <FontAwesomeIcon
+                    className="me-1"
+                    icon={(() => {
+                      switch (attachment.mimeType) {
+                        case "image/jpeg":
+                          return faFileImage;
+
+                        case "application/pdf":
+                          return faFilePdf;
+
+                        case "application/msword":
+                          return faFileWord;
+
+                        case "application/vnd.me-excel":
+                          return faFileExcel;
+
+                        default:
+                          return faFile;
+                      }
+                    })()}
+                  />
+                  {attachment.filename}
+                </div>
+                <div className="float-end">
+                  <Button
+                    className="p-0 ms-1"
+                    variant="light"
+                    size="sm"
+                    onClick={() => downloadAttachment(attachment)}
+                  >
+                    <FontAwesomeIcon icon={faDownload} />
+                  </Button>
+                  <Button
+                    className="p-0 ms-1"
+                    variant="light"
+                    size="sm"
+                    onClick={() => viewAttachment(attachment)}
+                  >
+                    <FontAwesomeIcon icon={faEye} />
+                  </Button>
+                </div>
               </div>
             ))
           ) : (
@@ -110,8 +130,8 @@ export const ViewAttachments: React.FC<IViewAttachmentsProps> = ({ attachments }
               <em>No attachments found</em>
             </p>
           )}
-        </>
-      </AccordionCollapse>
-    </Accordion>
+        </div>
+      </Collapse>
+    </Fragment>
   );
 };

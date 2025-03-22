@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent, JSX } from "react";
+import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent, ReactElement } from "react";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -34,23 +34,19 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
     const fileList: FileList | undefined = event.target.files ?? undefined;
     const files: File[] = Array.from(fileList ?? []);
 
-    let count: number = 0;
-
     files.forEach((file: File) => {
       const reader: FileReader = new FileReader();
 
       reader.onload = () => {
-        attachments.push({
-          id: count++,
+        const newAttachment: IComposeAttachment = {
+          id: attachments.length,
           filename: file.name,
           size: file.size,
           mimeType: file.type,
-          data: reader.result
-        });
+          data: reader.result ?? undefined
+        };
 
-        if (files?.length === count) {
-          setAttachments([...attachments]);
-        }
+        setAttachments([...attachments, newAttachment]);
       };
 
       reader.readAsBinaryString(file);
@@ -80,7 +76,7 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
     setAttachments(updatedAttachments);
   };
 
-  const AttachmentInput: () => JSX.Element = () => (
+  const AttachmentInput: () => ReactElement = () => (
     <input
       id="attachmentInput"
       type="file"
@@ -95,52 +91,56 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
     <Fragment>
       <AttachmentInput />
       {attachments.length > 0 && (
-        <div className="mt-2 mb-2 ps-2 pt-2 border-top overflow-hidden">
+        <div className="mt-2 mb-2 ps-2 pt-2 overflow-hidden">
           <h6>Attachments</h6>
 
-          {attachments.map((attachment: IComposeAttachment) => (
+          {attachments.map((attachment: IComposeAttachment, attachmentKey: number) => (
             <div
-              key={attachment.id}
-              className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
+              key={attachmentKey}
+              className="attachment float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-2"
             >
-              <Button
-                className="float-end p-0 ms-2"
-                variant="light"
-                size="sm"
-                onClick={() => removeAttachment(attachment.id)}
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </Button>
-              <Button
-                className="float-end p-0 ms-2"
-                variant="light"
-                size="sm"
-                onClick={() => viewAttachment(attachment.id)}
-              >
-                <FontAwesomeIcon icon={faEye} />
-              </Button>
-              <FontAwesomeIcon
-                className="me-1"
-                icon={(() => {
-                  switch (attachment.mimeType) {
-                    case "image/jpeg":
-                      return faFileImage;
+              <div className="title text-truncate float-start">
+                <FontAwesomeIcon
+                  className="me-1"
+                  icon={(() => {
+                    switch (attachment.mimeType) {
+                      case "image/jpeg":
+                        return faFileImage;
 
-                    case "application/pdf":
-                      return faFilePdf;
+                      case "application/pdf":
+                        return faFilePdf;
 
-                    case "application/msword":
-                      return faFileWord;
+                      case "application/msword":
+                        return faFileWord;
 
-                    case "application/vnd.me-excel":
-                      return faFileExcel;
+                      case "application/vnd.me-excel":
+                        return faFileExcel;
 
-                    default:
-                      return faFile;
-                  }
-                })()}
-              />{" "}
-              {attachment.filename}
+                      default:
+                        return faFile;
+                    }
+                  })()}
+                />
+                {attachment.filename}
+              </div>
+              <div className="float-end">
+                <Button
+                  className="p-0 ms-1"
+                  variant="light"
+                  size="sm"
+                  onClick={() => viewAttachment(attachment.id)}
+                >
+                  <FontAwesomeIcon icon={faEye} />
+                </Button>
+                <Button
+                  className="p-0 ms-1"
+                  variant="light"
+                  size="sm"
+                  onClick={() => removeAttachment(attachment.id)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </Button>
+              </div>
             </div>
           ))}
         </div>

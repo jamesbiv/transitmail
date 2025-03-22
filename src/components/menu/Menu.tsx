@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { FunctionComponent, useContext } from "react";
 import { Col, Container, ListGroup, ListGroupItem, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,7 +18,7 @@ interface IMenuItem {
   icon: IconDefinition;
 }
 
-const Menu: React.FC = () => {
+const Menu: FunctionComponent = () => {
   const { stateManager } = useContext(DependenciesContext);
 
   const menu: IMenuItem[] = [

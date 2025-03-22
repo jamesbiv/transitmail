@@ -34,7 +34,7 @@ export const convertAttachments = async (
         filename: attachment.filename,
         size: 0,
         mimeType: attachment.mimeType,
-        data: fileReaderResponse.result
+        data: fileReaderResponse.result ?? undefined
       });
 
       return Promise.resolve(convertedAttachments);
