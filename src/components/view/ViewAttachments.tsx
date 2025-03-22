@@ -6,7 +6,11 @@ import {
   faDownload,
   faEye,
   faPlusSquare,
-  faMinusSquare
+  faMinusSquare,
+  faFileImage,
+  faFilePdf,
+  faFileWord,
+  faFileExcel
 } from "@fortawesome/free-solid-svg-icons";
 import { IEmailAttachment } from "interfaces";
 import { MimeTools } from "lib";
@@ -70,41 +74,55 @@ export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ atta
         <FontAwesomeIcon icon={attachmentsCollapsed ? faMinusSquare : faPlusSquare} /> Attachments
       </div>
       <Collapse in={attachmentsCollapsed} timeout={100}>
-        <div className="p-0 m-0 mt-3">
+        <div className="p-0 m-0">
           {attachments ? (
             attachments.map((attachment: IEmailAttachment, attachmentKey: number) => (
               <div
                 key={attachmentKey}
-                className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mb-2 text-truncate"
+                className="attachment float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-3"
               >
-                <Button
-                  variant="light"
-                  size="sm"
-                  style={{ zIndex: 20000 }}
-                  className="float-end p-0 ms-2"
-                  onClick={() => downloadAttachment(attachment)}
-                >
-                  <FontAwesomeIcon icon={faDownload} />
-                </Button>
-                <Button
-                  variant="light"
-                  size="sm"
-                  style={{ zIndex: 20000 }}
-                  className="float-end p-0 ms-2"
-                  onClick={() => viewAttachment(attachment)}
-                >
-                  <FontAwesomeIcon icon={faEye} />
-                </Button>
-                <FontAwesomeIcon
-                  className="me-1"
-                  icon={(() => {
-                    switch (attachment.mimeType) {
-                      default:
-                        return faFile;
-                    }
-                  })()}
-                />{" "}
-                {attachment.filename}
+                <div className="title text-truncate float-start">
+                  <FontAwesomeIcon
+                    className="me-1"
+                    icon={(() => {
+                      switch (attachment.mimeType) {
+                        case "image/jpeg":
+                          return faFileImage;
+
+                        case "application/pdf":
+                          return faFilePdf;
+
+                        case "application/msword":
+                          return faFileWord;
+
+                        case "application/vnd.me-excel":
+                          return faFileExcel;
+
+                        default:
+                          return faFile;
+                      }
+                    })()}
+                  />
+                  {attachment.filename}
+                </div>
+                <div className="float-end">
+                  <Button
+                    className="p-0 ms-1"
+                    variant="light"
+                    size="sm"
+                    onClick={() => downloadAttachment(attachment)}
+                  >
+                    <FontAwesomeIcon icon={faDownload} />
+                  </Button>
+                  <Button
+                    className="p-0 ms-1"
+                    variant="light"
+                    size="sm"
+                    onClick={() => viewAttachment(attachment)}
+                  >
+                    <FontAwesomeIcon icon={faEye} />
+                  </Button>
+                </div>
               </div>
             ))
           ) : (

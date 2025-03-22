@@ -66,16 +66,12 @@ pre {
   width: 0;
 }
 
-.attachments {
+.attachment {
   width: 260px;
 }
 
-.attachments .title {
+.attachment .title {
   width: 200px;
-}
-
-.attachments .buttons {
-  width: 40px
 }
 
 .text-indent {

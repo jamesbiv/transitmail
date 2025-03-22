@@ -94,12 +94,12 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
         <div className="mt-2 mb-2 ps-2 pt-2 overflow-hidden">
           <h6>Attachments</h6>
 
-          {attachments.map((attachment: IComposeAttachment) => (
+          {attachments.map((attachment: IComposeAttachment, attachmentKey: number) => (
             <div
-              key={attachment.id}
-              className="attachments float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-2"
+              key={attachmentKey}
+              className="attachment float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-2"
             >
-              <div className="text-truncate title float-start">
+              <div className="title text-truncate float-start">
                 <FontAwesomeIcon
                   className="me-1"
                   icon={(() => {
@@ -123,9 +123,9 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
                 />
                 {attachment.filename}
               </div>
-              <div className="buttons float-end">
+              <div className="float-end">
                 <Button
-                  className=" p-0 ms-1"
+                  className="p-0 ms-1"
                   variant="light"
                   size="sm"
                   onClick={() => viewAttachment(attachment.id)}
@@ -133,7 +133,7 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
                 <Button
-                  className=" p-0 ms-1"
+                  className="p-0 ms-1"
                   variant="light"
                   size="sm"
                   onClick={() => removeAttachment(attachment.id)}
