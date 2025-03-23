@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Dispatch, FunctionComponent, useState } from "react";
+import React, { ChangeEvent, FunctionComponent, useState } from "react";
 import { faAsterisk, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,15 +14,13 @@ import {
   Row
 } from "react-bootstrap";
 import { ISettingsFolders, ISettingsValidationCondition } from "interfaces";
-import { validationConditions } from ".";
+import { settingsValidationConditions } from ".";
 
 /**
  * @interface ISettingsFormFoldersProps
  */
 interface ISettingsFormFoldersProps {
   folderSettings: ISettingsFolders;
-  displayFormFolders: boolean;
-  setDisplayFormFolders: Dispatch<boolean>;
 }
 
 /**
@@ -31,24 +29,20 @@ interface ISettingsFormFoldersProps {
  * @returns FunctionComponent
  */
 export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> = ({
-  folderSettings,
-  displayFormFolders,
-  setDisplayFormFolders
+  folderSettings
 }) => {
+  const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
+
   const [errorMessage, setErrorMessage] = useState<Partial<ISettingsFolders> | undefined>(
     undefined
   );
 
   const setFolderSetting = (folderName: keyof ISettingsFolders, folderValue: string): void => {
-    const settingsCondition = validationConditions.find(
+    const settingsCondition = settingsValidationConditions.find(
       (validationCondition: ISettingsValidationCondition) =>
         validationCondition.field === "folderSettings" &&
         validationCondition.subField === folderName
-    );
-
-    if (!settingsCondition) {
-      return;
-    }
+    )!;
 
     const updatedErrorMessage: Partial<ISettingsFolders> | undefined = settingsCondition.constraint(
       folderValue
@@ -74,7 +68,7 @@ export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> =
         <AccordionCollapse eventKey="0" as={CardBody}>
           <Row>
             <Col xs={12} sm={6}>
-              <FormGroup controlId="formFolderArchive">
+              <FormGroup controlId="formFolderArchive" className="mb-3">
                 <FormLabel>
                   Archive Folder{" "}
                   <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -92,7 +86,7 @@ export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> =
                   {errorMessage?.archiveFolder}
                 </FormControl.Feedback>
               </FormGroup>
-              <FormGroup controlId="formFolderTrash">
+              <FormGroup controlId="formFolderTrash" className="mb-3">
                 <FormLabel>
                   Trash Folder{" "}
                   <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -110,7 +104,7 @@ export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> =
                   {errorMessage?.trashFolder}
                 </FormControl.Feedback>
               </FormGroup>
-              <FormGroup controlId="formFolderDrafts">
+              <FormGroup controlId="formFolderDrafts" className="mb-3 mb-sm-0">
                 <FormLabel>
                   Drafts Folder{" "}
                   <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -130,7 +124,7 @@ export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> =
               </FormGroup>
             </Col>
             <Col xs={12} sm={6}>
-              <FormGroup controlId="formFolderSentItems">
+              <FormGroup controlId="formFolderSentItems" className="mb-3">
                 <FormLabel>
                   Sent Items Folder{" "}
                   <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />

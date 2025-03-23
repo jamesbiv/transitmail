@@ -26,6 +26,7 @@ export * from "./IMessageModalState";
 export * from "./ISettings";
 export * from "./ISettingsErrors";
 export * from "./ISettingsValidationCondition";
+export * from "./ISettingsValidationMessage";
 export * from "./ISliderState";
 export * from "./ISmtpRequest";
 export * from "./ISmtpResponse";

@@ -1,5 +1,5 @@
 import React, { FormEvent, FunctionComponent, useContext, useState } from "react";
-import { SettingsForm, SettingsValidation, validationConditions } from ".";
+import { SettingsForm, SettingsValidationMessage, settingsValidationConditions } from ".";
 import { Row, Col, Card, Form, Button, CardHeader, CardBody, CardFooter } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faCog, faSync } from "@fortawesome/free-solid-svg-icons";
@@ -11,17 +11,14 @@ import {
   ISettings,
   ISettingsErrors,
   ISettingsFolders,
+  ISettingsValidationMessage,
   ISmtpResponse
 } from "interfaces";
 import { DependenciesContext } from "contexts";
-
-/**
- * @interface ISettingsValidation
- */
-interface ISettingsValidation {
-  message: string;
-  type: string;
-}
+import {
+  processValidationConditions,
+  processValidationErrorMessages
+} from "./SettingsValidationConditions";
 
 /**
  * Settings
@@ -41,9 +38,9 @@ export const Settings: FunctionComponent = () => {
     }
   };
 
-  const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
-
-  const [validation, setValidation] = useState<ISettingsValidation | undefined>(undefined);
+  const [validationMessage, setValidationMessage] = useState<
+    ISettingsValidationMessage | undefined
+  >(undefined);
 
   const [settings, setSettings] = useState<ISettings>({
     ...settingsDefault,
@@ -51,16 +48,15 @@ export const Settings: FunctionComponent = () => {
   });
 
   const saveSettings = async (): Promise<void> => {
-    const validationErrors: ISettingsErrors = processValidationConditions();
+    const validationErrors: ISettingsErrors = processValidationConditions(
+      settingsValidationConditions,
+      settings
+    );
 
     if (Object.keys(validationErrors).length) {
       const errorMessages: string = processValidationErrorMessages(validationErrors);
 
-      if (settings.folderSettings) {
-        setDisplayFormFolders(true);
-      }
-
-      setValidation({
+      setValidationMessage({
         message: `Please check the following errors: ${errorMessages}`,
         type: "error"
       });
@@ -68,66 +64,11 @@ export const Settings: FunctionComponent = () => {
       return;
     }
 
-    setValidation({ message: "Settings saved successfully", type: "info" });
+    setValidationMessage({ message: "Settings saved successfully", type: "info" });
 
     secureStorage.setSettings(settings as Required<ISettings>);
 
     await createFolders(settings.folderSettings);
-  };
-
-  const processValidationConditions = (): ISettingsErrors =>
-    validationConditions.reduce(
-      (validationResults: ISettingsErrors, { field, subField, constraint, message }) => {
-        if (!subField) {
-          const settingsValue = settings[field] as string;
-
-          if (!constraint(settingsValue)) {
-            validationResults[field] = message;
-          }
-        } else {
-          const settingsValue = settings[field] as {
-            [subField: string]: string;
-          };
-
-          if (!constraint(settingsValue[subField])) {
-            validationResults[field] = {
-              [field]: message,
-              ...(validationResults[field] as object)
-            };
-          }
-        }
-
-        return validationResults;
-      },
-      {}
-    );
-
-  const processValidationErrorMessages = (validationErrors: ISettingsErrors): string => {
-    return `<ul>${Object.keys(validationErrors).reduce(
-      (errorResponse: string, valueKey: string): string => {
-        if (typeof validationErrors[valueKey] === "string") {
-          errorResponse += `<li>${validationErrors[valueKey]}</li>`;
-        }
-
-        if (typeof validationErrors[valueKey] === "object") {
-          const objectValidationErrors = validationErrors[valueKey] as {
-            [key: string]: string;
-          };
-
-          errorResponse += Object.keys(objectValidationErrors).reduce(
-            (errorObjectResponse: string, objectKey: string): string => {
-              errorObjectResponse += `<li>${objectValidationErrors[objectKey]}</li>`;
-
-              return errorObjectResponse;
-            },
-            ""
-          );
-        }
-
-        return errorResponse;
-      },
-      ""
-    )}</ul>`;
   };
 
   const verifySettings = async (): Promise<void> => {
@@ -160,8 +101,7 @@ export const Settings: FunctionComponent = () => {
       stateManager.showMessageModal({
         title: "Unable to verify your settings",
         content:
-          "Unable to verifiy your email settings, please check your credientals and try again",
-        action: () => {}
+          "Unable to verifiy your email settings, please check your credientals and try again"
       });
 
       return;
@@ -169,8 +109,7 @@ export const Settings: FunctionComponent = () => {
 
     stateManager.showMessageModal({
       title: "Settings verfieid",
-      content: "Your email settings have been verfied",
-      action: () => {}
+      content: "Your email settings have been verfied"
     });
   };
 
@@ -226,13 +165,11 @@ export const Settings: FunctionComponent = () => {
         noValidate={true}
       >
         <CardBody>
-          <SettingsValidation validation={validation} />
+          <SettingsValidationMessage validationMessage={validationMessage} />
           <SettingsForm
+            settingsValidationConditions={settingsValidationConditions}
             settings={settings}
-            validationConditions={validationConditions}
-            displayFormFolders={displayFormFolders}
             setSettings={setSettings}
-            setDisplayFormFolders={setDisplayFormFolders}
           />
         </CardBody>
         <CardFooter>

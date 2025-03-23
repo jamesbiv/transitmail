@@ -10,7 +10,7 @@ export interface ISettings {
   name: string;
   email: string;
   signature: string;
-  autoLogin: boolean;
+  autoLogin?: boolean;
   imapHost: string;
   imapPort: number;
   imapUsername: string;
@@ -34,6 +34,9 @@ export interface ISettingsFolders {
 }
 
 export interface ISettingsSecondaryEmail {
+  [key: string]: string | undefined;
+
+  key?: string;
   name: string;
   email: string;
   signature: string;

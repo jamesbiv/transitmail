@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Fragment, FunctionComponent, useState } from "react";
+import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent, useState } from "react";
 import {
   Button,
   Card,
@@ -20,14 +20,19 @@ import {
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk, faEdit, faEnvelope, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-import { ISettingsErrors, ISettingsSecondaryEmail } from "interfaces";
-import { SettingsValidation } from "./SettingsValidation";
+import { ISettingsErrors, ISettingsSecondaryEmail, ISettingsValidationCondition } from "interfaces";
+import { SettingsValidationMessage } from "./SettingsValidationMessage";
+import {
+  processValidationConditions,
+  processValidationErrorMessages,
+  secondaryEmailValidationConditions
+} from "./SettingsValidationConditions";
 
 /**
  * @interface ISettingsSecondaryEmailsProps
  */
 interface ISettingsSecondaryEmailsProps {
-  secondaryEmails: ISettingsSecondaryEmail[] | undefined;
+  secondaryEmails?: ISettingsSecondaryEmail[];
   updateSecondaryEmails: (secondaryEmails?: ISettingsSecondaryEmail[]) => void;
 }
 
@@ -48,26 +53,13 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
     signature: ""
   });
 
-  const [secondaryEmailKey, setSecondaryEmailKey] = useState<number | undefined>(undefined);
-
   const createNewSecondaryEmail: () => void = () => {
     setSecondaryEmail({
+      key: self?.crypto?.randomUUID(),
       name: "",
       email: "",
       signature: ""
     });
-
-    setSecondaryEmailKey(undefined);
-    setShowSecondaryEmailModal(true);
-  };
-
-  const editSecondaryEmail: (emailKey: number) => void = (emailKey) => {
-    if (!secondaryEmails?.[emailKey]) {
-      return;
-    }
-
-    setSecondaryEmail(secondaryEmails?.[emailKey]);
-    setSecondaryEmailKey(emailKey);
 
     setShowSecondaryEmailModal(true);
   };
@@ -77,27 +69,37 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
       secondaryEmails = [];
     }
 
-    if (secondaryEmails?.[secondaryEmailKey ?? NaN]) {
-      secondaryEmails[secondaryEmailKey!] = secondaryEmail;
-    } else {
+    const secondaryEmailIndex: number = secondaryEmails.findIndex(
+      (secondaryEmailElement) => secondaryEmailElement.key === secondaryEmail.key
+    );
+
+    if (secondaryEmailIndex === -1) {
       secondaryEmails.push(secondaryEmail);
+    } else {
+      secondaryEmails[secondaryEmailIndex] = secondaryEmail;
     }
 
     updateSecondaryEmails(secondaryEmails);
   };
 
-  const updateSecondaryEmailSetting: (name: string, data: string) => void = (name, data) => {
-    setSecondaryEmail({ ...secondaryEmail, [name]: data });
+  const editSecondaryEmail: (secondaryEmailKey: string) => void = (secondaryEmailKey) => {
+    const secondaryEmailIndex: number = secondaryEmails!.findIndex(
+      (secondaryEmail) => secondaryEmail.key === secondaryEmailKey
+    );
+
+    setSecondaryEmail(secondaryEmails![secondaryEmailIndex]);
+
+    setShowSecondaryEmailModal(true);
   };
 
-  const deleteSecondaryEmail: (emailKey: number) => void = (emailKey) => {
-    if (secondaryEmails) {
-      secondaryEmails.splice(emailKey, 1);
-    }
+  const deleteSecondaryEmail: (secondaryEmailKey: string) => void = (secondaryEmailKey) => {
+    const secondaryEmailIndex: number = secondaryEmails!.findIndex(
+      (secondaryEmail) => secondaryEmail.key === secondaryEmailKey
+    );
 
-    updateSecondaryEmails(secondaryEmails?.length ? secondaryEmails : undefined);
+    secondaryEmails!.splice(secondaryEmailIndex, 1);
 
-    setSecondaryEmailKey(emailKey);
+    updateSecondaryEmails(secondaryEmails!.length ? secondaryEmails : undefined);
   };
 
   return (
@@ -120,45 +122,46 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
             </Col>
           </Row>
         </CardHeader>
-        {!secondaryEmails?.length ? (
+        {!secondaryEmails ? (
           <CardBody className="text-center text-secondary">
             No secondary email accounts found
           </CardBody>
         ) : (
           <ListGroup variant="flush">
-            {secondaryEmails?.map((emailData: ISettingsSecondaryEmail, emailKey: number) => (
-              <ListGroupItem key={emailKey}>
-                <Button
-                  variant="danger"
-                  className="float-end"
-                  size="sm"
-                  aria-label=""
-                  onClick={() => deleteSecondaryEmail(emailKey)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </Button>
-                <Button
-                  variant="primary"
-                  className="float-end me-2"
-                  size="sm"
-                  aria-label=""
-                  onClick={() => editSecondaryEmail(emailKey)}
-                >
-                  <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                {`${emailData.name} <${emailData.email}>`}
-              </ListGroupItem>
-            ))}
+            {(secondaryEmails as Required<ISettingsSecondaryEmail>[]).map(
+              (secondaryEmail: Required<ISettingsSecondaryEmail>) => (
+                <ListGroupItem key={secondaryEmail.key}>
+                  <Button
+                    variant="danger"
+                    className="float-end"
+                    size="sm"
+                    aria-label=""
+                    onClick={() => deleteSecondaryEmail(secondaryEmail.key)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="float-end me-2"
+                    size="sm"
+                    aria-label=""
+                    onClick={() => editSecondaryEmail(secondaryEmail.key)}
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </Button>
+                  {`${secondaryEmail.name} <${secondaryEmail.email}>`}
+                </ListGroupItem>
+              )
+            )}
           </ListGroup>
         )}
       </Card>
       <SettingsSecondaryEmailsModal
         secondaryEmail={secondaryEmail}
-        secondaryEmailKey={secondaryEmailKey}
+        setSecondaryEmail={setSecondaryEmail}
         updateSecondaryEmail={updateSecondaryEmail}
-        updateSecondaryEmailSetting={updateSecondaryEmailSetting}
         showModal={showSecondaryEmailModal}
-        onHide={() => setShowSecondaryEmailModal(false)}
+        hideModal={() => setShowSecondaryEmailModal(false)}
       />
     </Fragment>
   );
@@ -169,11 +172,10 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
  */
 interface ISettingsSecondaryEmailsModalProps {
   secondaryEmail: ISettingsSecondaryEmail;
-  secondaryEmailKey: number | undefined;
+  setSecondaryEmail: Dispatch<ISettingsSecondaryEmail>;
   updateSecondaryEmail: () => void;
-  updateSecondaryEmailSetting: (name: string, data: string) => void;
   showModal: boolean;
-  onHide: () => void;
+  hideModal: () => void;
 }
 
 /**
@@ -183,46 +185,52 @@ interface ISettingsSecondaryEmailsModalProps {
  */
 export const SettingsSecondaryEmailsModal: FunctionComponent<
   ISettingsSecondaryEmailsModalProps
-> = ({
-  secondaryEmail,
-  secondaryEmailKey,
-  updateSecondaryEmail,
-  updateSecondaryEmailSetting,
-  showModal,
-  onHide
-}) => {
-  const [validation, setValidation] = useState<{ message: string; type: string } | undefined>(
+> = ({ secondaryEmail, setSecondaryEmail, updateSecondaryEmail, showModal, hideModal }) => {
+  const [errorMessage, setErrorMessage] = useState<Partial<ISettingsSecondaryEmail> | undefined>(
     undefined
   );
 
+  const [validationMessage, setValidationMessage] = useState<
+    { message: string; type: string } | undefined
+  >(undefined);
+
+  const setSecondaryEmailValue: (settingName: string, settingValue: string) => void = (
+    settingName,
+    settingValue
+  ) => {
+    const secondaryEmailCondition = secondaryEmailValidationConditions.find(
+      (validationCondition: ISettingsValidationCondition) =>
+        validationCondition.field === settingName
+    )!;
+
+    const updatedErrorMessage: Partial<ISettingsSecondaryEmail> | undefined =
+      secondaryEmailCondition.constraint(settingValue)
+        ? { ...errorMessage, [settingName]: undefined }
+        : {
+            ...errorMessage,
+            [settingName]: secondaryEmailCondition.message
+          };
+
+    setErrorMessage(updatedErrorMessage);
+
+    const updatedSettingValue: ISettingsSecondaryEmail = {
+      ...secondaryEmail,
+      [settingName]: settingValue
+    };
+
+    setSecondaryEmail(updatedSettingValue);
+  };
+
   const submitSecondaryEmail: () => void = () => {
-    const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const validationErrors: ISettingsErrors = processValidationConditions(
+      secondaryEmailValidationConditions,
+      secondaryEmail
+    );
 
-    const errors: ISettingsErrors = {};
+    if (Object.keys(validationErrors).length) {
+      const errorMessages: string = processValidationErrorMessages(validationErrors);
 
-    if (secondaryEmail.name === "") {
-      errors.name = "Please specify a valid display name";
-    }
-
-    if (!emailRegex.test(secondaryEmail.email) || secondaryEmail.email === "") {
-      errors.email = "Please specify a valid email address";
-    }
-
-    if (secondaryEmail.signature?.length > 1000) {
-      errors.signature = "Signature must have a maximum of 1000 characters";
-    }
-
-    if (Object.keys(errors).length) {
-      const errorMessages = `<ul>${Object.keys(errors).reduce(
-        (errorResponse: string, key: string): string => {
-          errorResponse += `<li>${errors[key] as string}</li>`;
-
-          return errorResponse;
-        },
-        ""
-      )}</ul>`;
-
-      setValidation({
+      setValidationMessage({
         message: `Please check the following errors: ${errorMessages}`,
         type: "error"
       });
@@ -230,29 +238,29 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
       return;
     }
 
-    setValidation(undefined);
+    setValidationMessage(undefined);
     updateSecondaryEmail();
 
-    onHide();
+    hideModal();
   };
 
   const closeSecondaryEmailModal: () => void = () => {
-    setValidation(undefined);
+    setValidationMessage(undefined);
 
-    onHide();
+    hideModal();
   };
 
   return (
-    <Modal show={showModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
+    <Modal show={showModal} centered={true} aria-labelledby="secondary-email-modal">
       <ModalHeader closeButton onClick={() => closeSecondaryEmailModal()}>
-        <ModalTitle id="contained-modal-title-vcenter">
+        <ModalTitle id="secondary-email-modal">
           <FontAwesomeIcon icon={faEnvelope} />{" "}
-          {secondaryEmailKey ? "Edit secondary email" : "Add new secondary email"}
+          {secondaryEmail.key ? "Edit secondary email" : "Add new secondary email"}
         </ModalTitle>
       </ModalHeader>
       <ModalBody>
-        <SettingsValidation validation={validation} />
-        <FormGroup controlId="formSecondaryEmailDisplayName" className="mb-3">
+        <SettingsValidationMessage validationMessage={validationMessage} />
+        <FormGroup controlId="formSecondaryDisplayName" className="mb-3">
           <FormLabel>
             Display name{" "}
             <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -260,17 +268,18 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
           <FormControl
             type="text"
             placeholder="Enter a secondary display name"
+            isInvalid={!!errorMessage?.name}
             defaultValue={secondaryEmail.name}
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              updateSecondaryEmailSetting("name", event.target.value)
+              setSecondaryEmailValue("name", event.target.value)
             }
           />
           <FormText className="text-muted">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
           </FormText>
-          <FormControl.Feedback type="invalid"> </FormControl.Feedback>
+          <FormControl.Feedback type="invalid">{errorMessage?.name}</FormControl.Feedback>
         </FormGroup>
-        <FormGroup controlId="formSecondaryEmailEmailAddress" className="mb-3">
+        <FormGroup controlId="formSecondaryEmailAddress" className="mb-3">
           <FormLabel>
             Email address{" "}
             <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -278,28 +287,30 @@ export const SettingsSecondaryEmailsModal: FunctionComponent<
           <FormControl
             type="email"
             placeholder="Enter a secondary email address"
+            isInvalid={!!errorMessage?.email}
             defaultValue={secondaryEmail.email}
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              updateSecondaryEmailSetting("email", event.target.value)
+              setSecondaryEmailValue("email", event.target.value)
             }
           />
           <FormText className="text-muted">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit ...
           </FormText>
-          <FormControl.Feedback type="invalid">{""}</FormControl.Feedback>
+          <FormControl.Feedback type="invalid">{errorMessage?.email}</FormControl.Feedback>
         </FormGroup>
-        <FormGroup controlId="formSecondaryEmailEmailSignature">
+        <FormGroup controlId="formSecondaryEmailSignature">
           <FormLabel>Email signature</FormLabel>
           <FormControl
             as="textarea"
             rows={3}
             placeholder="Enter a secondary email signature"
+            isInvalid={!!errorMessage?.signature}
             defaultValue={secondaryEmail.signature}
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              updateSecondaryEmailSetting("signature", event.target.value)
+              setSecondaryEmailValue("signature", event.target.value)
             }
           />
-          <FormControl.Feedback type="invalid">{""}</FormControl.Feedback>
+          <FormControl.Feedback type="invalid">{errorMessage?.signature}</FormControl.Feedback>
         </FormGroup>
       </ModalBody>
       <ModalFooter>

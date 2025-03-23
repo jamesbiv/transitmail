@@ -1,4 +1,78 @@
-import { ISettingsValidationCondition } from "interfaces";
+import {
+  ISettings,
+  ISettingsErrors,
+  ISettingsSecondaryEmail,
+  ISettingsValidationCondition
+} from "interfaces";
+
+/**
+ * processValidationConditions
+ * @param {ISettingsValidationCondition[]} validationConditions
+ * @param {ISettings | ISettingsSecondaryEmail} settings
+ * @returns ISettingsErrors
+ */
+export const processValidationConditions = (
+  validationConditions: ISettingsValidationCondition[],
+  settings: ISettings | ISettingsSecondaryEmail
+): ISettingsErrors =>
+  validationConditions.reduce(
+    (validationResults: ISettingsErrors, { field, subField, constraint, message }) => {
+      if (!subField) {
+        const settingsValue = settings[field] as string;
+
+        if (!constraint(settingsValue)) {
+          validationResults[field] = message;
+        }
+      } else {
+        const settingsValue = settings[field] as {
+          [subField: string]: string;
+        };
+
+        if (!constraint(settingsValue[subField])) {
+          validationResults[field] = {
+            [field]: message,
+            ...(validationResults[field] as object)
+          };
+        }
+      }
+
+      return validationResults;
+    },
+    {}
+  );
+
+/**
+ * processValidationErrorMessages
+ * @param {ISettingsErrors} validationErrors
+ * @returns string
+ */
+export const processValidationErrorMessages = (validationErrors: ISettingsErrors): string => {
+  return `<ul>${Object.keys(validationErrors).reduce(
+    (errorResponse: string, valueKey: string): string => {
+      if (typeof validationErrors[valueKey] === "string") {
+        errorResponse += `<li>${validationErrors[valueKey]}</li>`;
+      }
+
+      if (typeof validationErrors[valueKey] === "object") {
+        const objectValidationErrors = validationErrors[valueKey] as {
+          [key: string]: string;
+        };
+
+        errorResponse += Object.keys(objectValidationErrors).reduce(
+          (errorObjectResponse: string, objectKey: string): string => {
+            errorObjectResponse += `<li>${objectValidationErrors[objectKey]}</li>`;
+
+            return errorObjectResponse;
+          },
+          ""
+        );
+      }
+
+      return errorResponse;
+    },
+    ""
+  )}</ul>`;
+};
 
 /**
  * @constant {RegExp} emailRegex
@@ -6,9 +80,9 @@ import { ISettingsValidationCondition } from "interfaces";
 const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * @constant {ISettingsValidationCondition[]} validationConditions
+ * @constant {ISettingsValidationCondition[]} settingsValidationConditions
  */
-export const validationConditions: ISettingsValidationCondition[] = [
+export const settingsValidationConditions: ISettingsValidationCondition[] = [
   {
     field: "name",
     constraint: (value: unknown) => !!(value as string)?.length,
@@ -101,5 +175,29 @@ export const validationConditions: ISettingsValidationCondition[] = [
     subField: "trashFolder",
     constraint: (value: unknown) => !!(value as string)?.length,
     message: "Please specify an trash folder name"
+  }
+];
+
+/**
+ * @constant {ISettingsValidationCondition[]} secondaryEmailValidationConditions
+ */
+export const secondaryEmailValidationConditions: ISettingsValidationCondition[] = [
+  {
+    field: "name",
+    constraint: (value: unknown) => !!(value as string)?.length,
+    message: "Please specify a valid display name"
+  },
+  {
+    field: "email",
+    constraint: (value: unknown) =>
+      !!(value as string)?.length &&
+      ((value as string).toLocaleLowerCase().includes("localhost") ||
+        emailRegex.test(value as string)),
+    message: "Please specify a valid email address"
+  },
+  {
+    field: "signature",
+    constraint: (value: unknown) => !(value as string)?.length || (value as string)?.length <= 1000,
+    message: "Signature must have a maximum of 1000 characters"
   }
 ];

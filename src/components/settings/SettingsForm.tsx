@@ -21,11 +21,9 @@ import { SettingsSecondaryEmails, SettingsFormFolders } from ".";
  * @interface ISettingsFormProps
  */
 interface ISettingsFormProps {
+  settingsValidationConditions: ISettingsValidationCondition[];
   settings: ISettings;
-  validationConditions: ISettingsValidationCondition[];
-  displayFormFolders: boolean;
   setSettings: Dispatch<ISettings>;
-  setDisplayFormFolders: Dispatch<boolean>;
 }
 
 /**
@@ -34,11 +32,9 @@ interface ISettingsFormProps {
  * @returns FunctionComponent
  */
 export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
+  settingsValidationConditions,
   settings,
-  validationConditions,
-  displayFormFolders,
-  setSettings,
-  setDisplayFormFolders
+  setSettings
 }) => {
   const [errorMessage, setErrorMessage] = useState<Partial<ISettings> | undefined>(undefined);
 
@@ -46,7 +42,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
     settingName: keyof ISettings,
     settingValue: string | number | boolean
   ): void => {
-    const settingsCondition = validationConditions.find(
+    const settingsCondition = settingsValidationConditions.find(
       (validationCondition: ISettingsValidationCondition) =>
         validationCondition.field === settingName
     );
@@ -66,20 +62,17 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
 
     setErrorMessage(updatedErrorMessage);
 
-    const updatedSettings: ISettings = {
-      ...settings,
-      [settingName]: settingValue
-    };
+    const updatedSettingValue: ISettings = { ...settings, [settingName]: settingValue };
 
-    setSettings(updatedSettings);
+    setSettings(updatedSettingValue);
   };
 
   const updateSecondaryEmails: (secondaryEmails?: ISettingsSecondaryEmail[]) => void = (
     secondaryEmails?: ISettingsSecondaryEmail[]
   ): void => {
-    const updatedSettingsEmails: ISettings = { ...settings, secondaryEmails };
+    const updatedSecondaryEmails: ISettings = { ...settings, secondaryEmails };
 
-    setSettings(updatedSettingsEmails);
+    setSettings(updatedSecondaryEmails);
   };
 
   return (
@@ -313,11 +306,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
             </Card>
           </Col>
         </Row>
-        <SettingsFormFolders
-          folderSettings={settings.folderSettings}
-          displayFormFolders={displayFormFolders}
-          setDisplayFormFolders={setDisplayFormFolders}
-        />
+        <SettingsFormFolders folderSettings={settings.folderSettings} />
       </Container>
     </Fragment>
   );

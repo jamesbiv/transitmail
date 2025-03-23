@@ -1,4 +1,4 @@
-import React, { StrictMode, useContext, useEffect, useState } from "react";
+import React, { FunctionComponent, StrictMode, useContext, useEffect, useState } from "react";
 import { createRoot, Root } from "react-dom/client";
 import {
   Container,
@@ -6,7 +6,6 @@ import {
   Row,
   Col,
   Button,
-  Tab,
   TabContent,
   TabPane,
   NavbarBrand,
@@ -29,12 +28,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
 import { IComponent, IMessageModalState, ISliderState, ITouchState } from "interfaces";
 
+/**
+ * Replace with custom service worker
+ */
 // import * as serviceWorker from "serviceWorker";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
 
-const Index: React.FC = () => {
+/**
+ * Index
+ * @returns FunctionComponent
+ */
+const Index: FunctionComponent = () => {
   const [activeKey, setActiveKey] = useState<string>(window.location.hash.substring(1) || "inbox");
 
   const [sliderState, setSliderState] = useState<ISliderState>({
@@ -132,7 +138,6 @@ const Index: React.FC = () => {
       </Navbar>
       <div
         id="container-main"
-        tabIndex={0}
         onTouchStart={onTouchStartTrigger}
         onTouchEnd={onTouchEndTrigger}
         onTouchMove={onTouchMoveTrigger}
@@ -183,8 +188,8 @@ const Index: React.FC = () => {
   );
 };
 
-const container = document.getElementById("root") as Element;
-const root: Root = createRoot(container!);
+const container: Element = document.getElementById("root")!;
+const root: Root = createRoot(container);
 
 root.render(<Index />);
 

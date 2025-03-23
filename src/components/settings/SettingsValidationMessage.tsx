@@ -7,24 +7,27 @@ import {
   faTimes,
   IconDefinition
 } from "@fortawesome/free-solid-svg-icons";
+import { ISettingsValidationMessage } from "interfaces";
 
 /**
  * @interface ISettingsValidationProps
  */
 interface ISettingsValidationProps {
-  validation?: { message: string; type: string };
+  validationMessage?: ISettingsValidationMessage;
 }
 
 /**
- * SettingsValidation
+ * SettingsValidationMessage
  * @param {ISettingsValidationProps} properties
  * @returns FunctionComponent
  */
-export const SettingsValidation: FunctionComponent<ISettingsValidationProps> = ({ validation }) => {
+export const SettingsValidationMessage: FunctionComponent<ISettingsValidationProps> = ({
+  validationMessage
+}) => {
   let alertVariant: string;
   let alertIcon: IconDefinition;
 
-  switch (validation?.type) {
+  switch (validationMessage?.type) {
     case "error":
       alertVariant = "danger";
       alertIcon = faTimes;
@@ -43,9 +46,9 @@ export const SettingsValidation: FunctionComponent<ISettingsValidationProps> = (
   }
 
   return (
-    <Alert className={!validation ? "d-none" : "d-block"} variant={alertVariant}>
+    <Alert className={!validationMessage ? "d-none" : "d-block"} variant={alertVariant}>
       <FontAwesomeIcon icon={alertIcon} />{" "}
-      <span dangerouslySetInnerHTML={{ __html: validation?.message ?? "" }} />
+      <span dangerouslySetInnerHTML={{ __html: validationMessage?.message ?? "" }} />
     </Alert>
   );
 };

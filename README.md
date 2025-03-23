@@ -9,7 +9,7 @@ The key features of Transitmail as follows:
 <ul>
 <li>Built with ReactJS</li>
 <li>Built with Bootstrap</li>
-<li>Works as a Progessive Web Application</li>
+<li>Works as a Progressive Web Application</li>
 <li>Relies only on traditional IMAP and SMTP protocals</li>
 <li>Uses WebSockets for its communications</li>
 <li>Easy to use, setup and deploy</li>
