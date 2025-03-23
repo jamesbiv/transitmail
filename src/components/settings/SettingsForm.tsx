@@ -45,7 +45,7 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
   const setSettingValue = (
     settingName: keyof ISettings,
     settingValue: string | number | boolean
-  ) => {
+  ): void => {
     const settingsCondition = validationConditions.find(
       (validationCondition: ISettingsValidationCondition) =>
         validationCondition.field === settingName

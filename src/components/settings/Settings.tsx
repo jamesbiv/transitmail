@@ -75,8 +75,8 @@ export const Settings: FunctionComponent = () => {
     await createFolders(settings.folderSettings);
   };
 
-  const processValidationConditions = (): ISettingsErrors => {
-    return validationConditions.reduce(
+  const processValidationConditions = (): ISettingsErrors =>
+    validationConditions.reduce(
       (validationResults: ISettingsErrors, { field, subField, constraint, message }) => {
         if (!subField) {
           const settingsValue = settings[field] as string;
@@ -101,7 +101,6 @@ export const Settings: FunctionComponent = () => {
       },
       {}
     );
-  };
 
   const processValidationErrorMessages = (validationErrors: ISettingsErrors): string => {
     return `<ul>${Object.keys(validationErrors).reduce(
@@ -157,20 +156,22 @@ export const Settings: FunctionComponent = () => {
 
     smtpSocket.smtpClose();
 
-    if (imapVerfied && smtpVerfied) {
-      stateManager.showMessageModal({
-        title: "Settings verfieid",
-        content: "Your email settings have been verfied",
-        action: () => {}
-      });
-    } else {
+    if (!imapVerfied || !smtpVerfied) {
       stateManager.showMessageModal({
         title: "Unable to verify your settings",
         content:
           "Unable to verifiy your email settings, please check your credientals and try again",
         action: () => {}
       });
+
+      return;
     }
+
+    stateManager.showMessageModal({
+      title: "Settings verfieid",
+      content: "Your email settings have been verfied",
+      action: () => {}
+    });
   };
 
   const createFolders = async (folderSettings: ISettingsFolders): Promise<void> => {

@@ -39,7 +39,7 @@ export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> =
     undefined
   );
 
-  const setFolderSetting = (folderName: keyof ISettingsFolders, folderValue: string) => {
+  const setFolderSetting = (folderName: keyof ISettingsFolders, folderValue: string): void => {
     const settingsCondition = validationConditions.find(
       (validationCondition: ISettingsValidationCondition) =>
         validationCondition.field === "folderSettings" &&

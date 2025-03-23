@@ -278,7 +278,10 @@ export class SmtpSocket {
    * @returns Promise<ISmtpResponse>
    */
   public async smtpAuthorise(): Promise<ISmtpResponse> {
-    const ehloResponse: ISmtpResponse = await this.smtpRequest(`EHLO ${this.settings.host}`, 220);
+    const ehloResponse: ISmtpResponse = await this.smtpRequest(
+      `EHLO ${this.settings.host}`,
+      [220, 250]
+    );
 
     if (ehloResponse.status !== ESmtpResponseStatus.Success) {
       return ehloResponse;
