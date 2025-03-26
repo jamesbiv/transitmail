@@ -1,142 +1,40 @@
-import React, { ReactNode } from "react";
+import React, { JSX, ReactNode } from "react";
 
 import { render, fireEvent, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { Settings } from "components/settings";
-import {
-  EImapResponseStatus,
-  ESmtpResponseStatus,
-  IMessageModalState,
-  ISettings
-} from "interfaces";
+import { EImapResponseStatus, ESmtpResponseStatus } from "interfaces";
+import { DependenciesContext, IDependencies } from "contexts";
+import { ImapHelper, ImapSocket, SecureStorage, SmtpSocket, StateManager } from "classes";
 
 /**
- * @constant mockImapSocketResponses
+ * contextSpyHelper<T>
+ * @param {string} dependencyKey
+ * @returns T
  */
-const mockImapSocketResponses = {
-  getReadyState: 1,
-  imapConnect: true,
-  imapAuthorise: {
-    data: "",
-    status: EImapResponseStatus.OK
-  },
-  imapClose: true,
-  imapRequest: {
-    data: "",
-    status: EImapResponseStatus.OK
-  }
-};
+function contextSpyHelper<T>(dependencyKey: string) {
+  const dependenciesContext = DependenciesContext as unknown as { _currentValue: IDependencies };
+  const currentValue: IDependencies = dependenciesContext._currentValue;
 
-let lastImapRequest: string;
-
-jest.mock("classes/ImapSocket", () => ({
-  ImapSocket: class ImapSocket {
-    getReadyState() {
-      return mockImapSocketResponses.getReadyState;
-    }
-    imapConnect() {
-      return mockImapSocketResponses.imapConnect;
-    }
-    imapAuthorise() {
-      return mockImapSocketResponses.imapAuthorise;
-    }
-    imapClose() {
-      return mockImapSocketResponses.imapClose;
-    }
-    imapRequest(request: string) {
-      lastImapRequest = request;
-      return mockImapSocketResponses.imapRequest;
-    }
-  }
-}));
+  return currentValue[dependencyKey as keyof IDependencies] as T;
+}
 
 /**
- * @constant mockSmtpSocketResponses
+ * ContainerMain
+ * @param { children: ReactNode } properties
+ * @returns JSX.Element
  */
-const mockSmtpSocketResponses = {
-  getReadyState: 1,
-  smtpConnect: true,
-  smtpAuthorise: {
-    data: "",
-    status: ESmtpResponseStatus.Success
-  },
-  smtpClose: true,
-  smtpRequest: {
-    data: "",
-    status: ESmtpResponseStatus.Success
-  }
-};
-
-jest.mock("classes/SmtpSocket", () => ({
-  SmtpSocket: class SmtpSocket {
-    getReadyState() {
-      return mockSmtpSocketResponses.getReadyState;
-    }
-    smtpConnect() {
-      return mockSmtpSocketResponses.smtpConnect;
-    }
-    smtpAuthorise() {
-      return mockSmtpSocketResponses.smtpAuthorise;
-    }
-    smtpClose() {
-      return mockSmtpSocketResponses.smtpClose;
-    }
-    smtpRequest(request: string) {
-      return mockSmtpSocketResponses.smtpRequest;
-    }
-  }
-}));
-
-/**
- * @constant mockSecureStorageResponses
- */
-const mockSecureStorageResponses = {
-  getSettings: {}
-};
-
-jest.mock("classes/SecureStorage", () => ({
-  SecureStorage: class SecureStorage {
-    getSettings() {
-      return mockSecureStorageResponses.getSettings;
-    }
-    setSettings(setting: ISettings) {
-      return;
-    }
-  }
-}));
-
-/**
- * @constant mockImapHelperResponses
- */
-const mockImapHelperResponses = {
-  formatListFoldersResponse: []
-};
-
-jest.mock("classes/ImapHelper", () => ({
-  ImapHelper: class ImapHelper {
-    formatListFoldersResponse() {
-      return mockImapHelperResponses.formatListFoldersResponse;
-    }
-  }
-}));
-
-let lastMessageModalState: IMessageModalState;
-
-jest.mock("classes/StateManager", () => ({
-  StateManager: class StateManager {
-    showMessageModal(messageModalState: IMessageModalState) {
-      lastMessageModalState = messageModalState;
-    }
-  }
-}));
-
-const ContainerMain = ({ children }: { children: ReactNode }) => {
+const ContainerMain = ({ children }: { children: ReactNode }): JSX.Element => {
   return <div id="container-main">{children}</div>;
 };
 
 describe("Settings Component", () => {
-  describe("Test saveSettings function", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe("Test saveSettings() function", () => {
     const oldEnvironmentVariables: NodeJS.ProcessEnv = process.env;
 
     beforeAll(() => {
@@ -162,6 +60,37 @@ describe("Settings Component", () => {
     });
 
     it("with a successful save", () => {
+      const getReadyStateSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "getReadyState"
+      );
+
+      getReadyStateSpy.mockImplementationOnce(() => 0);
+
+      const imapConnectSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapConnect");
+      imapConnectSpy.mockImplementationOnce(() => true);
+
+      const imapAuthoriseSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapAuthorise"
+      );
+
+      imapAuthoriseSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const imapRequestSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapRequest");
+      imapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const formatListFoldersResponseSpy = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
+
+      formatListFoldersResponseSpy.mockImplementationOnce(() => []);
+
       const { container, getByText } = render(<Settings />, {
         wrapper: ContainerMain
       });
@@ -225,81 +154,209 @@ describe("Settings Component", () => {
   });
 
   describe("Test verifySettings() function", () => {
+    beforeEach(() => {
+      const imapConnectSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapConnect");
+      imapConnectSpy.mockImplementationOnce(() => true);
+
+      const imapCloseSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapClose");
+      imapCloseSpy.mockImplementationOnce(() => true);
+      imapCloseSpy.mockImplementationOnce(() => true);
+
+      const smtpConnectSpy = jest.spyOn(contextSpyHelper<SmtpSocket>("smtpSocket"), "smtpConnect");
+      smtpConnectSpy.mockImplementationOnce(() => true);
+
+      const smtpCloseSpy = jest.spyOn(contextSpyHelper<SmtpSocket>("smtpSocket"), "smtpClose");
+      smtpCloseSpy.mockImplementationOnce(() => true);
+      smtpCloseSpy.mockImplementationOnce(() => true);
+    });
+
     it("unable to verify settings", async () => {
-      mockImapSocketResponses.imapAuthorise = { data: "", status: EImapResponseStatus.BAD };
-      mockSmtpSocketResponses.smtpAuthorise = { data: "", status: ESmtpResponseStatus.Failure };
+      const imapAuthoriseSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapAuthorise"
+      );
+
+      imapAuthoriseSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const smtpAuthoriseSpy = jest.spyOn(
+        contextSpyHelper<SmtpSocket>("smtpSocket"),
+        "smtpAuthorise"
+      );
+
+      smtpAuthoriseSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: ESmtpResponseStatus.Failure };
+      });
+
+      const showMessageModalSpy = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "showMessageModal"
+      );
+
+      showMessageModalSpy.mockImplementationOnce(() => undefined);
 
       const { getByText } = render(<Settings />);
 
       fireEvent.click(getByText(/Verify/i));
 
       await waitFor(() =>
-        expect(lastMessageModalState).toEqual({
+        expect(showMessageModalSpy).toHaveBeenCalledWith({
           content:
             "Unable to verifiy your email settings, please check your credientals and try again",
           title: "Unable to verify your settings"
         })
       );
-
-      mockImapSocketResponses.imapAuthorise = { data: "", status: EImapResponseStatus.OK };
-      mockSmtpSocketResponses.smtpAuthorise = { data: "", status: ESmtpResponseStatus.Success };
     });
 
     it("settings verfied successfully", async () => {
-      mockImapSocketResponses.imapAuthorise = { data: "", status: EImapResponseStatus.OK };
-      mockSmtpSocketResponses.smtpAuthorise = { data: "", status: ESmtpResponseStatus.Success };
+      const imapAuthoriseSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapAuthorise"
+      );
+
+      imapAuthoriseSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const smtpAuthoriseSpy = jest.spyOn(
+        contextSpyHelper<SmtpSocket>("smtpSocket"),
+        "smtpAuthorise"
+      );
+
+      smtpAuthoriseSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: ESmtpResponseStatus.Success };
+      });
+
+      const showMessageModalSpy = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "showMessageModal"
+      );
+
+      showMessageModalSpy.mockImplementationOnce(() => undefined);
 
       const { getByText } = render(<Settings />);
 
       fireEvent.click(getByText(/Verify/i));
 
       await waitFor(() =>
-        expect(lastMessageModalState).toEqual({
+        expect(showMessageModalSpy).toHaveBeenCalledWith({
           content: "Your email settings have been verfied",
           title: "Settings verfieid"
         })
       );
-
-      mockImapSocketResponses.imapAuthorise = { data: "", status: EImapResponseStatus.OK };
-      mockSmtpSocketResponses.smtpAuthorise = { data: "", status: ESmtpResponseStatus.Success };
     });
   });
 
   describe("Test createFolders() function", () => {
+    beforeEach(() => {
+      const getSettingsSpy = jest.spyOn(
+        contextSpyHelper<SecureStorage>("secureStorage"),
+        "getSettings"
+      );
+
+      getSettingsSpy.mockImplementationOnce(() => {
+        return {
+          name: "Test Display Name",
+          email: "test@emailAddress.com",
+          signature: "Test Signature",
+          imapHost: "mail.testIncomingHost.com",
+          imapPort: 1234,
+          imapUsername: "testUsername",
+          imapPassword: "testPassword",
+          smtpHost: "mail.testOutgoingHost.com",
+          smtpPort: 1234,
+          smtpUsername: "testUsername",
+          smtpPassword: "testPassword",
+          folderSettings: {
+            archiveFolder: "Archives",
+            draftsFolder: "Drafts",
+            sentItemsFolder: "Sent Items",
+            spamFolder: "Spam",
+            trashFolder: "Recycle Bin"
+          },
+          autoLogin: undefined,
+          secondaryEmails: undefined
+        };
+      });
+    });
+
     it("test folder creation with successful response", async () => {
-      mockSecureStorageResponses.getSettings = {
-        name: "Test Display Name",
-        email: "test@emailAddress.com",
-        signature: "Test Signature",
-        imapHost: "mail.testIncomingHost.com",
-        imapPort: 1234,
-        imapUsername: "testUsername",
-        imapPassword: "testPassword",
-        smtpHost: "mail.testOutgoingHost.com",
-        smtpPort: 1234,
-        smtpUsername: "testUsername",
-        smtpPassword: "testPassword",
-        folderSettings: {
-          archiveFolder: "Archives",
-          draftsFolder: "Drafts",
-          sentItemsFolder: "Sent Items",
-          spamFolder: "Spam",
-          trashFolder: "Recycle Bin"
-        }
-      };
+      const formatListFoldersResponseSpy = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
 
-      mockImapHelperResponses.formatListFoldersResponse = [
+      formatListFoldersResponseSpy.mockImplementationOnce(() => [
         {
           id: 1,
           name: "Test Folder",
           ref: "Test Folder",
           folders: []
         }
-      ] as never[];
+      ]);
 
-      mockImapSocketResponses.getReadyState = 0;
+      const getReadyStateSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "getReadyState"
+      );
 
-      mockImapSocketResponses.imapRequest = { data: "", status: EImapResponseStatus.OK };
+      getReadyStateSpy.mockImplementationOnce(() => 1);
+
+      const imapRequestSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapRequest");
+
+      imapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      imapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const { container, getByText } = render(<Settings />, {
+        wrapper: ContainerMain
+      });
+
+      const containerMain: Element = container.querySelector("#container-main")! as Element;
+      containerMain.scroll = jest.fn();
+
+      fireEvent.click(getByText(/Save/i));
+    });
+
+    it("test folder creation with unsuccessful response", async () => {
+      const formatListFoldersResponseSpy = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
+
+      formatListFoldersResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: []
+        }
+      ]);
+
+      const getReadyStateSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "getReadyState"
+      );
+
+      getReadyStateSpy.mockImplementationOnce(() => 1);
+
+      const imapSocketImapRequestSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapSocketImapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      imapSocketImapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
 
       const { container, getByText } = render(<Settings />, {
         wrapper: ContainerMain
@@ -310,87 +367,18 @@ describe("Settings Component", () => {
 
       fireEvent.click(getByText(/Save/i));
 
-      mockSecureStorageResponses.getSettings = {};
-      mockImapSocketResponses.getReadyState = 1;
-      mockImapHelperResponses.formatListFoldersResponse = [];
-      mockImapSocketResponses.imapRequest = { data: "", status: EImapResponseStatus.OK };
+      await waitFor(() =>
+        expect(imapSocketImapRequestSpy).toHaveBeenCalledWith('CREATE "Recycle Bin"')
+      );
     });
 
     it("test folder creation with unsuccessful response", async () => {
-      mockSecureStorageResponses.getSettings = {
-        name: "Test Display Name",
-        email: "test@emailAddress.com",
-        signature: "Test Signature",
-        imapHost: "mail.testIncomingHost.com",
-        imapPort: 1234,
-        imapUsername: "testUsername",
-        imapPassword: "testPassword",
-        smtpHost: "mail.testOutgoingHost.com",
-        smtpPort: 1234,
-        smtpUsername: "testUsername",
-        smtpPassword: "testPassword",
-        folderSettings: {
-          archiveFolder: "Archives",
-          draftsFolder: "Drafts",
-          sentItemsFolder: "Sent Items",
-          spamFolder: "Spam",
-          trashFolder: "Recycle Bin"
-        }
-      };
+      const formatListFoldersResponseSpy = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
 
-      mockImapHelperResponses.formatListFoldersResponse = [
-        {
-          id: 1,
-          name: "Test Folder",
-          ref: "Test Folder",
-          folders: []
-        }
-      ] as never[];
-
-      mockImapSocketResponses.getReadyState = 0;
-
-      mockImapSocketResponses.imapRequest = { data: "", status: EImapResponseStatus.BAD };
-
-      const { container, getByText } = render(<Settings />, {
-        wrapper: ContainerMain
-      });
-
-      const containerMain: Element = container.querySelector("#container-main")! as Element;
-      containerMain.scroll = jest.fn();
-
-      fireEvent.click(getByText(/Save/i));
-
-      await waitFor(() => expect(lastImapRequest).toEqual('CREATE "Recycle Bin"'));
-
-      mockSecureStorageResponses.getSettings = {};
-      mockImapSocketResponses.getReadyState = 1;
-      mockImapHelperResponses.formatListFoldersResponse = [];
-      mockImapSocketResponses.imapRequest = { data: "", status: EImapResponseStatus.OK };
-    });
-
-    it("test folder creation with unsuccessful response", async () => {
-      mockSecureStorageResponses.getSettings = {
-        name: "Test Display Name",
-        email: "test@emailAddress.com",
-        signature: "Test Signature",
-        imapHost: "mail.testIncomingHost.com",
-        imapPort: 1234,
-        imapUsername: "testUsername",
-        imapPassword: "testPassword",
-        smtpHost: "mail.testOutgoingHost.com",
-        smtpPort: 1234,
-        smtpUsername: "testUsername",
-        smtpPassword: "testPassword",
-        folderSettings: {
-          archiveFolder: "Archives",
-          draftsFolder: "Drafts",
-          sentItemsFolder: "Sent Items",
-          spamFolder: "Spam",
-          trashFolder: "Recycle Bin"
-        }
-      };
-
-      mockImapHelperResponses.formatListFoldersResponse = [
+      formatListFoldersResponseSpy.mockImplementationOnce(() => [
         {
           id: 1,
           name: "Test Folder",
@@ -403,11 +391,24 @@ describe("Settings Component", () => {
           ref: "Archives",
           folders: []
         }
-      ] as never[];
+      ]);
 
-      mockImapSocketResponses.getReadyState = 0;
+      const getReadyStateSpy = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "getReadyState"
+      );
 
-      mockImapSocketResponses.imapRequest = { data: "", status: EImapResponseStatus.BAD };
+      getReadyStateSpy.mockImplementationOnce(() => 1);
+
+      const imapRequestSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapRequest");
+
+      imapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      imapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
 
       const { container, getByText } = render(<Settings />, {
         wrapper: ContainerMain
@@ -418,12 +419,7 @@ describe("Settings Component", () => {
 
       fireEvent.click(getByText(/Save/i));
 
-      await waitFor(() => expect(lastImapRequest).toEqual('CREATE "Recycle Bin"'));
-
-      mockSecureStorageResponses.getSettings = {};
-      mockImapSocketResponses.getReadyState = 1;
-      mockImapHelperResponses.formatListFoldersResponse = [];
-      mockImapSocketResponses.imapRequest = { data: "", status: EImapResponseStatus.OK };
+      await waitFor(() => expect(imapRequestSpy).toHaveBeenCalledWith('CREATE "Recycle Bin"'));
     });
   });
 });
