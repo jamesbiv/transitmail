@@ -47,6 +47,8 @@ export const Settings: FunctionComponent = () => {
     ...(secureStorage.getSettings() as ISettings)
   });
 
+  const [verifySettingsSpinner, setVerifySettingsSpinner] = useState<boolean>(false);
+
   const saveSettings = async (): Promise<void> => {
     const validationErrors: ISettingsErrors = processValidationConditions(
       settingsValidationConditions,
@@ -72,6 +74,22 @@ export const Settings: FunctionComponent = () => {
   };
 
   const verifySettings = async (): Promise<void> => {
+    setVerifySettingsSpinner(true);
+
+    imapSocket.settings = {
+      host: settings.imapHost,
+      port: settings.imapPort,
+      username: settings.imapUsername,
+      password: settings.imapPassword
+    };
+
+    smtpSocket.settings = {
+      host: settings.smtpHost,
+      port: settings.smtpPort,
+      username: settings.smtpUsername,
+      password: settings.smtpPassword
+    };
+
     imapSocket.imapClose();
     imapSocket.imapConnect(false);
 
@@ -81,17 +99,17 @@ export const Settings: FunctionComponent = () => {
     let imapVerfied: boolean = false;
     let smtpVerfied: boolean = false;
 
-    const imapAuthroiseResponse: IImapResponse = await imapSocket.imapAuthorise();
+    const imapAuthoriseResponse: IImapResponse = await imapSocket.imapAuthorise();
 
-    if (imapAuthroiseResponse.status === EImapResponseStatus.OK) {
+    if (imapAuthoriseResponse.status === EImapResponseStatus.OK) {
       imapVerfied = true;
     }
 
     imapSocket.imapClose();
 
-    const smtpAuthroiseResponse: ISmtpResponse = await smtpSocket.smtpAuthorise();
+    const smtpAuthoriseResponse: ISmtpResponse = await smtpSocket.smtpAuthorise();
 
-    if (smtpAuthroiseResponse.status === ESmtpResponseStatus.Success) {
+    if (smtpAuthoriseResponse.status === ESmtpResponseStatus.Success) {
       smtpVerfied = true;
     }
 
@@ -104,6 +122,8 @@ export const Settings: FunctionComponent = () => {
           "Unable to verifiy your email settings, please check your credientals and try again"
       });
 
+      setVerifySettingsSpinner(false);
+
       return;
     }
 
@@ -111,6 +131,8 @@ export const Settings: FunctionComponent = () => {
       title: "Settings verfieid",
       content: "Your email settings have been verfied"
     });
+
+    setVerifySettingsSpinner(false);
   };
 
   const createFolders = async (folderSettings: ISettingsFolders): Promise<void> => {
@@ -189,7 +211,7 @@ export const Settings: FunctionComponent = () => {
                   variant="secondary"
                   onClick={() => verifySettings()}
                 >
-                  <FontAwesomeIcon icon={faSync} /> Verify{" "}
+                  <FontAwesomeIcon icon={faSync} spin={verifySettingsSpinner} /> Verify{" "}
                   <span className="d-none d-sm-inline-block">settings</span>
                 </Button>
               </div>

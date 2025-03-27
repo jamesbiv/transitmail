@@ -58,10 +58,10 @@ describe("SettingsFormFolders Component", () => {
 
       const feedbackResponseSequence: RegExp[] = [
         /Please specify an archive folder name/i,
-        /Please specify an trash folder name/i,
-        /Please specify an drafts folder name/i,
-        /Please specify an sent items folder name/i,
-        /Please specify an spam folder name/i
+        /Please specify a trash folder name/i,
+        /Please specify a drafts folder name/i,
+        /Please specify a sent items folder name/i,
+        /Please specify a spam folder name/i
       ];
 
       const formFolderFeedback: NodeListOf<Element> = container.querySelectorAll(

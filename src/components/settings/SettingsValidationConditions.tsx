@@ -104,22 +104,22 @@ export const settingsValidationConditions: ISettingsValidationCondition[] = [
   {
     field: "imapHost",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an Incoming mail host"
+    message: "Please specify an incoming mail host"
   },
   {
     field: "imapPort",
     constraint: (value: unknown) => !isNaN(value as number),
-    message: "Please specify an Incoming mail port"
+    message: "Please specify an incoming mail port"
   },
   {
     field: "imapUsername",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an Incoming mail username"
+    message: "Please specify an incoming mail username"
   },
   {
     field: "imapPassword",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an Incoming mail password"
+    message: "Please specify an incoming mail password"
   },
   {
     field: "smtpHost",
@@ -156,25 +156,25 @@ export const settingsValidationConditions: ISettingsValidationCondition[] = [
     field: "folderSettings",
     subField: "draftsFolder",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an drafts folder name"
+    message: "Please specify a drafts folder name"
   },
   {
     field: "folderSettings",
     subField: "sentItemsFolder",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an sent items folder name"
+    message: "Please specify a sent items folder name"
   },
   {
     field: "folderSettings",
     subField: "spamFolder",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an spam folder name"
+    message: "Please specify a spam folder name"
   },
   {
     field: "folderSettings",
     subField: "trashFolder",
     constraint: (value: unknown) => !!(value as string)?.length,
-    message: "Please specify an trash folder name"
+    message: "Please specify a trash folder name"
   }
 ];
 
