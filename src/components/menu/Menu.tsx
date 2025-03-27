@@ -11,6 +11,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
 
+/**
+ * @interface IMenuItem
+ */
 interface IMenuItem {
   id: number;
   name: string;
@@ -18,6 +21,10 @@ interface IMenuItem {
   icon: IconDefinition;
 }
 
+/**
+ * Menu
+ * @returns FunctionComponent
+ */
 const Menu: FunctionComponent = () => {
   const { stateManager } = useContext(DependenciesContext);
 
