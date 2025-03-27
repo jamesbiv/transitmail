@@ -41,10 +41,9 @@ describe("SettingsSecondaryEmails Component", () => {
 
       fireEvent.click(getByText(/Ok/i));
 
-      expect(secondaryEmails).toEqual([
+      expect(secondaryEmails).toMatchObject([
         {
           email: "test@emailAddress.com",
-          key: undefined,
           name: "Test Display Name",
           signature: "Test Email Signature"
         }

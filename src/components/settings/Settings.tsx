@@ -118,7 +118,7 @@ export const Settings: FunctionComponent = () => {
       imapSocket.imapConnect();
     }
 
-    const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
+    const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
     const currentFolders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 

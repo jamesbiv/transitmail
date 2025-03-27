@@ -20,6 +20,7 @@ import {
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAsterisk, faEdit, faEnvelope, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { v4 as uuidv4 } from "uuid";
 import { ISettingsErrors, ISettingsSecondaryEmail, ISettingsValidationCondition } from "interfaces";
 import { SettingsValidationMessage } from "./SettingsValidationMessage";
 import {
@@ -54,14 +55,13 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
   });
 
   const createNewSecondaryEmail: () => void = () => {
+    setShowSecondaryEmailModal(true);
+
     setSecondaryEmail({
-      key: self?.crypto?.randomUUID(),
       name: "",
       email: "",
       signature: ""
     });
-
-    setShowSecondaryEmailModal(true);
   };
 
   const updateSecondaryEmail: () => void = () => {
@@ -73,11 +73,15 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
       (secondaryEmailElement) => secondaryEmailElement.key === secondaryEmail.key
     );
 
-    if (secondaryEmailIndex === -1) {
-      secondaryEmails.push(secondaryEmail);
-    } else {
+    if (secondaryEmailIndex > -1) {
       secondaryEmails[secondaryEmailIndex] = secondaryEmail;
+      updateSecondaryEmails(secondaryEmails);
+
+      return;
     }
+
+    secondaryEmail.key = uuidv4();
+    secondaryEmails.push(secondaryEmail);
 
     updateSecondaryEmails(secondaryEmails);
   };
