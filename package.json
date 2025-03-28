@@ -60,6 +60,9 @@
     ],
     "transformIgnorePatterns": [
       "node_modules/(?!crypto-es)"
+    ],
+    "watchPathIgnorePatterns": [
+      "src/__tests__/fixtures/.*"
     ]
   }
 }

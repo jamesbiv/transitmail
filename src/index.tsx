@@ -40,7 +40,7 @@ import "index.css";
  * Index
  * @returns FunctionComponent
  */
-const Index: FunctionComponent = () => {
+export const Index: FunctionComponent = () => {
   const [activeKey, setActiveKey] = useState<string>(window.location.hash.substring(1) || "inbox");
 
   const [sliderState, setSliderState] = useState<ISliderState>({
@@ -177,12 +177,7 @@ const Index: FunctionComponent = () => {
       </div>
       <MessageModal
         messageModalState={messageModalState}
-        onHide={() =>
-          setMessageModalState({
-            ...messageModalState,
-            show: false
-          })
-        }
+        setMessageModalState={setMessageModalState}
       />
     </StrictMode>
   );

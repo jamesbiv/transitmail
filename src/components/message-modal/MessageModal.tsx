@@ -1,23 +1,37 @@
-import React from "react";
+import React, { Dispatch, FunctionComponent } from "react";
 import { Button, Modal, ModalHeader, ModalTitle, ModalBody, ModalFooter } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import { IMessageModalState } from "interfaces";
 
+/**
+ * @interface IMessageModalProps
+ */
 interface IMessageModalProps {
   messageModalState: IMessageModalState;
-  onHide: () => void;
+  setMessageModalState: Dispatch<IMessageModalState>;
 }
 
-export const MessageModal: React.FC<IMessageModalProps> = ({ messageModalState, onHide }) => {
+/**
+ * MessageModal
+ * @param {IMessageModalProps} properties
+ * @returns FunctionComponent
+ */
+export const MessageModal: FunctionComponent<IMessageModalProps> = ({
+  messageModalState,
+  setMessageModalState
+}) => {
+  const hideMessageModal = (): void => setMessageModalState({ ...messageModalState, show: false });
+
   return (
     <Modal
       show={messageModalState.show}
+      onHide={hideMessageModal}
       centered={true}
-      aria-labelledby="contained-modal-title-vcenter"
+      aria-labelledby="message-modal"
     >
       <ModalHeader closeButton>
-        <ModalTitle id="contained-modal-title-vcenter">
+        <ModalTitle id="message-modal">
           <FontAwesomeIcon icon={faExclamationTriangle} /> {messageModalState.title}
         </ModalTitle>
       </ModalHeader>
@@ -26,12 +40,12 @@ export const MessageModal: React.FC<IMessageModalProps> = ({ messageModalState, 
         <Button
           onClick={() => {
             messageModalState.action && messageModalState.action();
-            onHide();
+            hideMessageModal();
           }}
         >
           Ok
         </Button>
-        <Button onClick={() => onHide()}>Close</Button>
+        <Button onClick={() => hideMessageModal()}>Close</Button>
       </ModalFooter>
     </Modal>
   );

@@ -3,22 +3,11 @@ import React, { JSX, ReactNode } from "react";
 import { render, fireEvent, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
+import { contextSpyHelper } from "__tests__/fixtures";
+
 import { Settings } from "components/settings";
 import { EImapResponseStatus, ESmtpResponseStatus } from "interfaces";
-import { DependenciesContext, IDependencies } from "contexts";
 import { ImapHelper, ImapSocket, SecureStorage, SmtpSocket, StateManager } from "classes";
-
-/**
- * contextSpyHelper<T>
- * @param {string} dependencyKey
- * @returns T
- */
-function contextSpyHelper<T>(dependencyKey: string) {
-  const dependenciesContext = DependenciesContext as unknown as { _currentValue: IDependencies };
-  const currentValue: IDependencies = dependenciesContext._currentValue;
-
-  return currentValue[dependencyKey as keyof IDependencies] as T;
-}
 
 /**
  * ContainerMain
@@ -60,17 +49,21 @@ describe("Settings Component", () => {
     });
 
     it("with a successful save", () => {
-      const getReadyStateSpy = jest.spyOn(
+      const getReadyStateSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "getReadyState"
       );
 
       getReadyStateSpy.mockImplementationOnce(() => 0);
 
-      const imapConnectSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapConnect");
+      const imapConnectSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapConnect"
+      );
+
       imapConnectSpy.mockImplementationOnce(() => true);
 
-      const imapAuthoriseSpy = jest.spyOn(
+      const imapAuthoriseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapAuthorise"
       );
@@ -79,12 +72,16 @@ describe("Settings Component", () => {
         return { data: [[]], status: EImapResponseStatus.OK };
       });
 
-      const imapRequestSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapRequest");
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
       imapRequestSpy.mockImplementationOnce(async () => {
         return { data: [[]], status: EImapResponseStatus.OK };
       });
 
-      const formatListFoldersResponseSpy = jest.spyOn(
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatListFoldersResponse"
       );
@@ -155,23 +152,39 @@ describe("Settings Component", () => {
 
   describe("Test verifySettings() function", () => {
     beforeEach(() => {
-      const imapConnectSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapConnect");
+      const imapConnectSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapConnect"
+      );
+
       imapConnectSpy.mockImplementationOnce(() => true);
 
-      const imapCloseSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapClose");
+      const imapCloseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapClose"
+      );
+
       imapCloseSpy.mockImplementationOnce(() => true);
       imapCloseSpy.mockImplementationOnce(() => true);
 
-      const smtpConnectSpy = jest.spyOn(contextSpyHelper<SmtpSocket>("smtpSocket"), "smtpConnect");
+      const smtpConnectSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<SmtpSocket>("smtpSocket"),
+        "smtpConnect"
+      );
+
       smtpConnectSpy.mockImplementationOnce(() => true);
 
-      const smtpCloseSpy = jest.spyOn(contextSpyHelper<SmtpSocket>("smtpSocket"), "smtpClose");
+      const smtpCloseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<SmtpSocket>("smtpSocket"),
+        "smtpClose"
+      );
+      
       smtpCloseSpy.mockImplementationOnce(() => true);
       smtpCloseSpy.mockImplementationOnce(() => true);
     });
 
     it("unable to verify settings", async () => {
-      const imapAuthoriseSpy = jest.spyOn(
+      const imapAuthoriseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapAuthorise"
       );
@@ -180,7 +193,7 @@ describe("Settings Component", () => {
         return { data: [[]], status: EImapResponseStatus.BAD };
       });
 
-      const smtpAuthoriseSpy = jest.spyOn(
+      const smtpAuthoriseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<SmtpSocket>("smtpSocket"),
         "smtpAuthorise"
       );
@@ -189,7 +202,7 @@ describe("Settings Component", () => {
         return { data: [[]], status: ESmtpResponseStatus.Failure };
       });
 
-      const showMessageModalSpy = jest.spyOn(
+      const showMessageModalSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<StateManager>("stateManager"),
         "showMessageModal"
       );
@@ -210,7 +223,7 @@ describe("Settings Component", () => {
     });
 
     it("settings verfied successfully", async () => {
-      const imapAuthoriseSpy = jest.spyOn(
+      const imapAuthoriseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapAuthorise"
       );
@@ -219,7 +232,7 @@ describe("Settings Component", () => {
         return { data: [[]], status: EImapResponseStatus.OK };
       });
 
-      const smtpAuthoriseSpy = jest.spyOn(
+      const smtpAuthoriseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<SmtpSocket>("smtpSocket"),
         "smtpAuthorise"
       );
@@ -228,7 +241,7 @@ describe("Settings Component", () => {
         return { data: [[]], status: ESmtpResponseStatus.Success };
       });
 
-      const showMessageModalSpy = jest.spyOn(
+      const showMessageModalSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<StateManager>("stateManager"),
         "showMessageModal"
       );
@@ -250,7 +263,7 @@ describe("Settings Component", () => {
 
   describe("Test createFolders() function", () => {
     beforeEach(() => {
-      const getSettingsSpy = jest.spyOn(
+      const getSettingsSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<SecureStorage>("secureStorage"),
         "getSettings"
       );
@@ -282,7 +295,7 @@ describe("Settings Component", () => {
     });
 
     it("test folder creation with successful response", async () => {
-      const formatListFoldersResponseSpy = jest.spyOn(
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatListFoldersResponse"
       );
@@ -296,14 +309,17 @@ describe("Settings Component", () => {
         }
       ]);
 
-      const getReadyStateSpy = jest.spyOn(
+      const getReadyStateSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "getReadyState"
       );
 
       getReadyStateSpy.mockImplementationOnce(() => 1);
 
-      const imapRequestSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapRequest");
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
 
       imapRequestSpy.mockImplementationOnce(async () => {
         return { data: [[]], status: EImapResponseStatus.OK };
@@ -324,7 +340,7 @@ describe("Settings Component", () => {
     });
 
     it("test folder creation with unsuccessful response", async () => {
-      const formatListFoldersResponseSpy = jest.spyOn(
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatListFoldersResponse"
       );
@@ -338,14 +354,14 @@ describe("Settings Component", () => {
         }
       ]);
 
-      const getReadyStateSpy = jest.spyOn(
+      const getReadyStateSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "getReadyState"
       );
 
       getReadyStateSpy.mockImplementationOnce(() => 1);
 
-      const imapSocketImapRequestSpy = jest.spyOn(
+      const imapSocketImapRequestSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapRequest"
       );
@@ -373,7 +389,7 @@ describe("Settings Component", () => {
     });
 
     it("test folder creation with unsuccessful response", async () => {
-      const formatListFoldersResponseSpy = jest.spyOn(
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatListFoldersResponse"
       );
@@ -393,14 +409,17 @@ describe("Settings Component", () => {
         }
       ]);
 
-      const getReadyStateSpy = jest.spyOn(
+      const getReadyStateSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "getReadyState"
       );
 
       getReadyStateSpy.mockImplementationOnce(() => 1);
 
-      const imapRequestSpy = jest.spyOn(contextSpyHelper<ImapSocket>("imapSocket"), "imapRequest");
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
 
       imapRequestSpy.mockImplementationOnce(async () => {
         return { data: [[]], status: EImapResponseStatus.OK };

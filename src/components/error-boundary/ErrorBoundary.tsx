@@ -1,4 +1,4 @@
-import React, { ErrorInfo, Fragment, PureComponent, ReactNode, useCallback, useState } from "react";
+import React, { ErrorInfo, Fragment, PureComponent, ReactNode } from "react";
 import { Spinner } from "react-bootstrap";
 
 import { StateManager } from "classes";
@@ -30,7 +30,7 @@ export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoun
   /**
    * @static {DependenciesContext} contextType
    */
-  static contextType = DependenciesContext;
+  static readonly contextType = DependenciesContext;
 
   /**
    * @declare {ContextType<typeof DependenciesContext>} context
