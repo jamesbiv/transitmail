@@ -25,7 +25,7 @@ export const MessageModal: React.FC<IMessageModalProps> = ({ messageModalState, 
       <ModalFooter>
         <Button
           onClick={() => {
-            messageModalState.action();
+            messageModalState.action && messageModalState.action();
             onHide();
           }}
         >

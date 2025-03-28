@@ -1,5 +1,5 @@
-import React, { FormEvent, useContext, useState } from "react";
-import { SettingsForm, SettingsValidation, validationConditions } from ".";
+import React, { FormEvent, FunctionComponent, useContext, useState } from "react";
+import { SettingsForm, SettingsValidationMessage, settingsValidationConditions } from ".";
 import { Row, Col, Card, Form, Button, CardHeader, CardBody, CardFooter } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faCog, faSync } from "@fortawesome/free-solid-svg-icons";
@@ -11,16 +11,20 @@ import {
   ISettings,
   ISettingsErrors,
   ISettingsFolders,
+  ISettingsValidationMessage,
   ISmtpResponse
 } from "interfaces";
 import { DependenciesContext } from "contexts";
+import {
+  processValidationConditions,
+  processValidationErrorMessages
+} from "./SettingsValidationConditions";
 
-interface ISettingsValidation {
-  message: string;
-  type: string;
-}
-
-export const Settings: React.FC = () => {
+/**
+ * Settings
+ * @returns FunctionComponent
+ */
+export const Settings: FunctionComponent = () => {
   const { imapHelper, imapSocket, smtpSocket, secureStorage, stateManager } =
     useContext(DependenciesContext);
 
@@ -34,26 +38,27 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const [displayFormFolders, setDisplayFormFolders] = useState<boolean>(false);
-
-  const [validation, setValidation] = useState<ISettingsValidation | undefined>(undefined);
+  const [validationMessage, setValidationMessage] = useState<
+    ISettingsValidationMessage | undefined
+  >(undefined);
 
   const [settings, setSettings] = useState<ISettings>({
     ...settingsDefault,
     ...(secureStorage.getSettings() as ISettings)
   });
 
+  const [verifySettingsSpinner, setVerifySettingsSpinner] = useState<boolean>(false);
+
   const saveSettings = async (): Promise<void> => {
-    const validationErrors: ISettingsErrors = processValidationConditions();
+    const validationErrors: ISettingsErrors = processValidationConditions(
+      settingsValidationConditions,
+      settings
+    );
 
     if (Object.keys(validationErrors).length) {
       const errorMessages: string = processValidationErrorMessages(validationErrors);
 
-      if (settings.folderSettings) {
-        setDisplayFormFolders(true);
-      }
-
-      setValidation({
+      setValidationMessage({
         message: `Please check the following errors: ${errorMessages}`,
         type: "error"
       });
@@ -61,72 +66,30 @@ export const Settings: React.FC = () => {
       return;
     }
 
-    setValidation({ message: "Settings saved successfully", type: "info" });
+    setValidationMessage({ message: "Settings saved successfully", type: "info" });
 
     secureStorage.setSettings(settings as Required<ISettings>);
 
     await createFolders(settings.folderSettings);
-
-    return;
-  };
-
-  const processValidationConditions = (): ISettingsErrors => {
-    return validationConditions.reduce(
-      (validationResults: ISettingsErrors, { field, subField, constraint, message }) => {
-        if (!subField) {
-          const settingsValue = settings[field] as string;
-
-          if (!constraint(settingsValue)) {
-            validationResults[field] = message;
-          }
-        } else {
-          const settingsValue = settings[field] as {
-            [subField: string]: string;
-          };
-
-          if (!constraint(settingsValue[subField])) {
-            validationResults[field] = {
-              [field]: message,
-              ...(validationResults[field] as object)
-            };
-          }
-        }
-
-        return validationResults;
-      },
-      {}
-    );
-  };
-
-  const processValidationErrorMessages = (validationErrors: ISettingsErrors): string => {
-    return `<ul>${Object.keys(validationErrors).reduce(
-      (errorResponse: string, valueKey: string): string => {
-        if (typeof validationErrors[valueKey] === "string") {
-          errorResponse += `<li>${validationErrors[valueKey]}</li>`;
-        }
-
-        if (typeof validationErrors[valueKey] === "object") {
-          const objectValidationErrors = validationErrors[valueKey] as {
-            [key: string]: string;
-          };
-
-          errorResponse += Object.keys(objectValidationErrors).reduce(
-            (errorObjectResponse: string, objectKey: string): string => {
-              errorObjectResponse += `<li>${objectValidationErrors[objectKey]}</li>`;
-
-              return errorObjectResponse;
-            },
-            ""
-          );
-        }
-
-        return errorResponse;
-      },
-      ""
-    )}</ul>`;
   };
 
   const verifySettings = async (): Promise<void> => {
+    setVerifySettingsSpinner(true);
+
+    imapSocket.settings = {
+      host: settings.imapHost,
+      port: settings.imapPort,
+      username: settings.imapUsername,
+      password: settings.imapPassword
+    };
+
+    smtpSocket.settings = {
+      host: settings.smtpHost,
+      port: settings.smtpPort,
+      username: settings.smtpUsername,
+      password: settings.smtpPassword
+    };
+
     imapSocket.imapClose();
     imapSocket.imapConnect(false);
 
@@ -134,38 +97,42 @@ export const Settings: React.FC = () => {
     smtpSocket.smtpConnect(false);
 
     let imapVerfied: boolean = false;
-    let smtpVerfied: boolean = true;
+    let smtpVerfied: boolean = false;
 
-    const imapAuthroiseResponse: IImapResponse = await imapSocket.imapAuthorise();
+    const imapAuthoriseResponse: IImapResponse = await imapSocket.imapAuthorise();
 
-    if (imapAuthroiseResponse.status === EImapResponseStatus.OK) {
+    if (imapAuthoriseResponse.status === EImapResponseStatus.OK) {
       imapVerfied = true;
     }
 
     imapSocket.imapClose();
 
-    const smtpAuthroiseResponse: ISmtpResponse = await smtpSocket.smtpAuthorise();
+    const smtpAuthoriseResponse: ISmtpResponse = await smtpSocket.smtpAuthorise();
 
-    if (smtpAuthroiseResponse.status === ESmtpResponseStatus.Success) {
+    if (smtpAuthoriseResponse.status === ESmtpResponseStatus.Success) {
       smtpVerfied = true;
     }
 
     smtpSocket.smtpClose();
 
-    if (imapVerfied && smtpVerfied) {
-      stateManager.showMessageModal({
-        title: "Settings verfieid",
-        content: "Your email settings have been verfied",
-        action: () => {}
-      });
-    } else {
+    if (!imapVerfied || !smtpVerfied) {
       stateManager.showMessageModal({
         title: "Unable to verify your settings",
         content:
-          "Unable to verifiy your email settings, please check your credientals and try again",
-        action: () => {}
+          "Unable to verifiy your email settings, please check your credientals and try again"
       });
+
+      setVerifySettingsSpinner(false);
+
+      return;
     }
+
+    stateManager.showMessageModal({
+      title: "Settings verfieid",
+      content: "Your email settings have been verfied"
+    });
+
+    setVerifySettingsSpinner(false);
   };
 
   const createFolders = async (folderSettings: ISettingsFolders): Promise<void> => {
@@ -173,7 +140,7 @@ export const Settings: React.FC = () => {
       imapSocket.imapConnect();
     }
 
-    const listResponse = await imapSocket.imapRequest(`LIST "" "*"`);
+    const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
     const currentFolders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
@@ -211,7 +178,7 @@ export const Settings: React.FC = () => {
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
           event.preventDefault();
 
-          const containerElement = document.getElementById("container-main") as HTMLElement;
+          const containerElement: HTMLElement = document.getElementById("container-main")!;
 
           containerElement.scroll(0, 0);
 
@@ -220,13 +187,11 @@ export const Settings: React.FC = () => {
         noValidate={true}
       >
         <CardBody>
-          <SettingsValidation validation={validation} />
+          <SettingsValidationMessage validationMessage={validationMessage} />
           <SettingsForm
+            settingsValidationConditions={settingsValidationConditions}
             settings={settings}
-            validationConditions={validationConditions}
-            displayFormFolders={displayFormFolders}
             setSettings={setSettings}
-            setDisplayFormFolders={setDisplayFormFolders}
           />
         </CardBody>
         <CardFooter>
@@ -246,7 +211,7 @@ export const Settings: React.FC = () => {
                   variant="secondary"
                   onClick={() => verifySettings()}
                 >
-                  <FontAwesomeIcon icon={faSync} /> Verify{" "}
+                  <FontAwesomeIcon icon={faSync} spin={verifySettingsSpinner} /> Verify{" "}
                   <span className="d-none d-sm-inline-block">settings</span>
                 </Button>
               </div>

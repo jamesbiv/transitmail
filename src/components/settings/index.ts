@@ -1,6 +1,11 @@
 export { Settings } from "./Settings";
 export { SettingsForm } from "./SettingsForm";
 export { SettingsFormFolders } from "./SettingsFormFolders";
-export { SettingsSecondaryEmails } from "./SettingsSecondaryEmails";
-export { SettingsValidation } from "./SettingsValidation";
-export { validationConditions } from "./SettingsValidationConditions";
+export { SettingsSecondaryEmails, SettingsSecondaryEmailsModal } from "./SettingsSecondaryEmails";
+export { SettingsValidationMessage } from "./SettingsValidationMessage";
+export {
+  processValidationConditions,
+  processValidationErrorMessages,
+  settingsValidationConditions,
+  secondaryEmailValidationConditions
+} from "./SettingsValidationConditions";
