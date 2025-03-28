@@ -3,11 +3,20 @@ import {
   ISmtpSession,
   ISmtpResponse,
   ESmtpResponseStatus,
-  ISmtpResponseData
+  ISmtpResponseData,
+  ESmtpResponseCodeType,
+  ISmtpResponseCode
 } from "interfaces";
+import { smtpResponseCodes } from "lib";
 
+/**
+ * @type TSmtpCallback
+ */
 type TSmtpCallback = (event: ISmtpResponseData | Event) => void;
 
+/**
+ * @class SmtpSocket
+ */
 export class SmtpSocket {
   /**
    * @var {ISmtpSession} session
@@ -18,6 +27,11 @@ export class SmtpSocket {
    * @var {ISmtpSettings} settings
    */
   public settings: ISmtpSettings;
+
+  /**
+   * @var {number[]} responseCodes
+   */
+  public responseCodes: { positive: number[]; negative: number[] };
 
   /**
    * @constuctor
@@ -45,6 +59,18 @@ export class SmtpSocket {
       streamCumlative: 0, // download count of entire session
       stream: 0, // download count of last request
       lock: true // locking asynchronous messages
+    };
+
+    // Response codes
+    this.responseCodes = {
+      positive: this.getResponseCodesByType([
+        ESmtpResponseCodeType.PositiveCompletion,
+        ESmtpResponseCodeType.PositiveIntermediate
+      ]),
+      negative: this.getResponseCodesByType([
+        ESmtpResponseCodeType.NegativePermanent,
+        ESmtpResponseCodeType.NegativeTransient
+      ])
     };
   }
 
@@ -80,7 +106,7 @@ export class SmtpSocket {
       }
 
       this.session.request.push({
-        code: 250,
+        responseCodes: [250],
         request: "",
         success: () => {},
         failure: () => {}
@@ -131,7 +157,7 @@ export class SmtpSocket {
       }
     };
 
-    return false;
+    return true;
   }
 
   /**
@@ -150,13 +176,16 @@ export class SmtpSocket {
    * @param {number} code
    * @returns Promise<ISmtpResponse>
    */
-  public async smtpRequest(request: string, code: number | number[]): Promise<ISmtpResponse> {
+  public async smtpRequest(
+    request: string,
+    responseCodes: number[] = this.responseCodes["positive"]
+  ): Promise<ISmtpResponse> {
     let status: ESmtpResponseStatus | undefined;
 
     const responsePayload: Promise<ISmtpResponseData> = new Promise((fulfilled, rejected) => {
       this.smtpProcessRequest(
         request,
-        code,
+        responseCodes,
         (event: ISmtpResponseData | Event) => {
           fulfilled(event as ISmtpResponseData);
           status = ESmtpResponseStatus.Success;
@@ -183,13 +212,13 @@ export class SmtpSocket {
    */
   private smtpProcessRequest(
     request: string,
-    code: number | number[],
+    responseCodes: number[],
     success?: TSmtpCallback,
     failure?: TSmtpCallback
   ): void {
     if (this.session.lock) {
       setTimeout(() => {
-        this.smtpProcessRequest(request, code, success, failure);
+        this.smtpProcessRequest(request, responseCodes, success, failure);
       }, 100);
 
       return;
@@ -207,7 +236,7 @@ export class SmtpSocket {
 
     this.session.request.push({
       request: request,
-      code: code,
+      responseCodes: responseCodes,
       success: success,
       failure: failure
     });
@@ -263,11 +292,7 @@ export class SmtpSocket {
     const request: ISmtpResponseData = this.session.request[index];
 
     if (request) {
-      const requestCodeArray = Array.isArray(request.code) ? request.code : [request.code];
-      // eslint-disable-next-line no-console
-      console.log(request.code, responseCode);
-
-      requestCodeArray.includes(Number(responseCode))
+      request.responseCodes.includes(Number(responseCode))
         ? request.success && request.success(request)
         : request.failure && request.failure(request);
     }
@@ -278,34 +303,25 @@ export class SmtpSocket {
    * @returns Promise<ISmtpResponse>
    */
   public async smtpAuthorise(): Promise<ISmtpResponse> {
-    const ehloResponse: ISmtpResponse = await this.smtpRequest(
-      `EHLO ${this.settings.host}`,
-      [220, 250]
-    );
+    const ehloResponse: ISmtpResponse = await this.smtpRequest(`EHLO ${this.settings.host}`);
 
     if (ehloResponse.status !== ESmtpResponseStatus.Success) {
       return ehloResponse;
     }
 
-    const authResponse: ISmtpResponse = await this.smtpRequest("AUTH LOGIN", [235, 250, 334]);
+    const authResponse: ISmtpResponse = await this.smtpRequest("AUTH LOGIN");
 
     if (authResponse.status !== ESmtpResponseStatus.Success) {
       return authResponse;
     }
 
-    const userResponse: ISmtpResponse = await this.smtpRequest(
-      btoa(this.settings.username),
-      [235, 250, 334]
-    );
+    const userResponse: ISmtpResponse = await this.smtpRequest(btoa(this.settings.username));
 
     if (userResponse.status !== ESmtpResponseStatus.Success) {
       return userResponse;
     }
 
-    const passResponse: ISmtpResponse = await this.smtpRequest(
-      btoa(this.settings.password),
-      [235, 250, 334]
-    );
+    const passResponse: ISmtpResponse = await this.smtpRequest(btoa(this.settings.password));
 
     return passResponse;
   }
@@ -325,4 +341,24 @@ export class SmtpSocket {
   public getBufferedAmount = (): number => {
     return this.session.socket?.bufferedAmount ?? 0;
   };
+
+  /**
+   * getResponseCodesByType
+   * @param responseCodeTypes
+   * @returns number[]
+   */
+  private getResponseCodesByType(responseCodeTypes: ESmtpResponseCodeType[]) {
+    return smtpResponseCodes.reduce(
+      (responseCode: number[], smtpResponseCode: ISmtpResponseCode) => {
+        const { code, type } = smtpResponseCode;
+
+        if (responseCodeTypes.includes(type)) {
+          responseCode.push(code);
+        }
+
+        return responseCode;
+      },
+      []
+    );
+  }
 }

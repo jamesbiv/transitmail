@@ -1,7 +1,7 @@
 import { ISmtpResponseData } from ".";
 
 export interface ISmtpRequest {
-  code?: number | number[];
+  responseCodes: number[];
   failure?: (event: ISmtpResponseData | Event) => void;
   request?: string;
   response?: string[][];
