@@ -138,7 +138,7 @@ export class SmtpSocket {
     this.session.socket.onerror = (event: Event) => {
       if (this.session.debug) {
         // eslint-disable-next-line no-console
-        console.error("[SMTP] Connection error", event);
+        console.error("[SMTP] Connection error", JSON.stringify(event));
       }
 
       if (this.session.retry > 0) {
@@ -150,10 +150,10 @@ export class SmtpSocket {
       error && error(event);
     };
 
-    this.session.socket.onclose = (event: Event) => {
+    this.session.socket.onclose = (event: CloseEvent) => {
       if (this.session.debug) {
         // eslint-disable-next-line no-console
-        console.log("[SMTP] Connection closed", event);
+        console.log("[SMTP] Connection closed", JSON.stringify(event));
       }
     };
 
@@ -245,7 +245,7 @@ export class SmtpSocket {
       setTimeout(() => {
         const currentReadyState: number | undefined = this.getReadyState();
 
-        if (this.session.socket && currentReadyState && currentReadyState === 1) {
+        if (this.session.socket && currentReadyState && currentReadyState === WebSocket.OPEN) {
           this.session.socket.send(blob);
         } else {
           readyStateCallack();
@@ -260,7 +260,7 @@ export class SmtpSocket {
    * @param {string} response
    * @returns void
    */
-  public smtpResponseHandler(response: string): void {
+  private smtpResponseHandler(response: string): void {
     const index: number = this.session.request.length - 1;
     const responseRows: string[] = response.split("\r\n");
 
