@@ -1,11 +1,15 @@
 import { Dispatch } from "react";
-import { IComposePresets, IFolderEmail, IMessageModalState, ISliderState } from "interfaces";
+import {
+  IComposePresets,
+  IFolderEmail,
+  IFolderEmails,
+  IMessageModalState,
+  ISliderState
+} from "interfaces";
 
-interface IFolderEmails {
-  emails?: IFolderEmail[];
-  latestUid?: string;
-}
-
+/**
+ * @type TIndexState
+ */
 type TIndexState = {
   sliderState: ISliderState;
   setSliderState: Dispatch<ISliderState>;
@@ -13,6 +17,9 @@ type TIndexState = {
   setMessageModalState: Dispatch<IMessageModalState>;
 };
 
+/**
+ * @class StateManager
+ */
 export class StateManager {
   /**
    * @var {TIndexState} indexState;
@@ -49,7 +56,11 @@ export class StateManager {
   public updateActiveKey(activeKey: string): void {
     window.location.hash = "#" + activeKey;
 
-    this.indexState.setActiveKey(activeKey);
+    const setActiveKey: Dispatch<string> = this.indexState.setActiveKey;
+
+    if (typeof setActiveKey === "function") {
+      this.indexState.setActiveKey(activeKey);
+    }
 
     const sliderState: ISliderState = this.indexState.sliderState;
 
@@ -119,7 +130,7 @@ export class StateManager {
    * @param {IFolderEmail[]} folderEmails
    * @returns void
    */
-  public updateCurrentFolder(emails?: IFolderEmail[], latestUid?: string) {
+  public updateCurrentFolder(emails?: IFolderEmail[], latestUid?: string): void {
     if (this.folderId) {
       this.folderEmails[this.folderId] = { emails, latestUid };
     }

@@ -1,4 +1,4 @@
-import { ISmtpSettings } from "interfaces";
+import { ESmtpResponseStatus, ISmtpSettings } from "interfaces";
 import { SmtpSocket } from "classes";
 import { WebSocketServer, WebSocket } from "ws";
 import { overloadWebSocketConstructor, restoreWebSocketClass } from "__tests__/fixtures";
@@ -31,10 +31,25 @@ describe("Testing the SmtpSocket class", () => {
     // eslint-disable-next-line no-console
     const webSocketOnError = (error: Error): void => console.error(error);
 
-    const webSocketOnMessage = (data: string, isBinary: boolean): void => {
+    const webSocketOnMessage = (requestData: Buffer, isBinary: boolean): void => {
       webSocketServer.clients.forEach((client: WebSocket) => {
-        if (client !== this && client.readyState === WebSocket.OPEN) {
-          client.send("220 " + data, { binary: isBinary });
+        if (client === this || client.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
+        const requestDataString: string = Buffer.from(requestData).toString();
+
+        switch (true) {
+          case /Test positive request/i.test(requestDataString):
+            client.send("220 Test positive response", { binary: isBinary });
+            break;
+
+          case /Test negative request/i.test(requestDataString):
+            client.send("500 Test negative response", { binary: isBinary });
+            break;
+
+          default:
+            client.send(`220 ${requestDataString}`, { binary: isBinary });
         }
       });
     };
@@ -69,16 +84,34 @@ describe("Testing the SmtpSocket class", () => {
     expect(smtpCloseResponse).toBeTruthy();
   });
 
-  it("testing smtpRequest() method", async () => {
+  it("testing smtpRequest() method with a positive request", async () => {
     const smtpSocket = new SmtpSocket(settings);
 
     smtpSocket.smtpConnect();
 
-    const smtpRequestResponse = await smtpSocket.smtpRequest("Test request");
+    const smtpRequestResponse = await smtpSocket.smtpRequest("Test positive request");
 
     smtpSocket.smtpClose();
 
-    expect(smtpRequestResponse).toBeTruthy();
+    expect(smtpRequestResponse).toEqual({
+      data: [["220 Test positive response"]],
+      status: ESmtpResponseStatus.Success
+    });
+  });
+
+  it("testing smtpRequest() method with a negavtive request", async () => {
+    const smtpSocket = new SmtpSocket(settings);
+
+    smtpSocket.smtpConnect();
+
+    const smtpRequestResponse = await smtpSocket.smtpRequest("Test negative request");
+
+    smtpSocket.smtpClose();
+
+    expect(smtpRequestResponse).toEqual({
+      data: [["500 Test negative response"]],
+      status: ESmtpResponseStatus.Failure
+    });
   });
 
   it("testing smtpAuthorise() method", () => {});

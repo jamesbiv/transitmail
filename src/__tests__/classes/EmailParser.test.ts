@@ -1,9 +1,10 @@
 /* eslint-disable no-useless-escape */
 import { EmailParser } from "classes";
+import { IEmail } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
-const mockEmailRaw: any = `Return-Path: sender@transitmail.org\r\n\
+const mockEmailRaw: string = `Return-Path: sender@transitmail.org\r\n\
 Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n\
 To: receiver@transitmail.org\r\n\
 Reply-to: receiver@transitmail.org\r\n\
@@ -25,7 +26,7 @@ Content-Type: text/html; charset="utf-8"\r\n\r\n\
 <p>Test Body</p>\r\n\r\n\
 --transit--client--6ohw29r5-\r\n\r\n`;
 
-const mockProcessEmailResponse: any = {
+const mockProcessEmailResponse: IEmail = {
   emailRaw:
     "Return-Path: sender@transitmail.org\r\n" +
     "Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n" +
@@ -154,8 +155,8 @@ const mockProcessEmailResponse: any = {
 const emailParser = new EmailParser();
 
 describe("Testing the EmailParser class", () => {
-  test("Test getEmail", () => {
-    const getEmailResponse: any = emailParser.getEmail();
+  it("Test getEmail", () => {
+    const getEmailResponse: IEmail = emailParser.getEmail();
 
     expect(getEmailResponse).toEqual({
       contentRaw: "",
@@ -164,8 +165,8 @@ describe("Testing the EmailParser class", () => {
     });
   });
 
-  test("Test processEmail", () => {
-    const processEmailResponse: any = emailParser.processEmail(mockEmailRaw);
+  it("Test processEmail", () => {
+    const processEmailResponse: IEmail = emailParser.processEmail(mockEmailRaw);
 
     expect(processEmailResponse).toEqual(mockProcessEmailResponse);
   });

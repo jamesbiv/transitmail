@@ -1,9 +1,11 @@
 import { EmailComposer } from "classes";
+import { IEmailData } from "classes/EmailComposer";
+import { IComposedEmail } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
-const mockEmailData: any = {
-  from: "sender@transitmail.org",
+const mockEmailData: IEmailData = {
+  from: { displayName: "Test Display Name", email: "sender@transitmail.org" },
   subject: "Test Email",
   recipients: [
     {
@@ -95,8 +97,8 @@ const mockContentBlocks: any = {
 const emailParser = new EmailComposer();
 
 describe("Testing the EmailCompose class", () => {
-  test("As a standard email", () => {
-    const emailParserResponse: any = emailParser.composeEmail(mockEmailData);
+  it("As a standard email", () => {
+    const emailParserResponse: IComposedEmail = emailParser.composeEmail(mockEmailData);
 
     expect(emailParserResponse).toMatchObject<{ contentHTML: string }>({
       contentHTML: "<p>Test Body</p>"

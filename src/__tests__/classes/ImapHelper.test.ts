@@ -1,4 +1,5 @@
 import { ImapHelper } from "classes";
+import { IEmail, IEmailFlags, IFolderEmail, IFoldersEntry } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
@@ -6,20 +7,20 @@ const imapHelper = new ImapHelper();
 
 describe("Testing the ImapHelper class", () => {
   describe("Test formatFetchEmailFlagsResponse", () => {
-    const mockFetchData: any = [
+    const mockFetchData: string[][] = [
       ["*", "1", "FETCH (UID 1 RFC822.SIZE 100000 FLAGS (\\Seen))"],
       ["clbk0jks", "OK", "UID FETCH completed"]
     ];
 
-    const mockFormatFetchEmailFlagsResponse: any = {
+    const mockFormatFetchEmailFlagsResponse: IEmailFlags = {
       deleted: false,
       flags: "\\Seen",
       seen: true,
       size: 100000
     };
 
-    test("Test populated string", () => {
-      const formatFetchEmailFlagsResponse: any =
+    it("Test populated string", () => {
+      const formatFetchEmailFlagsResponse: IEmailFlags | undefined =
         imapHelper.formatFetchEmailFlagsResponse(mockFetchData);
 
       expect(formatFetchEmailFlagsResponse).toEqual(mockFormatFetchEmailFlagsResponse);
@@ -27,7 +28,7 @@ describe("Testing the ImapHelper class", () => {
   });
 
   describe("Test formatFetchEmailResponse", () => {
-    const mockFetchData: any = [
+    const mockFetchData: string[][] = [
       ["*", "1971", "FETCH (UID 5968 RFC822 {885}"],
       [
         "Return-Path: sender@transitmail.org\r\n" +
@@ -63,7 +64,7 @@ describe("Testing the ImapHelper class", () => {
       ["q3ilhxgq", "OK", "UID FETCH completed"]
     ];
 
-    const mockFormatFetchEmailResponse: any = {
+    const mockFormatFetchEmailResponse: IEmail = {
       emailRaw:
         "Return-Path: sender@transitmail.org\r\n" +
         "Date: Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
@@ -185,15 +186,15 @@ describe("Testing the ImapHelper class", () => {
       }
     };
 
-    test("Test populated string", () => {
-      const formatFetchEmailResponse: any = imapHelper.formatFetchEmailResponse(mockFetchData);
+    it("Test populated string", () => {
+      const formatFetchEmailResponse: IEmail = imapHelper.formatFetchEmailResponse(mockFetchData);
 
       expect(formatFetchEmailResponse).toEqual(mockFormatFetchEmailResponse);
     });
   });
 
   describe("Test formatFetchFolderEmailsResponse", () => {
-    const mockFolderData: any = [
+    const mockFolderData: string[][] = [
       ["*", "1", "FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {1}"],
       [
         "Date: Fri, 24 Jul 2020 00:00:00 -0300\r\n" +
@@ -205,7 +206,7 @@ describe("Testing the ImapHelper class", () => {
       ["3d290h4", "OK", "UID FETCH completed"]
     ];
 
-    const mockFormatFetchFolderEmailsResponse: any = [
+    const mockFormatFetchFolderEmailsResponse: IFolderEmail[] = [
       {
         id: 1,
         date: "Fri, 24 Jul 2020 00:00:00 -0300",
@@ -220,8 +221,8 @@ describe("Testing the ImapHelper class", () => {
       }
     ];
 
-    test("Test populated string", () => {
-      const formatFetchFolderEmailsResponse: any =
+    it("Test populated string", () => {
+      const formatFetchFolderEmailsResponse: IFolderEmail[] =
         imapHelper.formatFetchFolderEmailsResponse(mockFolderData);
 
       expect(formatFetchFolderEmailsResponse).toEqual(mockFormatFetchFolderEmailsResponse);
@@ -229,14 +230,14 @@ describe("Testing the ImapHelper class", () => {
   });
 
   describe("Test formatListFoldersResponse", () => {
-    const mockFolderData: any = [
+    const mockFolderData: string[][] = [
       ["*", "LIST", '(\\NoSelect \\HasChildren) "/" ""'],
       ["*", "LIST", '() "/" "INBOX"'],
       ["*", "LIST", '() "/" "INBOX/subfolder"'],
       ["g7xyu52", "OK", "LIST completed"]
     ];
 
-    const mockFormatListFoldersResponse: any = [
+    const mockFormatListFoldersResponse: IFoldersEntry[] = [
       {
         folders: [
           {
@@ -251,8 +252,9 @@ describe("Testing the ImapHelper class", () => {
       }
     ];
 
-    test("Test populated string", () => {
-      const formatListFoldersResponse: any = imapHelper.formatListFoldersResponse(mockFolderData);
+    it("Test populated string", () => {
+      const formatListFoldersResponse: IFoldersEntry[] =
+        imapHelper.formatListFoldersResponse(mockFolderData);
 
       expect(formatListFoldersResponse).toEqual(mockFormatListFoldersResponse);
     });

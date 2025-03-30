@@ -1,4 +1,5 @@
 import { SecureStorage } from "classes";
+import { ISettings } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
@@ -6,45 +7,51 @@ const secureStorage = new SecureStorage();
 
 describe("Testing the SecureStorage class", () => {
   describe("Test setData and getData", () => {
-    test("Test a successful set and get senario", () => {
+    it("Test a successful set and get senario", () => {
       secureStorage.setData("activeUid", "mockVariableContent");
 
-      const getDataResponse: any = secureStorage.getData("activeUid");
+      const getDataResponse: string = secureStorage.getData("activeUid");
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });
 
   describe("Test setSetting and getSetting", () => {
-    test("Test a successful set and get senario", () => {
+    it("Test a successful set and get senario", () => {
       secureStorage.setSetting("name", "mockVariableContent");
 
-      const getDataResponse: any = secureStorage.getSetting("name");
+      const getDataResponse: string = secureStorage.getSetting("name");
       expect(getDataResponse).toEqual("mockVariableContent");
     });
   });
 
   describe("Test setSettings and getSettings", () => {
-    test("Test a successful set and get senario", () => {
-      const settingsMock: any = {
+    it("Test a successful set and get senario", () => {
+      const settingsMock: ISettings = {
         name: "mockName",
         email: "mockEmail",
         signature: "mockSignature",
-        autoLogin: "mockAutoLogin",
+        autoLogin: undefined,
         imapHost: "mockImapHost",
-        imapPort: "mockImapPort",
+        imapPort: 1234,
         imapUsername: "mockImapUsername",
         imapPassword: "mockImapPassword",
         smtpHost: "mockSmtpHost",
-        smtpPort: "mockSmtpPort",
+        smtpPort: 1234,
         smtpUsername: "mockSmtpUsername",
         smtpPassword: "mockSmtpPassword",
         secondaryEmails: [],
-        folderSettings: {}
+        folderSettings: {
+          archiveFolder: "Archives",
+          draftsFolder: "Drafts",
+          sentItemsFolder: "Sent Items",
+          spamFolder: "Spam",
+          trashFolder: "Recycle Bin"
+        }
       };
 
-      secureStorage.setSettings(settingsMock);
+      secureStorage.setSettings(settingsMock as Required<ISettings>);
 
-      const getDataResponse: any = secureStorage.getSettings();
+      const getDataResponse = secureStorage.getSettings() as Partial<ISettings>;
       expect(getDataResponse).toEqual(settingsMock);
     });
   });
