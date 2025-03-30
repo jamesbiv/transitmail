@@ -1,44 +1,95 @@
 import { SecureStorage } from "classes";
-import { ISettings } from "interfaces";
+import { IImapSettings, ISettings, ISmtpSettings } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
-const secureStorage = new SecureStorage();
-
 describe("Testing the SecureStorage class", () => {
-  describe("Test setData and getData", () => {
-    it("Test a successful set and get senario", () => {
-      secureStorage.setData("activeUid", "mockVariableContent");
+  describe("test setData() and getData() methods", () => {
+    it("successful getting and setting", () => {
+      const secureStorage = new SecureStorage();
+
+      secureStorage.setData("activeUid", "testActiveUid");
 
       const getDataResponse: string = secureStorage.getData("activeUid");
-      expect(getDataResponse).toEqual("mockVariableContent");
+
+      expect(getDataResponse).toEqual("testActiveUid");
     });
   });
 
-  describe("Test setSetting and getSetting", () => {
-    it("Test a successful set and get senario", () => {
-      secureStorage.setSetting("name", "mockVariableContent");
+  describe("test setSetting() and getSetting() methods", () => {
+    it("successful getting and setting", () => {
+      const secureStorage = new SecureStorage();
 
-      const getDataResponse: string = secureStorage.getSetting("name");
-      expect(getDataResponse).toEqual("mockVariableContent");
+      secureStorage.setSetting("name", "Test Display Name");
+
+      const getSettingResponse: string = secureStorage.getSetting("name");
+
+      expect(getSettingResponse).toEqual("Test Display Name");
     });
   });
 
-  describe("Test setSettings and getSettings", () => {
-    it("Test a successful set and get senario", () => {
-      const settingsMock: ISettings = {
-        name: "mockName",
-        email: "mockEmail",
-        signature: "mockSignature",
-        autoLogin: undefined,
-        imapHost: "mockImapHost",
+  describe("test getImapSettings() for getSmtpSettings() methods", () => {
+    it("successful response getImapSettings()", () => {
+      const imapSettings: Partial<ISettings> = {
+        imapHost: "mail.testIncomingHost.com",
         imapPort: 1234,
-        imapUsername: "mockImapUsername",
-        imapPassword: "mockImapPassword",
-        smtpHost: "mockSmtpHost",
+        imapUsername: "testUsername",
+        imapPassword: "testPassword"
+      };
+
+      const secureStorage = new SecureStorage();
+
+      secureStorage.setSettings(imapSettings as Required<ISettings>);
+      const getImapSettingsResponse: IImapSettings = secureStorage.getImapSettings();
+
+      expect(getImapSettingsResponse).toEqual({
+        host: "mail.testIncomingHost.com",
+        password: "testPassword",
+        port: 1234,
+        username: "testUsername"
+      });
+    });
+
+    it("successful response getSmtpSettings()", () => {
+      const smtpSettings: Partial<ISettings> = {
+        smtpHost: "mail.testOutgoingHost.com",
         smtpPort: 1234,
-        smtpUsername: "mockSmtpUsername",
-        smtpPassword: "mockSmtpPassword",
+        smtpUsername: "testUsername",
+        smtpPassword: "testPassword"
+      };
+
+      const secureStorage = new SecureStorage();
+
+      secureStorage.setSettings(smtpSettings as Required<ISettings>);
+
+      const getSmtpSettingsResponse: ISmtpSettings = secureStorage.getSmtpSettings();
+
+      expect(getSmtpSettingsResponse).toEqual({
+        host: "mail.testOutgoingHost.com",
+        password: "testPassword",
+        port: 1234,
+        username: "testUsername"
+      });
+    });
+  });
+
+  describe("test getSettings methods and setSettings() methods", () => {
+    it("successful getting and setting", () => {
+      const secureStorage = new SecureStorage();
+
+      const settings: ISettings = {
+        name: "Test Display Name",
+        email: "test@emailAddress.com",
+        signature: "Test Signature",
+        autoLogin: undefined,
+        imapHost: "mail.testIncomingHost.com",
+        imapPort: 1234,
+        imapUsername: "testUsername",
+        imapPassword: "testPassword",
+        smtpHost: "mail.testOutgoingHost.com",
+        smtpPort: 1234,
+        smtpUsername: "testUsername",
+        smtpPassword: "testPassword",
         secondaryEmails: [],
         folderSettings: {
           archiveFolder: "Archives",
@@ -49,10 +100,11 @@ describe("Testing the SecureStorage class", () => {
         }
       };
 
-      secureStorage.setSettings(settingsMock as Required<ISettings>);
+      secureStorage.setSettings(settings as Required<ISettings>);
 
-      const getDataResponse = secureStorage.getSettings() as Partial<ISettings>;
-      expect(getDataResponse).toEqual(settingsMock);
+      const getSettingsResponse = secureStorage.getSettings();
+
+      expect(getSettingsResponse).toEqual(settings);
     });
   });
 });
