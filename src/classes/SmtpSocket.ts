@@ -19,17 +19,17 @@ type TSmtpCallback = (event: ISmtpResponseData | Event) => void;
  */
 export class SmtpSocket {
   /**
-   * @var {ISmtpSession} session
+   * @public {ISmtpSession} session
    */
   public session: ISmtpSession;
 
   /**
-   * @var {ISmtpSettings} settings
+   * @public {ISmtpSettings} settings
    */
   public settings: ISmtpSettings;
 
   /**
-   * @var {number[]} responseCodes
+   * @public {number[]} responseCodes
    */
   public responseCodes: { positive: number[]; negative: number[] };
 

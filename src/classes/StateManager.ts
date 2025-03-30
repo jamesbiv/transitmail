@@ -22,31 +22,29 @@ type TIndexState = {
  */
 export class StateManager {
   /**
-   * @var {TIndexState} indexState;
+   * @public {TIndexState} indexState;
    */
   public indexState: TIndexState = {} as TIndexState;
 
   /**
-   * @var {IComposePresets} composePresets;
+   * @protected {IComposePresets} composePresets;
    */
   protected composePresets?: IComposePresets;
 
   /**
-   * @var {string} activeUid;
+   * @protected {string} activeUid;
    */
   protected activeUid?: number;
 
   /**
-   * @var {string} folderId;
+   * @protected {string} folderId;
    */
   protected folderId?: string;
 
   /**
-   * @var {{[key:string] IFolderEmails}} folderEmails;
+   * @protected {{[key:string] IFolderEmails}} folderEmails;
    */
-  protected folderEmails: {
-    [key: string]: IFolderEmails | undefined;
-  } = {};
+  protected folderEmails: { [key: string]: IFolderEmails | undefined } = {};
 
   /**
    * @name updateActiveKey
