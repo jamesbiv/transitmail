@@ -5,7 +5,8 @@ import {
   ESmtpResponseStatus,
   ISmtpResponseData,
   ESmtpResponseCodeType,
-  ISmtpResponseCode
+  ISmtpResponseCode,
+  ISmtpRequest
 } from "interfaces";
 import { smtpResponseCodes } from "lib";
 
@@ -77,77 +78,67 @@ export class SmtpSocket {
   /**
    * @name smtpConnect
    * @param {boolean} authorise
-   * @param {TSmtpCallback} success
-   * @param {TSmtpCallback} error
    * @returns boolean
    */
-  public smtpConnect(
-    authorise: boolean = true,
-    success?: TSmtpCallback,
-    error?: TSmtpCallback
-  ): boolean {
+  public async smtpConnect(authorise: boolean = true): Promise<boolean> {
     this.session.socket = new WebSocket(
       `wss://${this.settings.host}:${this.settings.port}`,
       "binary"
     );
 
     this.session.socket.binaryType = this.session.binaryType;
-
-    if (!(this.session.socket instanceof WebSocket)) {
-      return false;
-    }
-
     this.session.lock = true;
 
-    this.session.socket.onopen = (event: Event) => {
-      if (this.session.debug) {
-        // eslint-disable-next-line no-console
-        console.log("[SMTP] Client Connected");
-      }
+    const isConnected: boolean = await new Promise((resolve, reject) => {
+      this.session.socket!.onopen = (event: Event) => {
+        if (this.session.debug) {
+          // eslint-disable-next-line no-console
+          console.log("[SMTP] Client connected");
+        }
 
-      this.session.request.push({
-        responseCodes: [250],
-        request: "",
-        success: () => {},
-        failure: () => {}
-      });
+        this.session.request.push({ request: "", responseCodes: [220] });
+
+        resolve(true);
+      };
+
+      this.session.socket!.onerror = (event: Event) => {
+        if (this.session.debug) {
+          // eslint-disable-next-line no-console
+          console.error("[SMTP] Connection error", JSON.stringify(event));
+        }
+
+        resolve(false);
+      };
+    });
+
+    if (!isConnected) {
+      if (this.session.retry > 0) {
+        setTimeout(() => this.smtpConnect(authorise), this.session.retry);
+      }
 
       this.session.lock = false;
 
-      if (authorise) {
-        this.smtpAuthorise();
-      } else {
-        success && success(event);
-      }
-    };
+      return false;
+    }
+
+    this.session.socket.onopen = undefined as never;
+    this.session.socket.onerror = undefined as never;
 
     this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
-      if (message.data instanceof Blob) {
-        const reader: FileReader = new FileReader();
+      if (!(message.data instanceof Blob)) {
+        this.smtpResponseHandler(message.data as string);
 
-        reader.onload = () => {
-          const result: string = reader.result as string;
-
-          this.smtpResponseHandler(result);
-        };
-
-        reader.readAsText(message.data);
-      }
-    };
-
-    this.session.socket.onerror = (event: Event) => {
-      if (this.session.debug) {
-        // eslint-disable-next-line no-console
-        console.error("[SMTP] Connection error", JSON.stringify(event));
+        return;
       }
 
-      if (this.session.retry > 0) {
-        setTimeout(() => {
-          this.smtpConnect(authorise, success, error);
-        }, this.session.retry);
-      }
+      const reader: FileReader = new FileReader();
 
-      error && error(event);
+      reader.onload = () => {
+        const readerResult: string = reader.result as string;
+        this.smtpResponseHandler(readerResult);
+      };
+
+      reader.readAsText(message.data);
     };
 
     this.session.socket.onclose = (event: CloseEvent) => {
@@ -156,6 +147,12 @@ export class SmtpSocket {
         console.log("[SMTP] Connection closed", JSON.stringify(event));
       }
     };
+
+    this.session.lock = false;
+
+    if (authorise) {
+      await this.smtpAuthorise();
+    }
 
     return true;
   }
@@ -182,24 +179,22 @@ export class SmtpSocket {
   ): Promise<ISmtpResponse> {
     let status: ESmtpResponseStatus | undefined;
 
-    const responsePayload: Promise<ISmtpResponseData> = new Promise((fulfilled, rejected) => {
+    const responsePayload: ISmtpResponseData = await new Promise((resolve, reject) => {
       this.smtpProcessRequest(
         request,
         responseCodes,
         (event: ISmtpResponseData | Event) => {
-          fulfilled(event as ISmtpResponseData);
+          resolve(event as ISmtpResponseData);
           status = ESmtpResponseStatus.Success;
         },
         (event: ISmtpResponseData | Event) => {
-          fulfilled(event as ISmtpResponseData);
+          resolve(event as ISmtpResponseData);
           status = ESmtpResponseStatus.Failure;
         }
       );
     });
 
-    const resolvedResponsePayload = await responsePayload;
-
-    return { data: resolvedResponsePayload.response ?? [], status };
+    return { data: responsePayload.response, status };
   }
 
   /**
@@ -217,10 +212,7 @@ export class SmtpSocket {
     failure?: TSmtpCallback
   ): void {
     if (this.session.lock) {
-      setTimeout(() => {
-        this.smtpProcessRequest(request, responseCodes, success, failure);
-      }, 100);
-
+      setTimeout(() => this.smtpProcessRequest(request, responseCodes, success, failure), 100);
       return;
     }
 
@@ -241,18 +233,7 @@ export class SmtpSocket {
       failure: failure
     });
 
-    const readyStateCallack = () =>
-      setTimeout(() => {
-        const currentReadyState: number | undefined = this.getReadyState();
-
-        if (this.session.socket && currentReadyState && currentReadyState === WebSocket.OPEN) {
-          this.session.socket.send(blob);
-        } else {
-          readyStateCallack();
-        }
-      }, 10);
-
-    readyStateCallack();
+    this.session.socket!.send(blob);
   }
 
   /**
@@ -289,13 +270,11 @@ export class SmtpSocket {
 
     this.session.lock = false;
 
-    const request: ISmtpResponseData = this.session.request[index];
+    const request: ISmtpResponseData = this.session.request[index] as Required<ISmtpRequest>;
 
-    if (request) {
-      request.responseCodes.includes(Number(responseCode))
-        ? request.success && request.success(request)
-        : request.failure && request.failure(request);
-    }
+    request.responseCodes.includes(Number(responseCode))
+      ? request.success && request.success(request)
+      : request.failure && request.failure(request);
   }
 
   /**
@@ -335,7 +314,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name getStreamAmount
+   * @name getBufferedAmount
    * @returns number
    */
   public getBufferedAmount = (): number => {

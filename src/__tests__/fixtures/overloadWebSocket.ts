@@ -10,7 +10,9 @@ const originalWebSocketClass = global.WebSocket;
 export const overloadWebSocketConstructor = () => {
   global.WebSocket = class WebSocketOverload extends WebSocket {
     constructor(url: string | URL, protocols?: string | string[]) {
-      super("ws://localhost:8123", protocols);
+      const overloadedUrl = typeof url === "string" ? url.replace("wss://", "ws://") : url;
+
+      super(overloadedUrl, protocols);
     }
   };
 };
