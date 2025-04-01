@@ -55,11 +55,9 @@ export class EmailParser {
 
     email.boundaries = this.parseBoundaries(email.contentRaw, email.boundaryIds);
 
-    if (email.boundaries.length) {
-      this.extractContentFromBoundaries(email);
-    } else {
-      this.extractContentFromBody(email);
-    }
+    email.boundaries.length
+      ? this.extractContentFromBoundaries(email)
+      : this.extractContentFromBody(email);
 
     if (email.bodyHtml) {
       email.bodyHtml = this.stripScripts(email.bodyHtml).replace(/http/gi, "#http");
@@ -89,35 +87,44 @@ export class EmailParser {
     let headerContent: string = "";
 
     headerRows.forEach((headerRow: string) => {
-      const [match, contentHeaderName, contentHeaderData]: RegExpMatchArray | [] =
-        headerRow.match(/(^\S*):\s*(.*)/) ?? [];
+      const [_, contentHeaderName, contentHeaderData]: RegExpMatchArray | [] =
+        /(^\S*):\s*(.*)/.exec(headerRow) ?? [];
 
-      if (!headerEnd) {
-        if (contentHeaderName) {
+      if (headerEnd) {
+        if (returnContent) {
+          headerContent += headerRow + "\r\n";
+        }
+
+        return;
+      }
+
+      switch (true) {
+        case !!contentHeaderName:
           currentHeaderName = contentHeaderName.toLowerCase();
           currentHeaderData = headers[currentHeaderName];
 
-          if (!currentHeaderData) {
-            headers[currentHeaderName] = contentHeaderData ?? "";
-          } else {
+          headers[currentHeaderName] = !currentHeaderData
+            ? (contentHeaderData ?? "")
+            : currentHeaderData + " " + (contentHeaderData ?? "").trimStart();
+          break;
+
+        case !contentHeaderName && (headerRow.startsWith("\t") || headerRow.startsWith(" ")):
+          {
+            currentHeaderData = headers[currentHeaderName];
+
+            const lastHeaderLength: number = currentHeaderData ? currentHeaderData.length - 1 : 0;
+
             headers[currentHeaderName] =
-              currentHeaderData + " " + (contentHeaderData ?? "").trimLeft();
+              lastHeaderLength >= headerMaxLength
+                ? currentHeaderData + headerRow.trimStart()
+                : currentHeaderData + " " + headerRow.trimStart();
           }
-        } else if (!contentHeaderName && (headerRow[0] === "\t" || headerRow[0] === " ")) {
-          currentHeaderData = headers[currentHeaderName];
+          break;
 
-          const lastHeaderLength: number = currentHeaderData ? currentHeaderData.length - 1 : 0;
-
-          if (lastHeaderLength >= headerMaxLength) {
-            headers[currentHeaderName] = currentHeaderData + headerRow.trimLeft();
-          } else {
-            headers[currentHeaderName] = currentHeaderData + " " + headerRow.trimLeft();
-          }
-        } else {
+        default:
           headerEnd = true;
-        }
-      } else if (returnContent) {
-        headerContent += headerRow + "\r\n";
+
+          break;
       }
     });
 
@@ -168,9 +175,9 @@ export class EmailParser {
 
         case "content-type":
           {
-            const [match, mimeType]: RegExpMatchArray | [] =
-              headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
-              headerData.match(/['|"]?(\S+)['|"]?/i) ??
+            const [_, mimeType]: RegExpMatchArray | [] =
+              /['|"]?(\S+)['|"]?;(.*)/i.exec(headerData) ??
+              /['|"]?(\S+)['|"]?/i.exec(headerData) ??
               [];
 
             if (mimeType) {
@@ -192,9 +199,6 @@ export class EmailParser {
               email.boundaryIds.push(newBoundaryId);
             }
           }
-          break;
-
-        default:
           break;
       }
     });
@@ -219,15 +223,17 @@ export class EmailParser {
           boundaries.push(boundary);
 
           boundary.contents.forEach((contentRow: IEmailBoundaryContent) => {
-            if (contentRow.subBoundaryId) {
-              const subBoundary: IEmailBoundary = this.filterContentByBoundaries(
-                contentRow.subBoundaryId,
-                contentRow.contentRaw
-              );
+            if (!contentRow.subBoundaryId) {
+              return;
+            }
 
-              if (this.sanitiseRawBoundry(subBoundary)) {
-                boundaries.push(subBoundary);
-              }
+            const subBoundary: IEmailBoundary = this.filterContentByBoundaries(
+              contentRow.subBoundaryId,
+              contentRow.contentRaw
+            );
+
+            if (this.sanitiseRawBoundry(subBoundary)) {
+              boundaries.push(subBoundary);
             }
           });
         }
@@ -357,21 +363,27 @@ export class EmailParser {
         (contents: IEmailBoundaryContent[], contentRow: string): IEmailBoundaryContent[] => {
           contentRow = contentRow.replace(/(\r\n|\n|\r)/gm, "");
 
-          if (contentRow === "--" + boundaryId) {
-            contents.push({
-              contentRaw: "",
-              headers: {},
-              content: "",
-              mimeType: ""
-            });
+          switch (true) {
+            case contentRow === "--" + boundaryId:
+              contents.push({
+                contentRaw: "",
+                headers: {},
+                content: "",
+                mimeType: ""
+              });
 
-            contentIndex = contents.length - 1;
-          } else if (contentRow === "--" + boundaryId + "--") {
-            allBoundariesMet = true;
-          } else {
-            if (!allBoundariesMet && contents[contentIndex]) {
+              contentIndex = contents.length - 1;
+              break;
+
+            case contentRow === "--" + boundaryId + "--":
+              allBoundariesMet = true;
+
+              break;
+
+            case !allBoundariesMet && !!contents[contentIndex]:
               contents[contentIndex].contentRaw += contentRow + "\r\n";
-            }
+
+              break;
           }
 
           return contents;
@@ -399,25 +411,29 @@ export class EmailParser {
         switch (headerKey.toLowerCase()) {
           case "content-disposition":
             {
-              const [match, mimeType, contentData]: RegExpMatchArray | [] =
-                headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
-                headerData.match(/['|"]?(\S+)['|"]?/i) ??
+              const [_, mimeType, contentData]: RegExpMatchArray | [] =
+                /['|"]?(\S+)['|"]?;(.*)/i.exec(headerData) ??
+                /['|"]?(\S+)['|"]?/i.exec(headerData) ??
                 [];
 
-              if (mimeType) {
-                boundary.contents[contentIndex].isAttachment = true;
+              if (!mimeType) {
+                break;
+              }
 
-                if (contentData) {
-                  const filename: string | undefined = this.getHeaderAttribute("name", contentData);
+              boundary.contents[contentIndex].isAttachment = true;
 
-                  if (filename) {
-                    boundary.contents[contentIndex].filename = filename;
-                  }
-                }
+              if (!boundary.contents[contentIndex].filename) {
+                boundary.contents[contentIndex].filename = "Untitled";
+              }
 
-                if (!boundary.contents[contentIndex].filename) {
-                  boundary.contents[contentIndex].filename = "Untitled";
-                }
+              if (!contentData) {
+                break;
+              }
+
+              const filename: string | undefined = this.getHeaderAttribute("name", contentData);
+
+              if (filename) {
+                boundary.contents[contentIndex].filename = filename;
               }
             }
             break;
@@ -428,38 +444,36 @@ export class EmailParser {
 
           case "content-type":
             {
-              const [match, mimeType, contentData]: RegExpMatchArray | [] =
-                headerData.match(/['|"]?(\S+)['|"]?;(.*)/i) ??
-                headerData.match(/['|"]?(\S+)['|"]?/i) ??
+              const [_, mimeType, contentData]: RegExpMatchArray | [] =
+                /['|"]?(\S+)['|"]?;(.*)/i.exec(headerData) ??
+                /['|"]?(\S+)['|"]?/i.exec(headerData) ??
                 [];
 
-              if (mimeType) {
-                boundary.contents[contentIndex].mimeType = mimeType.toLowerCase();
+              if (!mimeType) {
+                break;
+              }
 
-                if (contentData) {
-                  const charset: string | undefined = this.getHeaderAttribute(
-                    "charset",
-                    contentData
-                  );
+              boundary.contents[contentIndex].mimeType = mimeType.toLowerCase();
 
-                  if (charset) {
-                    boundary.contents[contentIndex].charset = charset;
-                  }
+              if (!contentData) {
+                break;
+              }
 
-                  const subBoundaryId: string | undefined = this.getHeaderAttribute(
-                    "boundary",
-                    contentData
-                  );
+              const charset: string | undefined = this.getHeaderAttribute("charset", contentData);
 
-                  if (subBoundaryId) {
-                    boundary.contents[contentIndex].subBoundaryId = subBoundaryId;
-                  }
-                }
+              if (charset) {
+                boundary.contents[contentIndex].charset = charset;
+              }
+
+              const subBoundaryId: string | undefined = this.getHeaderAttribute(
+                "boundary",
+                contentData
+              );
+
+              if (subBoundaryId) {
+                boundary.contents[contentIndex].subBoundaryId = subBoundaryId;
               }
             }
-            break;
-
-          default:
             break;
         }
       });
@@ -503,7 +517,7 @@ export class EmailParser {
     }
 
     const regex = new RegExp(attribute + "=['|\"]?(\\S+)", "i");
-    const [match, attributeValue]: RegExpMatchArray | [] = data.match(regex) ?? [];
+    const [_, attributeValue]: RegExpMatchArray | [] = regex.exec(data) ?? [];
 
     return attributeValue?.replace(/['|"]/g, "") || undefined;
   }
