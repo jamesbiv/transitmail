@@ -7,6 +7,9 @@ import {
   IEmailHeaders
 } from "interfaces";
 
+/**
+ * @class EmailParser
+ */
 export class EmailParser {
   /**
    * @var {IEmail} email
@@ -17,11 +20,7 @@ export class EmailParser {
    * @constructor
    */
   constructor() {
-    this.email = {
-      emailRaw: "",
-      headersRaw: "",
-      contentRaw: ""
-    };
+    this.email = { emailRaw: "", headersRaw: "", contentRaw: "" };
   }
 
   /**
@@ -46,7 +45,7 @@ export class EmailParser {
     const email: IEmail = {
       emailRaw,
       headersRaw: emailRaw.substring(0, headerPosition),
-      contentRaw: emailRaw.substring(headerPosition + 4, emailRaw.length - 1)
+      contentRaw: emailRaw.substring(headerPosition + 4, emailRaw.length)
     };
 
     email.headers = this.splitHeaders(email.headersRaw, false);
@@ -76,7 +75,7 @@ export class EmailParser {
    */
   private splitHeaders(headerRaw: string, returnContent: boolean = true): IEmailHeaders {
     const headerRows: string[] = headerRaw.split(/\r?\n|\r/);
-    const headerMaxLength: number = 76;
+    const headerMaxLength: number = 78;
 
     const headers: IEmailHeaders = {};
 
@@ -516,7 +515,7 @@ export class EmailParser {
       return undefined;
     }
 
-    const regex = new RegExp(attribute + "=['|\"]?(\\S+)", "i");
+    const regex = new RegExp(attribute + "=(?:\"([^\"]*)\"|'([^']*)'|([^\\s]*))", "i");
     const [_, attributeValue]: RegExpMatchArray | [] = regex.exec(data) ?? [];
 
     return attributeValue?.replace(/['|"]/g, "") || undefined;
