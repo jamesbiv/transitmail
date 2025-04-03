@@ -13,7 +13,7 @@ describe("Testing the EmailParser class", () => {
   });
 
   describe("Test processEmail", () => {
-    describe("testing splitHeaders() function", () => {
+    describe("testing splitHeaders() method", () => {
       it("with an empty header", () => {
         const emailRaw: string = "\r\n" + " \r\n" + "\r\n";
 
@@ -145,7 +145,7 @@ describe("Testing the EmailParser class", () => {
       });
     });
 
-    describe("testing extractDetailsFromHeaders() function", () => {
+    describe("testing extractDetailsFromHeaders() method", () => {
       it("with a Date header", () => {
         const emailRaw: string = "Date: Thu, 01 Apr 2021 00:00:00 -0300\r\n\r\n";
 
@@ -340,7 +340,7 @@ describe("Testing the EmailParser class", () => {
       });
     });
 
-    describe("testing extractContentFromBody() function", () => {
+    describe("testing extractContentFromBody() method", () => {
       it("with Content-Type as text/html", () => {
         const emailRaw: string =
           'Content-Type: text/html; charset="utf-8"\r\n\r\n' + "<p>Test email content</p>\r\n\r\n";
@@ -514,7 +514,7 @@ describe("Testing the EmailParser class", () => {
       });
     });
 
-    describe("testing extractContentFromBoundaries() function", () => {
+    describe("testing extractContentFromBoundaries() method", () => {
       it("with boundary as an attachment", () => {
         const emailRaw: string =
           'Content-Type: multipart/alternative; boundary="transit--client--6ohw29r5"\r\n\r\n' +
@@ -552,6 +552,28 @@ describe("Testing the EmailParser class", () => {
                 encoding: "base64"
               }
             ]
+          }
+        ]);
+        expect(processEmailResponse.attachments).toEqual([
+          {
+            contentRaw:
+              'Content-Type: text/plain; name="testFile.txt"\r\n' +
+              'Content-Disposition: attachment; filename="testFile.txt"\r\n' +
+              "Content-Transfer-Encoding: base64\r\n" +
+              "\r\n" +
+              "MQo=\r\n" +
+              "\r\n",
+            headers: {
+              "content-type": 'text/plain; name="testFile.txt"',
+              "content-disposition": 'attachment; filename="testFile.txt"',
+              "content-transfer-encoding": "base64",
+              content: "MQo=\r\n\r\n\r\n"
+            },
+            content: "MQo=\r\n\r\n\r\n",
+            mimeType: "text/plain",
+            isAttachment: true,
+            filename: "testFile.txt",
+            encoding: "base64"
           }
         ]);
       });
@@ -780,6 +802,181 @@ describe("Testing the EmailParser class", () => {
             ]
           }
         ]);
+      });
+    });
+
+    describe("testing sanitiseRawBoundry() method", () => {
+      it("a content boundary Content-type without a charset", () => {
+        const emailRaw: string =
+          'Content-Type: multipart/alternative; boundary="transit--client--6ohw29r5"\r\n\r\n' +
+          "--transit--client--6ohw29r5\r\n" +
+          "Content-Type: text/html;\r\n\r\n" +
+          "<p>Test email content</p>\r\n\r\n" +
+          "--transit--client--6ohw29r5--\r\n\r\n";
+
+        const emailParser = new EmailParser();
+
+        const processEmailResponse: IEmail = emailParser.processEmail(emailRaw);
+
+        expect(processEmailResponse.boundaryIds).toEqual(["transit--client--6ohw29r5"]);
+        expect(processEmailResponse.boundaries).toEqual([
+          {
+            contents: [
+              {
+                contentRaw: "Content-Type: text/html;\r\n\r\n<p>Test email content</p>\r\n\r\n",
+                headers: {
+                  "content-type": "text/html;",
+                  content: "<p>Test email content</p>\r\n\r\n\r\n"
+                },
+                content: "<p>Test email content</p>\r\n\r\n\r\n",
+                mimeType: "text/html"
+              }
+            ]
+          }
+        ]);
+      });
+
+      it("a content boundary  Content-type without a mime type and charset", () => {
+        const emailRaw: string =
+          'Content-Type: multipart/alternative; boundary="transit--client--6ohw29r5"\r\n\r\n' +
+          "--transit--client--6ohw29r5\r\n" +
+          "Content-Type: \r\n\r\n" +
+          "<p>Test email content</p>\r\n\r\n" +
+          "--transit--client--6ohw29r5--\r\n\r\n";
+
+        const emailParser = new EmailParser();
+
+        const processEmailResponse: IEmail = emailParser.processEmail(emailRaw);
+
+        expect(processEmailResponse.boundaryIds).toEqual(["transit--client--6ohw29r5"]);
+        expect(processEmailResponse.boundaries).toEqual([
+          {
+            contents: [
+              {
+                contentRaw: "Content-Type: \r\n\r\n<p>Test email content</p>\r\n\r\n",
+                headers: {
+                  "content-type": "",
+                  content: "<p>Test email content</p>\r\n\r\n\r\n"
+                },
+                content: "<p>Test email content</p>\r\n\r\n\r\n",
+                mimeType: ""
+              }
+            ]
+          }
+        ]);
+      });
+
+      it("an attachment based content boundary Content-disposition without a filename", () => {
+        const emailRaw: string =
+          'Content-Type: multipart/alternative; boundary="transit--client--6ohw29r5"\r\n\r\n' +
+          "--transit--client--6ohw29r5\r\n" +
+          "Content-Disposition: attachment;\r\n" +
+          "Content-Transfer-Encoding: base64\r\n\r\n" +
+          "MQo=\r\n\r\n" +
+          "--transit--client--6ohw29r5--\r\n\r\n";
+
+        const emailParser = new EmailParser();
+
+        const processEmailResponse: IEmail = emailParser.processEmail(emailRaw);
+
+        expect(processEmailResponse.boundaryIds).toEqual(["transit--client--6ohw29r5"]);
+        expect(processEmailResponse.boundaries).toEqual([
+          {
+            contents: [
+              {
+                contentRaw:
+                  "Content-Disposition: attachment;\r\n" +
+                  "Content-Transfer-Encoding: base64\r\n\r\n" +
+                  "MQo=\r\n\r\n",
+                headers: {
+                  "content-disposition": "attachment;",
+                  "content-transfer-encoding": "base64",
+                  content: "MQo=\r\n\r\n\r\n"
+                },
+                content: "MQo=\r\n\r\n\r\n",
+                mimeType: "",
+                isAttachment: true,
+                encoding: "base64"
+              }
+            ]
+          }
+        ]);
+        expect(processEmailResponse.attachments).toEqual([
+          {
+            contentRaw:
+              "Content-Disposition: attachment;\r\n" +
+              "Content-Transfer-Encoding: base64\r\n\r\n" +
+              "MQo=\r\n\r\n",
+            headers: {
+              "content-disposition": "attachment;",
+              "content-transfer-encoding": "base64",
+              content: "MQo=\r\n\r\n\r\n"
+            },
+            content: "MQo=\r\n\r\n\r\n",
+            mimeType: "",
+            isAttachment: true,
+            encoding: "base64"
+          }
+        ]);
+      });
+
+      it("an attachment based content boundary Content-disposition without a mime type and filename", () => {
+        const emailRaw: string =
+          'Content-Type: multipart/alternative; boundary="transit--client--6ohw29r5"\r\n\r\n' +
+          "--transit--client--6ohw29r5\r\n" +
+          "Content-Disposition: \r\n" +
+          "Content-Transfer-Encoding: base64\r\n\r\n" +
+          "MQo=\r\n\r\n" +
+          "--transit--client--6ohw29r5--\r\n\r\n";
+
+        const emailParser = new EmailParser();
+
+        const processEmailResponse: IEmail = emailParser.processEmail(emailRaw);
+
+        expect(processEmailResponse.boundaryIds).toEqual(["transit--client--6ohw29r5"]);
+        expect(processEmailResponse.boundaries).toEqual([
+          {
+            contents: [
+              {
+                contentRaw:
+                  "Content-Disposition: \r\n" +
+                  "Content-Transfer-Encoding: base64\r\n\r\n" +
+                  "MQo=\r\n\r\n",
+                headers: {
+                  "content-disposition": "",
+                  "content-transfer-encoding": "base64",
+                  content: "MQo=\r\n\r\n\r\n"
+                },
+                content: "MQo=\r\n\r\n\r\n",
+                mimeType: "",
+                encoding: "base64"
+              }
+            ]
+          }
+        ]);
+      });
+    });
+
+    describe("testing stripScripts() method", () => {
+      it("a successful response", () => {
+        const emailRaw: string =
+          'Content-Type: text/html; charset="utf-8"\r\n\r\n' + "<script>alert(1)</script>\r\n\r\n";
+
+        const emailParser = new EmailParser();
+
+        const processEmailResponse: IEmail = emailParser.processEmail(emailRaw);
+
+        expect(processEmailResponse).toEqual({
+          emailRaw:
+            'Content-Type: text/html; charset="utf-8"\r\n\r\n<script>alert(1)</script>\r\n\r\n',
+          headersRaw: 'Content-Type: text/html; charset="utf-8"',
+          contentRaw: "<script>alert(1)</script>\r\n\r\n",
+          headers: { "content-type": 'text/html; charset="utf-8"' },
+          mimeType: "text/html",
+          charset: "utf-8",
+          boundaries: [],
+          bodyHtml: "\n\n"
+        });
       });
     });
   });

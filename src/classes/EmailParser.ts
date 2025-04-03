@@ -364,24 +364,17 @@ export class EmailParser {
 
           switch (true) {
             case contentRow === "--" + boundaryId:
-              contents.push({
-                contentRaw: "",
-                headers: {},
-                content: "",
-                mimeType: ""
-              });
+              contents.push({ contentRaw: "", headers: {}, content: "", mimeType: "" });
 
               contentIndex = contents.length - 1;
               break;
 
             case contentRow === "--" + boundaryId + "--":
               allBoundariesMet = true;
-
               break;
 
             case !allBoundariesMet && !!contents[contentIndex]:
               contents[contentIndex].contentRaw += contentRow + "\r\n";
-
               break;
           }
 
@@ -410,20 +403,16 @@ export class EmailParser {
         switch (headerKey.toLowerCase()) {
           case "content-disposition":
             {
-              const [_, mimeType, contentData]: RegExpMatchArray | [] =
+              const [_, isAttachment, contentData]: RegExpMatchArray | [] =
                 /['|"]?(\S+)['|"]?;(.*)/i.exec(headerData) ??
                 /['|"]?(\S+)['|"]?/i.exec(headerData) ??
                 [];
 
-              if (!mimeType) {
+              if (!isAttachment) {
                 break;
               }
 
               boundary.contents[contentIndex].isAttachment = true;
-
-              if (!boundary.contents[contentIndex].filename) {
-                boundary.contents[contentIndex].filename = "Untitled";
-              }
 
               if (!contentData) {
                 break;
@@ -431,9 +420,7 @@ export class EmailParser {
 
               const filename: string | undefined = this.getHeaderAttribute("name", contentData);
 
-              if (filename) {
-                boundary.contents[contentIndex].filename = filename;
-              }
+              boundary.contents[contentIndex].filename = filename ?? "Untitled";
             }
             break;
 
