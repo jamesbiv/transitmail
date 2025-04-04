@@ -7,9 +7,9 @@ export interface IEmailBoundary {
 
 export interface IEmailBoundaryContent {
   contentRaw: string;
-  headers: IEmailHeaders;
-  content: string;
-  mimeType: string;
+  headers?: IEmailHeaders;
+  content?: string;
+  mimeType?: string;
   isAttachment?: boolean;
   filename?: string;
   encoding?: string;
