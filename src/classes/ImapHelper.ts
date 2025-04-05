@@ -2,6 +2,10 @@ import { IEmail, IEmailFlags, IFolderEmail, IFoldersEntry } from "interfaces";
 import { EmailParser } from "classes";
 import { MimeTools } from "lib";
 
+/**
+ * @class ImapHelper
+ * @extends EmailParser
+ */
 export class ImapHelper extends EmailParser {
   /**
    * @name formatFetchEmailFlagsResponse
@@ -11,7 +15,7 @@ export class ImapHelper extends EmailParser {
   public formatFetchEmailFlagsResponse(fetchData: string[][]): IEmailFlags | undefined {
     const flagDataRaw: string = fetchData[0][2];
     const flagData: RegExpMatchArray | [] | undefined =
-      flagDataRaw.match(/.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/) ?? undefined;
+      /.*FETCH \(UID (.*) RFC822.SIZE (.*) FLAGS \((.*)\)\)/.exec(flagDataRaw) ?? undefined;
 
     if (flagData?.length !== 4) {
       return undefined;
@@ -33,7 +37,7 @@ export class ImapHelper extends EmailParser {
   public formatFetchEmailResponse(fetchData: string[][]): IEmail {
     let emailRaw: string = fetchData[1][0];
 
-    if (emailRaw.substring(emailRaw.length - 5) === "\r\n)\r\n") {
+    if (emailRaw.endsWith("\r\n)\r\n")) {
       emailRaw = emailRaw.substring(0, emailRaw.length - 5);
     }
 
@@ -50,18 +54,18 @@ export class ImapHelper extends EmailParser {
 
     for (let i: number = 1; i < folderData.length - 1; i = i + 2) {
       const emailFlags: string[] | undefined =
-        (folderData[i - 1][2] ?? "").match(
-          /FETCH \(UID (.*) FLAGS \((.*)\) BODY\[HEADER\.FIELDS \(DATE FROM SUBJECT\)\] \{(.*)\}/
+        /FETCH \(UID (.*) FLAGS \((.*)\) BODY\[HEADER\.FIELDS \(DATE FROM SUBJECT\)\] \{(.*)\}/.exec(
+          folderData[i - 1][2] ?? ""
         ) ?? undefined;
 
       const emailDate: string | undefined =
-        folderData[i][0].match(/.*date: (.*).*/i)?.[1] ?? undefined;
+        /.*date: (.*).*/i.exec(folderData[i][0])?.[1] ?? undefined;
 
       let emailSubject: string | undefined =
-        folderData[i][0].match(/.*subject: (.*).*/i)?.[1] ?? undefined;
+        /.*subject: (.*).*/i.exec(folderData[i][0])?.[1] ?? undefined;
 
       let emailFrom: string | undefined =
-        folderData[i][0].match(/.*from: (.*).*/i)?.[1] ?? undefined;
+        /.*from: (.*).*/i.exec(folderData[i][0])?.[1] ?? undefined;
 
       if (emailSubject && emailSubject.indexOf("=?") > -1) {
         emailSubject = MimeTools.parseMimeWords(emailSubject);
@@ -72,7 +76,7 @@ export class ImapHelper extends EmailParser {
       }
 
       const emailBodyStructure =
-        folderData[i][0].match(/.*bodystructure \((.*)\)/i)?.[1] ?? undefined;
+        /.*bodystructure \((.*)\)/i.exec(folderData[i][0])?.[1] ?? undefined;
 
       if (emailFlags && emailDate && emailFrom && emailBodyStructure) {
         emails.push({
@@ -105,7 +109,7 @@ export class ImapHelper extends EmailParser {
     folderData.forEach((folderDataRow: string[]) => {
       if (folderDataRow[0] === "*") {
         const rawFolder: RegExpMatchArray | [] | undefined =
-          folderDataRow[2].match(/\((.*)\) "(.*)" (.*)/) ?? undefined;
+          /\((.*)\) "(.*)" (.*)/.exec(folderDataRow[2]) ?? undefined;
 
         const santatisedRawfolder: string | undefined = rawFolder?.[3].replace(/"/g, "");
 
@@ -117,27 +121,26 @@ export class ImapHelper extends EmailParser {
 
     let id: number = 1;
 
-    [...rawFolders].sort().forEach((rawFolderRow: string) => {
-      const slash: number | undefined = rawFolderRow.indexOf("/");
+    [...rawFolders]
+      .sort((first: string, second: string) => first.localeCompare(second))
+      .forEach((rawFolderRow: string) => {
+        const slash: number = rawFolderRow.indexOf("/");
 
-      if (slash > 0) {
+        if (slash === -1) {
+          folders.push({ id: id++, name: rawFolderRow, ref: rawFolderRow, folders: [] });
+
+          return;
+        }
+
         const parent: string = rawFolderRow.slice(0, slash);
         const name: string = rawFolderRow.slice(slash + 1, rawFolderRow.length);
 
-        for (let i: number = 0; i < folders.length; i++) {
-          if (folders[i].name === parent) {
-            folders[i].folders.push({ id: id++, name: name, ref: name });
+        folders.forEach((folder: IFoldersEntry, folderIndex: number) => {
+          if (folders[folderIndex].name === parent) {
+            folders[folderIndex].folders.push({ id: id++, name: name, ref: name });
           }
-        }
-      } else {
-        folders.push({
-          id: id++,
-          name: rawFolderRow,
-          ref: rawFolderRow,
-          folders: []
         });
-      }
-    });
+      });
 
     return folders;
   }

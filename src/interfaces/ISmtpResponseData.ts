@@ -1,8 +1,8 @@
 export interface ISmtpResponseData {
-  code?: number | number[];
+  responseCodes:  number[];
+  request: string;
+  response: string[][];
+  responseCode: string;
   failure?: (event: ISmtpResponseData | Event) => void;
-  request?: string;
-  response?: string[][];
-  responseCode?: string;
   success?: (event: ISmtpResponseData | Event) => void;
 }

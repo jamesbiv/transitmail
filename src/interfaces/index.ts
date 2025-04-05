@@ -30,6 +30,7 @@ export * from "./ISettingsValidationMessage";
 export * from "./ISliderState";
 export * from "./ISmtpRequest";
 export * from "./ISmtpResponse";
+export * from "./ISmtpResponseCodes";
 export * from "./ISmtpResponseData";
 export * from "./ISmtpSession";
 export * from "./ISmtpSettings";

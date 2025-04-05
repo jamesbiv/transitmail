@@ -100,8 +100,7 @@ const sendEmailAction = async (
   const composedEmailData: IComposedEmail = emailComposer.composeEmail(emailData);
 
   const mailResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-    `MAIL from: ${emailData.from.email}`,
-    [235, 250, 334]
+    `MAIL from: ${emailData.from.email}`
   );
 
   if (mailResponse.status !== ESmtpResponseStatus.Success) {
@@ -109,30 +108,28 @@ const sendEmailAction = async (
   }
 
   const rcptResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-    `RCPT to: ${composedEmailData.to}`,
-    [235, 250, 334]
+    `RCPT to: ${composedEmailData.to}`
   );
 
   if (rcptResponse.status !== ESmtpResponseStatus.Success) {
     return rcptResponse;
   }
 
-  const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest("DATA", [235, 250, 354]);
+  const dataResponse: ISmtpResponse = await smtpSocket.smtpRequest("DATA");
 
   if (dataResponse.status !== ESmtpResponseStatus.Success) {
     return dataResponse;
   }
 
   const payloadResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-    `${composedEmailData.payload}\r\n\r\n.`,
-    [235, 250, 354]
+    `${composedEmailData.payload}\r\n\r\n.`
   );
 
   if (payloadResponse.status !== ESmtpResponseStatus.Success) {
     return payloadResponse;
   }
 
-  const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(`QUIT`, [221, 250]);
+  const quitResponse: ISmtpResponse = await smtpSocket.smtpRequest(`QUIT`);
 
   return quitResponse;
 };

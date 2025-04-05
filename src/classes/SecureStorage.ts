@@ -1,12 +1,21 @@
 import CryptoES from "crypto-es";
 import { IImapSettings, ISmtpSettings } from "interfaces";
 
+/**
+ * @type TDataKeys
+ */
 type TDataKeys = "activeUid" | "folderId" | "composeMode";
 
+/**
+ * @interface IData
+ */
 interface IData {
   [key: string]: unknown;
 }
 
+/**
+ * @type TSettingsKeys
+ */
 type TSettingsKeys =
   | "name"
   | "email"
@@ -23,23 +32,29 @@ type TSettingsKeys =
   | "secondaryEmails"
   | "folderSettings";
 
+/**
+ * @interface ISettings
+ */
 interface ISettings {
   [key: string]: unknown;
 }
 
+/**
+ * @class SecureStorage
+ */
 export class SecureStorage {
   /**
-   * @var {Pick<ISettings, TSettingsKeys>} settings
+   * @protected {Pick<ISettings, TSettingsKeys>} settings
    */
   protected settings: Pick<ISettings, TSettingsKeys>;
 
   /**
-   * @var {Pick<IData, TDataKeys>} data
+   * @protected {Pick<IData, TDataKeys>} data
    */
   protected data: Pick<IData, TDataKeys>;
 
   /**
-   * @var {string} passPhrase
+   * @protected {string} passPhrase
    */
   protected passPhrase: string = "transit-mail";
 

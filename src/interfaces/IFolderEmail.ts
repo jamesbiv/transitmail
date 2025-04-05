@@ -12,3 +12,8 @@ export interface IFolderEmail {
   hasAttachment: boolean;
   selected: boolean;
 }
+
+export interface IFolderEmails {
+  emails?: IFolderEmail[];
+  latestUid?: string;
+}

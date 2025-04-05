@@ -1,5 +1,8 @@
 import { IComposeRecipient, IComposeAttachment, IComposedEmail } from "interfaces";
 
+/**
+ * @interface IEmailData
+ */
 export interface IEmailData {
   from: {
     email: string;
@@ -11,6 +14,9 @@ export interface IEmailData {
   body?: string;
 }
 
+/**
+ * @class EmailComposer
+ */
 export class EmailComposer {
   /**
    * @name composeEmail
@@ -23,29 +29,27 @@ export class EmailComposer {
     };
 
     composedEmail.subject = emailData.subject;
-    composedEmail.from = `"${emailData.from.displayName}" <${emailData.from.email}>`;
+    composedEmail.from = `${emailData.from.displayName} <${emailData.from.email}>`;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
-      if (recipient.type === "To") {
-        if (composedEmail.to) {
-          // nothing
-        } else {
-          if (recipient.value) {
-            composedEmail.to = recipient.value;
-          }
-        }
+      if (!recipient.value) {
+        return;
+      }
+
+      if (recipient.type === "To" && !composedEmail.to) {
+        composedEmail.to = recipient.value;
       }
 
       if (recipient.type === "Cc") {
-        composedEmail.cc
-          ? (composedEmail.cc += ", " + recipient.value)
-          : (composedEmail.cc = recipient.value ?? "");
+        composedEmail.cc = composedEmail.cc
+          ? `${composedEmail.cc}, ${recipient.value}`
+          : recipient.value;
       }
 
       if (recipient.type === "Bcc") {
-        composedEmail.bcc
-          ? (composedEmail.bcc += ", " + recipient.value)
-          : (composedEmail.bcc = recipient.value ?? "");
+        composedEmail.bcc = composedEmail.bcc
+          ? `${composedEmail.bcc}, ${recipient.value}`
+          : recipient.value;
       }
     });
 

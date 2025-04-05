@@ -73,7 +73,7 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           }
         }}
       >
-        {email.from.match(/"(.*)"/)?.[1] ?? undefined}
+        {email.from.match(/(.*) <(.*)>/)?.[1] ?? undefined}
         <br />
         <small>
           <em>{email.from.match(/<(.*)>/)?.[1] ?? undefined}</em>

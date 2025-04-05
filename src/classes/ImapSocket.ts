@@ -116,7 +116,7 @@ export class ImapSocket {
     this.session.socket.onerror = (event: Event) => {
       if (this.session.debug) {
         // eslint-disable-next-line no-console
-        console.error("[IMAP] Connection error", event);
+        console.error("[IMAP] Connection error", JSON.stringify(event));
       }
 
       if (this.session.retry > 0) {
@@ -128,10 +128,10 @@ export class ImapSocket {
       error && error(event);
     };
 
-    this.session.socket.onclose = (event: Event) => {
+    this.session.socket.onclose = (event: CloseEvent) => {
       if (this.session.debug) {
         // eslint-disable-next-line no-console
-        console.log("[IMAP] Connection closed", event);
+        console.log("[IMAP] Connection closed", JSON.stringify(event));
       }
     };
 
@@ -222,8 +222,6 @@ export class ImapSocket {
     this.session.stream = 0;
 
     this.session.socket!.send(blob);
-
-    return;
   }
 
   /**
@@ -301,8 +299,6 @@ export class ImapSocket {
         }
       }
     });
-
-    return;
   }
 
   /**

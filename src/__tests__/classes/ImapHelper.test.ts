@@ -1,260 +1,239 @@
 import { ImapHelper } from "classes";
+import { IEmail, IEmailFlags, IFolderEmail, IFoldersEntry } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
-const imapHelper = new ImapHelper();
-
 describe("Testing the ImapHelper class", () => {
-  describe("Test formatFetchEmailFlagsResponse", () => {
-    const mockFetchData: any = [
-      ["*", "1", "FETCH (UID 1 RFC822.SIZE 100000 FLAGS (\\Seen))"],
-      ["clbk0jks", "OK", "UID FETCH completed"]
-    ];
+  describe("testing formatFetchEmailFlagsResponse() function", () => {
+    it("a successful response", () => {
+      const fetchData: string[][] = [
+        ["*", "1", "FETCH (UID 1 RFC822.SIZE 100000 FLAGS (\\Seen))"],
+        ["clbk0jks", "OK", "UID FETCH completed"]
+      ];
 
-    const mockFormatFetchEmailFlagsResponse: any = {
-      deleted: false,
-      flags: "\\Seen",
-      seen: true,
-      size: 100000
-    };
+      const imapHelper = new ImapHelper();
 
-    test("Test populated string", () => {
-      const formatFetchEmailFlagsResponse: any =
-        imapHelper.formatFetchEmailFlagsResponse(mockFetchData);
+      const formatFetchEmailFlagsResponse: IEmailFlags | undefined =
+        imapHelper.formatFetchEmailFlagsResponse(fetchData);
 
-      expect(formatFetchEmailFlagsResponse).toEqual(mockFormatFetchEmailFlagsResponse);
-    });
-  });
-
-  describe("Test formatFetchEmailResponse", () => {
-    const mockFetchData: any = [
-      ["*", "1971", "FETCH (UID 5968 RFC822 {885}"],
-      [
-        "Return-Path: sender@transitmail.org\r\n" +
-          "Date: Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
-          "To: receiever@transitmail.org\r\n" +
-          "CC: \r\n" +
-          "Subject: (no subject)\r\n" +
-          "Message-ID: <606A561C-00001750@mailserver01.transitmail.org\r\n" +
-          'From: "james" <sender@transitmail.org>\r\n' +
-          "Received: from mail.transitmail.org (mailserver01.transitmail.org [127.0.0.1])\r\n" +
-          "\tby mailserver01.transitmail.org; Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
-          "Bcc: \r\n" +
-          "MIME-Version: 1.0\r\n" +
-          "X-Mailer: Transit alpha0.0.1\r\n" +
-          'Content-Type: multipart/alternative; boundary="transit--client--zieazjy"\r\n' +
-          "\r\n" +
-          "\r\n" +
-          "--transit--client--zieazjy\r\n" +
-          'Content-Type: text/plain; charset="utf-8"\r\n' +
-          "\r\n" +
-          "Test Body\r\n" +
-          "\r\n" +
-          "\r\n" +
-          "--transit--client--zieazjy\r\n" +
-          'Content-Type: text/html; charset="utf-8"\r\n' +
-          "\r\n" +
-          "<p>Test Body</p>\r\n" +
-          "\r\n" +
-          "--transit--client--zieazjy--\r\n" +
-          "\r\n" +
-          "\r\n)\r\n"
-      ],
-      ["q3ilhxgq", "OK", "UID FETCH completed"]
-    ];
-
-    const mockFormatFetchEmailResponse: any = {
-      emailRaw:
-        "Return-Path: sender@transitmail.org\r\n" +
-        "Date: Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
-        "To: receiever@transitmail.org\r\n" +
-        "CC: \r\n" +
-        "Subject: (no subject)\r\n" +
-        "Message-ID: <606A561C-00001750@mailserver01.transitmail.org\r\n" +
-        'From: "james" <sender@transitmail.org>\r\n' +
-        "Received: from mail.transitmail.org (mailserver01.transitmail.org [127.0.0.1])\r\n" +
-        "\tby mailserver01.transitmail.org; Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
-        "Bcc: \r\n" +
-        "MIME-Version: 1.0\r\n" +
-        "X-Mailer: Transit alpha0.0.1\r\n" +
-        'Content-Type: multipart/alternative; boundary="transit--client--zieazjy"\r\n' +
-        "\r\n" +
-        "\r\n" +
-        "--transit--client--zieazjy\r\n" +
-        'Content-Type: text/plain; charset="utf-8"\r\n' +
-        "\r\n" +
-        "Test Body\r\n" +
-        "\r\n" +
-        "\r\n" +
-        "--transit--client--zieazjy\r\n" +
-        'Content-Type: text/html; charset="utf-8"\r\n' +
-        "\r\n" +
-        "<p>Test Body</p>\r\n" +
-        "\r\n" +
-        "--transit--client--zieazjy--\r\n" +
-        "\r\n",
-      headersRaw:
-        "Return-Path: sender@transitmail.org\r\n" +
-        "Date: Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
-        "To: receiever@transitmail.org\r\n" +
-        "CC: \r\n" +
-        "Subject: (no subject)\r\n" +
-        "Message-ID: <606A561C-00001750@mailserver01.transitmail.org\r\n" +
-        'From: "james" <sender@transitmail.org>\r\n' +
-        "Received: from mail.transitmail.org (mailserver01.transitmail.org [127.0.0.1])\r\n" +
-        "\tby mailserver01.transitmail.org; Sun, 04 Apr 2021 21:13:16 -0300\r\n" +
-        "Bcc: \r\n" +
-        "MIME-Version: 1.0\r\n" +
-        "X-Mailer: Transit alpha0.0.1\r\n" +
-        'Content-Type: multipart/alternative; boundary="transit--client--zieazjy"',
-      contentRaw:
-        "\r\n" +
-        "--transit--client--zieazjy\r\n" +
-        'Content-Type: text/plain; charset="utf-8"\r\n' +
-        "\r\n" +
-        "Test Body\r\n" +
-        "\r\n" +
-        "\r\n" +
-        "--transit--client--zieazjy\r\n" +
-        'Content-Type: text/html; charset="utf-8"\r\n' +
-        "\r\n" +
-        "<p>Test Body</p>\r\n" +
-        "\r\n" +
-        "--transit--client--zieazjy--\r\n" +
-        "\r",
-      headers: {
-        "return-path": "sender@transitmail.org",
-        date: "Sun, 04 Apr 2021 21:13:16 -0300",
-        to: "receiever@transitmail.org",
-        cc: "",
-        subject: "(no subject)",
-        "message-id": "<606A561C-00001750@mailserver01.transitmail.org",
-        from: '"james" <sender@transitmail.org>',
-        received:
-          "from mail.transitmail.org (mailserver01.transitmail.org [127.0.0.1]) by mailserver01.transitmail.org; Sun, 04 Apr 2021 21:13:16 -0300",
-        bcc: "",
-        "mime-version": "1.0",
-        "x-mailer": "Transit alpha0.0.1",
-        "content-type": 'multipart/alternative; boundary="transit--client--zieazjy"'
-      },
-      date: "Sun, 04 Apr 2021 21:13:16 -0300",
-      to: "receiever@transitmail.org",
-      cc: "",
-      subject: "(no subject)",
-      from: '"james" <sender@transitmail.org>',
-      mimeType: "multipart/alternative",
-      charset: undefined,
-      boundaryIds: ["transit--client--zieazjy"],
-      boundaries: [
-        {
-          contents: [
-            {
-              contentRaw:
-                'Content-Type: text/plain; charset="utf-8"\r\n\r\n' + "Test Body\r\n\r\n\r\n",
-              headers: {
-                "content-type": 'text/plain; charset="utf-8"',
-                content: "Test Body\r\n\r\n\r\n\r\n"
-              },
-              content: "Test Body\r\n\r\n\r\n\r\n",
-              mimeType: "text/plain",
-              charset: "utf-8"
-            },
-            {
-              contentRaw:
-                'Content-Type: text/html; charset="utf-8"\r\n\r\n' + "<p>Test Body</p>\r\n\r\n",
-              headers: {
-                "content-type": 'text/html; charset="utf-8"',
-                content: "<p>Test Body</p>\r\n\r\n\r\n"
-              },
-              content: "<p>Test Body</p>\r\n\r\n\r\n",
-              mimeType: "text/html",
-              charset: "utf-8"
-            }
-          ]
-        }
-      ],
-      bodyText: "Test Body\r\n\r\n\r\n\r\n",
-      bodyTextHeaders: {
-        "content-type": 'text/plain; charset="utf-8"',
-        content: "Test Body\r\n\r\n\r\n\r\n"
-      },
-      bodyHtml: "<p>Test Body</p>\n\n\n",
-      bodyHtmlHeaders: {
-        "content-type": 'text/html; charset="utf-8"',
-        content: "<p>Test Body</p>\r\n\r\n\r\n"
-      }
-    };
-
-    test("Test populated string", () => {
-      const formatFetchEmailResponse: any = imapHelper.formatFetchEmailResponse(mockFetchData);
-
-      expect(formatFetchEmailResponse).toEqual(mockFormatFetchEmailResponse);
-    });
-  });
-
-  describe("Test formatFetchFolderEmailsResponse", () => {
-    const mockFolderData: any = [
-      ["*", "1", "FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {1}"],
-      [
-        "Date: Fri, 24 Jul 2020 00:00:00 -0300\r\n" +
-          "Subject: Test Subject\r\n" +
-          'From: "Test Sender" <sender@transitmail.org>\r\n' +
-          "\r\n" +
-          ' BODYSTRUCTURE ("text" "plain" ("CHARSET" "utf-8") NIL NIL "7BIT" 337 11 NIL NIL NIL))\r\n'
-      ],
-      ["3d290h4", "OK", "UID FETCH completed"]
-    ];
-
-    const mockFormatFetchFolderEmailsResponse: any = [
-      {
-        id: 1,
-        date: "Fri, 24 Jul 2020 00:00:00 -0300",
-        epoch: 1595559600000,
-        from: '"Test Sender" <sender@transitmail.org>',
-        subject: "Test Subject",
-        uid: 1,
-        ref: "1",
+      expect(formatFetchEmailFlagsResponse).toEqual({
+        deleted: false,
         flags: "\\Seen",
-        hasAttachment: false,
-        selected: false
-      }
-    ];
+        seen: true,
+        size: 100000
+      });
+    });
 
-    test("Test populated string", () => {
-      const formatFetchFolderEmailsResponse: any =
-        imapHelper.formatFetchFolderEmailsResponse(mockFolderData);
+    it("a unsuccessful response", () => {
+      const fetchData: string[][] = [["Invalid request"]];
 
-      expect(formatFetchFolderEmailsResponse).toEqual(mockFormatFetchFolderEmailsResponse);
+      const imapHelper = new ImapHelper();
+
+      const formatFetchEmailFlagsResponse: IEmailFlags | undefined =
+        imapHelper.formatFetchEmailFlagsResponse(fetchData);
+
+      expect(formatFetchEmailFlagsResponse).toEqual(undefined);
     });
   });
 
-  describe("Test formatListFoldersResponse", () => {
-    const mockFolderData: any = [
-      ["*", "LIST", '(\\NoSelect \\HasChildren) "/" ""'],
-      ["*", "LIST", '() "/" "INBOX"'],
-      ["*", "LIST", '() "/" "INBOX/subfolder"'],
-      ["g7xyu52", "OK", "LIST completed"]
-    ];
+  describe("testing formatFetchEmailResponse() function", () => {
+    it("a successful response", () => {
+      const mockFetchData: string[][] = [
+        ["*", "1971", "FETCH (UID 5968 RFC822 {885}"],
+        ["Test email header\r\n\r\nTest email body\r\n\r\n" + "\r\n)\r\n"],
+        ["q3ilhxgq", "OK", "UID FETCH completed"]
+      ];
 
-    const mockFormatListFoldersResponse: any = [
-      {
-        folders: [
-          {
-            id: 2,
-            name: "subfolder",
-            ref: "subfolder"
-          }
+      const imapHelper = new ImapHelper();
+
+      const formatFetchEmailResponse: IEmail = imapHelper.formatFetchEmailResponse(mockFetchData);
+
+      expect(formatFetchEmailResponse).toEqual({
+        emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+        headersRaw: "Test email header",
+        contentRaw: "Test email body\r\n\r\n",
+        headers: undefined,
+        boundaries: [],
+        bodyText: "Test email body\r\n\r\n"
+      });
+    });
+
+    it("a successful response without a terminator", () => {
+      const mockFetchData: string[][] = [
+        ["*", "1971", "FETCH (UID 5968 RFC822 {885}"],
+        ["Test email header\r\n\r\nTest email body\r\n\r\n"],
+        ["q3ilhxgq", "OK", "UID FETCH completed"]
+      ];
+
+      const imapHelper = new ImapHelper();
+
+      const formatFetchEmailResponse: IEmail = imapHelper.formatFetchEmailResponse(mockFetchData);
+
+      expect(formatFetchEmailResponse).toEqual({
+        emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+        headersRaw: "Test email header",
+        contentRaw: "Test email body\r\n\r\n",
+        headers: undefined,
+        boundaries: [],
+        bodyText: "Test email body\r\n\r\n"
+      });
+    });
+  });
+
+  describe("testing formatFetchFolderEmailsResponse() function", () => {
+    it("a successful response", () => {
+      const folderData: string[][] = [
+        ["*", "1", "FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {1}"],
+        [
+          "Date: Fri, 24 Jul 2020 00:00:00 -0300\r\n" +
+            "Subject: Test Subject\r\n" +
+            "From: Test Display Name <test@emailAddress.com>\r\n" +
+            "\r\n" +
+            ' BODYSTRUCTURE ("text" "plain" ("CHARSET" "utf-8") NIL NIL "7BIT" 337 11 NIL NIL NIL))\r\n'
         ],
-        id: 1,
-        name: "INBOX",
-        ref: "INBOX"
-      }
-    ];
+        ["3d290h4", "OK", "UID FETCH completed"]
+      ];
 
-    test("Test populated string", () => {
-      const formatListFoldersResponse: any = imapHelper.formatListFoldersResponse(mockFolderData);
+      const imapHelper = new ImapHelper();
 
-      expect(formatListFoldersResponse).toEqual(mockFormatListFoldersResponse);
+      const formatFetchFolderEmailsResponse: IFolderEmail[] =
+        imapHelper.formatFetchFolderEmailsResponse(folderData);
+
+      expect(formatFetchFolderEmailsResponse).toEqual([
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "Test Subject",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        }
+      ]);
+    });
+
+    it("a successful response without a subject", () => {
+      const folderData: string[][] = [
+        ["*", "1", "FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {1}"],
+        [
+          "Date: Fri, 24 Jul 2020 00:00:00 -0300\r\n" +
+            "From: Test Display Name <test@emailAddress.com>\r\n" +
+            "\r\n" +
+            ' BODYSTRUCTURE ("text" "plain" ("CHARSET" "utf-8") NIL NIL "7BIT" 337 11 NIL NIL NIL))\r\n'
+        ],
+        ["3d290h4", "OK", "UID FETCH completed"]
+      ];
+
+      const imapHelper = new ImapHelper();
+
+      const formatFetchFolderEmailsResponse: IFolderEmail[] =
+        imapHelper.formatFetchFolderEmailsResponse(folderData);
+
+      expect(formatFetchFolderEmailsResponse).toEqual([
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "(no subject)",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        }
+      ]);
+    });
+
+    it("a successful response with mime encoded From or Subject header", () => {
+      const folderData: string[][] = [
+        ["*", "1", "FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {1}"],
+        [
+          "Date: Fri, 24 Jul 2020 00:00:00 -0300\r\n" +
+            "Subject: =?UTF-8?B?VGVzdCBTdWJqZWN0?=\r\n" +
+            "From: =?UTF-8?B?VGVzdCBEaXNwbGF5IE5hbWUgPHRlc3RAZW1haWxBZGRyZXNzLmNvbT4=?=\r\n" +
+            "\r\n" +
+            ' BODYSTRUCTURE ("text" "plain" ("CHARSET" "utf-8") NIL NIL "7BIT" 337 11 NIL NIL NIL))\r\n'
+        ],
+        ["3d290h4", "OK", "UID FETCH completed"]
+      ];
+
+      const imapHelper = new ImapHelper();
+
+      const formatFetchFolderEmailsResponse: IFolderEmail[] =
+        imapHelper.formatFetchFolderEmailsResponse(folderData);
+
+      expect(formatFetchFolderEmailsResponse).toEqual([
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "Test Subject",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        }
+      ]);
+    });
+
+    it("an unsuccesful response to an invalid request", () => {
+      const folderData: string[][] = [["*"], ["Invalid request"], []];
+
+      const imapHelper = new ImapHelper();
+
+      const formatFetchFolderEmailsResponse: IFolderEmail[] =
+        imapHelper.formatFetchFolderEmailsResponse(folderData);
+
+      expect(formatFetchFolderEmailsResponse).toEqual([]);
+    });
+  });
+
+  describe("testing formatListFoldersResponse() function", () => {
+    it("a successful response", () => {
+      const folderData: string[][] = [
+        ["*", "LIST", '(\\NoSelect \\HasChildren) "/" ""'],
+        ["*", "LIST", '() "/" "testFolder"'],
+        ["*", "LIST", '() "/" "testFolder/subfolder"'],
+        ["*", "LIST", '() "/" "anotherTestFolder"'],
+        ["g7xyu52", "OK", "LIST completed"]
+      ];
+
+      const imapHelper = new ImapHelper();
+
+      const formatListFoldersResponse: IFoldersEntry[] =
+        imapHelper.formatListFoldersResponse(folderData);
+
+      expect(formatListFoldersResponse).toEqual([
+        {
+          id: 1,
+          name: "anotherTestFolder",
+          ref: "anotherTestFolder",
+          folders: []
+        },
+        {
+          id: 2,
+          name: "testFolder",
+          ref: "testFolder",
+          folders: [{ id: 3, name: "subfolder", ref: "subfolder" }]
+        }
+      ]);
+    });
+
+    it("an unsuccessful response", () => {
+      const folderData: string[][] = [["*"]];
+
+      const imapHelper = new ImapHelper();
+
+      const formatListFoldersResponse: IFoldersEntry[] =
+        imapHelper.formatListFoldersResponse(folderData);
+
+      expect(formatListFoldersResponse).toEqual([]);
     });
   });
 });
