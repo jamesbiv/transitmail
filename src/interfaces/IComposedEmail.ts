@@ -1,6 +1,6 @@
 export interface IComposedEmail {
   boundaryid?: string;
-  to?: string;
+  to: string;
   cc?: string;
   bcc?: string;
   from?: string;
