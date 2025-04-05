@@ -18,6 +18,10 @@ describe("Testing EmailCompose class", () => {
     const emailParserResponse: IComposedEmail = emailParser.composeEmail(emailData);
 
     expect(emailParserResponse).toMatchObject({
+      subject: "Test Email",
+      from: "Test Display Name <sender@transitmail.org>",
+      to: "receiver@transitmail.org",
+      contentText: "",
       contentHTML: "<p>Test Body</p>"
     });
   });
@@ -33,7 +37,13 @@ describe("Testing EmailCompose class", () => {
 
     const emailParserResponse: IComposedEmail = emailParser.composeEmail(emailData);
 
-    expect(emailParserResponse).toMatchObject({ subject: undefined });
+    expect(emailParserResponse).toMatchObject({
+      subject: undefined,
+      from: "Test Display Name <sender@transitmail.org>",
+      to: "receiver@transitmail.org",
+      contentText: "",
+      contentHTML: "<p>Test Body</p>"
+    });
   });
 
   it("test an email with cc and bcc", () => {
@@ -56,9 +66,13 @@ describe("Testing EmailCompose class", () => {
     const emailParserResponse: IComposedEmail = emailParser.composeEmail(emailData);
 
     expect(emailParserResponse).toMatchObject({
+      subject: "Test Email",
+      from: "Test Display Name <sender@transitmail.org>",
       to: "receiver@transitmail.org",
       cc: "receiverCc@transitmail.org, receiverCc1@transitmail.org",
-      bcc: "receiverBcc@transitmail.org, receiverBcc1@transitmail.org"
+      bcc: "receiverBcc@transitmail.org, receiverBcc1@transitmail.org",
+      contentText: "",
+      contentHTML: "<p>Test Body</p>"
     });
   });
 
@@ -76,6 +90,10 @@ describe("Testing EmailCompose class", () => {
     const emailParserResponse: IComposedEmail = emailParser.composeEmail(emailData);
 
     expect(emailParserResponse).toMatchObject({
+      subject: "Test Email",
+      from: "Test Display Name <sender@transitmail.org>",
+      to: "receiver@transitmail.org",
+      contentText: "",
       contentHTML: "<p>Test Body</p>"
     });
   });

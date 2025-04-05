@@ -29,7 +29,7 @@ export class EmailComposer {
     };
 
     composedEmail.subject = emailData.subject;
-    composedEmail.from = `"${emailData.from.displayName}" <${emailData.from.email}>`;
+    composedEmail.from = `${emailData.from.displayName} <${emailData.from.email}>`;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
       if (!recipient.value) {
