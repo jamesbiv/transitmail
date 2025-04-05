@@ -101,6 +101,29 @@ describe("Testing the SmtpSocket class", () => {
 
       const smtpConnectResponse: boolean = await smtpSocket.smtpConnect(false);
 
+      smtpSocket.smtpClose();
+
+      expect(smtpConnectResponse).toBeFalsy();
+    });
+
+    it("with unsuccessful connection with  retry", async () => {
+      const settings: ISmtpSettings = {
+        host: "localhost",
+        port: 1111,
+        username: "testUsername",
+        password: "testPasword"
+      };
+
+      const smtpSocket = new SmtpSocket(settings);
+
+      smtpSocket.session.retry = 10;
+
+      const smtpConnectResponse: boolean = await smtpSocket.smtpConnect(false);
+
+      await sleep(20);
+
+      smtpSocket.smtpClose();
+
       expect(smtpConnectResponse).toBeFalsy();
     });
   });
