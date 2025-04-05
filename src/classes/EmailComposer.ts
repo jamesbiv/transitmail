@@ -24,12 +24,11 @@ export class EmailComposer {
    * @returns IComposedEmail
    */
   public composeEmail(emailData: IEmailData): IComposedEmail {
-    const composedEmail: IComposedEmail = {
-      boundaryid: Math.random().toString(36).substring(5)
+    const composedEmail: Partial<IComposedEmail> = {
+      boundaryid: Math.random().toString(36).substring(5),
+      subject: emailData.subject,
+      from: `${emailData.from.displayName} <${emailData.from.email}>`
     };
-
-    composedEmail.subject = emailData.subject;
-    composedEmail.from = `${emailData.from.displayName} <${emailData.from.email}>`;
 
     emailData.recipients?.forEach((recipient: IComposeRecipient) => {
       if (!recipient.value) {
@@ -91,6 +90,6 @@ ${composedEmail.contentHTML}\r\n\r\n\
 ${composedEmail.attachmentsEncoded}\
 --transit--client--${composedEmail.boundaryid}--`;
 
-    return composedEmail;
+    return composedEmail as IComposedEmail;
   }
 }

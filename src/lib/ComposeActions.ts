@@ -107,8 +107,11 @@ const sendEmailAction = async (
     return mailResponse;
   }
 
+  const composedEmailDataTo =
+    /(.*) <(.*)>/i.exec(composedEmailData.to)?.[2] ?? composedEmailData.to;
+
   const rcptResponse: ISmtpResponse = await smtpSocket.smtpRequest(
-    `RCPT to: ${composedEmailData.to}`
+    `RCPT to: ${composedEmailDataTo}`
   );
 
   if (rcptResponse.status !== ESmtpResponseStatus.Success) {
