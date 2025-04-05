@@ -94,13 +94,38 @@ describe("Testing the StateManager class", () => {
     });
 
     it("updateCurrentFolder() doesn't update folderEmails because folderId is empty", () => {
+      const folderId: string = "folder";
+
+      const folderEmails: IFolderEmail[] = [
+        {
+          id: 1,
+          epoch: 1,
+          uid: 1,
+          date: "Thu, 01 Apr 2021 00:00:00 -0300",
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "Test Subject",
+          ref: "testFolder",
+          flags: "\\Flagged",
+          hasAttachment: false,
+          selected: true
+        }
+      ];
+
       const stateManager = new StateManager();
 
-      stateManager.updateCurrentFolder();
+      stateManager.setFolderId(folderId);
 
-      /**
-       * needs a better test case
-       */
+      const beforelUpdateCurrentFolder = stateManager.updateCurrentFolder(folderEmails, "1");
+
+      stateManager.setFolderId(undefined!);
+
+      stateManager.updateCurrentFolder([{ ...folderEmails[0], subject: "Subject Changed" }], "1");
+
+      stateManager.setFolderId(folderId);
+
+      const afterUpdateCurrentFolder = stateManager.updateCurrentFolder(folderEmails, "1");
+
+      expect(afterUpdateCurrentFolder).toBe(beforelUpdateCurrentFolder);
     });
 
     it("successful getting and setting", () => {
@@ -109,13 +134,13 @@ describe("Testing the StateManager class", () => {
       const folderEmails: IFolderEmail[] = [
         {
           id: 1,
-          date: "",
           epoch: 1,
-          from: "",
-          subject: "",
           uid: 1,
-          ref: "",
-          flags: "",
+          date: "Thu, 01 Apr 2021 00:00:00 -0300",
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "Test Subject",
+          ref: "testFolder",
+          flags: "\\Flagged",
           hasAttachment: false,
           selected: true
         }
@@ -131,8 +156,21 @@ describe("Testing the StateManager class", () => {
         stateManager.getCurrentFolder();
 
       expect(updateCurrentFolderResponse).toEqual({
-        emails: folderEmails,
-        latestUid: "1"
+        latestUid: "1",
+        emails: [
+          {
+            id: 1,
+            epoch: 1,
+            uid: 1,
+            date: "Thu, 01 Apr 2021 00:00:00 -0300",
+            from: "Test Display Name <test@emailAddress.com>",
+            subject: "Test Subject",
+            ref: "testFolder",
+            flags: "\\Flagged",
+            hasAttachment: false,
+            selected: true
+          }
+        ]
       });
     });
   });

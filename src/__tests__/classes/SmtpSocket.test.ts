@@ -394,12 +394,12 @@ describe("Testing the SmtpSocket class", () => {
     const originalEnvironmentVariables: NodeJS.ProcessEnv = process.env;
     const originalConsole: Console = global.console;
 
-    beforeAll(() => {
+    beforeEach(() => {
       process.env = { NODE_ENV: "development", PUBLIC_URL: "https://localhost" };
       global.console = { error: jest.fn(), log: jest.fn() } as never;
     });
 
-    afterAll(() => {
+    afterEach(() => {
       process.env = originalEnvironmentVariables;
       global.console = originalConsole;
     });
@@ -443,6 +443,8 @@ describe("Testing the SmtpSocket class", () => {
         await smtpSocket.smtpConnect(false);
 
         smtpSocket.smtpClose();
+
+        await sleep(100);
 
         expect(global.console.log).toHaveBeenCalledWith(
           expect.stringMatching(/\[SMTP\] Connection closed/i),
