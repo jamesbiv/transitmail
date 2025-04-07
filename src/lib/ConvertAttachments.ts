@@ -26,7 +26,7 @@ export const convertAttachments = async (
         const fileReader = new FileReader();
 
         fileReader.onload = () => resolve(fileReader);
-        fileReader.readAsBinaryString(attachmentContent);
+        fileReader.readAsArrayBuffer(attachmentContent);
       });
 
       (await convertedAttachments).push({

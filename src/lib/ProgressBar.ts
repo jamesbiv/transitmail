@@ -35,7 +35,7 @@ export const initiateProgressBar = (
  * @param {() => void} finalCallbackFn
  * @returns void
  */
-export const checkProgressBar = (
+const checkProgressBar = (
   setProgressBarNow: Dispatch<number>,
   currentBytesFn: () => number,
   finalCallbackFn: () => void

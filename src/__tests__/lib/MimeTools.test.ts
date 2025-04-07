@@ -1,59 +1,51 @@
 import { MimeTools } from "lib";
 
-describe("Testing the MimeTools class", () => {
-  describe("Test parseMimeWords", () => {
-    test("With valid quoted printable string content", () => {
-      const mockParseMimeWordsContent: string = "=?UTF-8?Q?test_quoted_printable?=";
+describe("Testing MimeTools", () => {
+  describe("Test parseMimeWords() function", () => {
+    it("with a valid quoted printable string content", () => {
+      const content: string = "=?UTF-8?Q?test_quoted_printable?=";
 
-      const mockParseMimeWordsResponse: string = "test quoted printable";
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
 
-      const parseMimeWordsResponse = MimeTools.parseMimeWords(mockParseMimeWordsContent);
-
-      expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
+      expect(parseMimeWordsResponse).toEqual("test quoted printable");
     });
 
-    test("With valid bas64 string content", () => {
-      const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?=";
+    test("with valid bas64 string content", () => {
+      const content: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?=";
 
-      const mockParseMimeWordsResponse: string = "test base64";
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
 
-      const parseMimeWordsResponse = MimeTools.parseMimeWords(mockParseMimeWordsContent);
-
-      expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
+      expect(parseMimeWordsResponse).toEqual("test base64");
     });
 
-    test("With joinable content", () => {
-      const mockParseMimeWordsContent: string = "=?UTF-8?B?dGVzdCA=?==?UTF-8?B?YmFzZTY0?=";
+    test("with joinable content", () => {
+      const content: string = "=?UTF-8?B?dGVzdCA=?==?UTF-8?B?YmFzZTY0?=";
 
-      const mockParseMimeWordsResponse: string = "test base64";
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
 
-      const parseMimeWordsResponse = MimeTools.parseMimeWords(mockParseMimeWordsContent);
-
-      expect(parseMimeWordsResponse).toEqual(mockParseMimeWordsResponse);
+      expect(parseMimeWordsResponse).toEqual("test base64");
     });
   });
 
   describe("Test base64toBlob", () => {
-    test("With valid string content", () => {
-      const mockBase64toBlobsContent: string = "dGVzdCBibG9i";
+    test("with valid string content", () => {
+      const content: string = "dGVzdCBibG9i";
+      const contentType: string = "";
 
-      const mockBase64toBlobResponse: Blob = new Blob();
+      const base64toBlobResponse = MimeTools.base64toBlob(content, contentType);
 
-      const base64toBlobResponse = MimeTools.base64toBlob(mockBase64toBlobsContent, "");
-
-      expect(base64toBlobResponse).toEqual(mockBase64toBlobResponse);
+      expect(base64toBlobResponse).toEqual(new Blob());
     });
   });
 
   describe("Test binaryStringToBlob", () => {
-    test("With valid string content", () => {
-      const mockBinaryStringToBlobContent: string = "test blob";
+    test("with valid string content", () => {
+      const content: string = "test blob";
+      const contentType: string = "";
 
-      const mockBinaryStringToBlobResponse: Blob = new Blob();
+      const base64toBlobResponse = MimeTools.binaryStringToBlob(content, contentType);
 
-      const base64toBlobResponse = MimeTools.binaryStringToBlob(mockBinaryStringToBlobContent, "");
-
-      expect(base64toBlobResponse).toEqual(mockBinaryStringToBlobResponse);
+      expect(base64toBlobResponse).toEqual(new Blob());
     });
   });
 });

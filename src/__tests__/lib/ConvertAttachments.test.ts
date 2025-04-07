@@ -1,5 +1,6 @@
 import { IEmailAttachment } from "interfaces";
 import { convertAttachments } from "lib";
+import { TextDecoder } from "util";
 
 describe("Testing convertAttachments", () => {
   it("with a valid attachment", async () => {
@@ -26,13 +27,21 @@ describe("Testing convertAttachments", () => {
 
     const convertAttachmentsResponse = await convertAttachments(attachments);
 
-    expect(convertAttachmentsResponse).toEqual([
+    const textDecoder = new TextDecoder();
+
+    const extractDataResponse = convertAttachmentsResponse?.[0]?.data as ArrayBuffer | undefined;
+
+    const decodedDataResponse = extractDataResponse
+      ? textDecoder.decode(extractDataResponse)
+      : undefined;
+
+    expect(decodedDataResponse).toEqual("Test Attachment\n");
+    expect(convertAttachmentsResponse).toMatchObject([
       {
-        data: "Test Attachment\n",
-        filename: "testAttachment.txt",
         id: 0,
-        mimeType: "text/plain",
-        size: 0
+        size: 0,
+        filename: "testAttachment.txt",
+        mimeType: "text/plain"
       }
     ]);
   });
