@@ -15,9 +15,7 @@ export const copyEmailToFolder = (actionUids: number[], destinationFolderId: str
   const { imapSocket, stateManager } = directAccessToDependencies();
 
   actionUids.forEach(async (actionUid: number) => {
-    const copyResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID COPY ${actionUid} "${destinationFolderId}"`
-    );
+    await imapSocket.imapRequest(`UID COPY ${actionUid} "${destinationFolderId}"`);
   });
 
   const currentEmailFolder = stateManager.getCurrentFolder()?.emails;
@@ -123,9 +121,7 @@ export const deleteEmailFromFolder = (actionUids: number[]): boolean => {
   const { imapSocket, stateManager } = directAccessToDependencies();
 
   actionUids.forEach(async (actionUid: number) => {
-    const deleteResponse: IImapResponse = await imapSocket.imapRequest(
-      `UID STORE ${actionUid} +FLAGS (\\Deleted)`
-    );
+    await imapSocket.imapRequest(`UID STORE ${actionUid} +FLAGS (\\Deleted)`);
   });
 
   const currentEmailFolder = stateManager.getCurrentFolder()?.emails;

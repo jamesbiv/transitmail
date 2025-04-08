@@ -46,15 +46,15 @@ const joinMimeWords = (
 const decodeMimeWord = (content: string): string => {
   const contentNoWhitespace: string = content.replace(/\s+/g, "");
 
-  const [match, charset, encoding, encodedContent]: RegExpMatchArray | [] =
-    contentNoWhitespace.trim().match(/^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i) ?? [];
+  const [_, _charset, encoding, encodedContent]: RegExpMatchArray =
+    /^=\?([\w_-]+)\?([QqBb])\?([^?]*)\?=$/i.exec(contentNoWhitespace.trim())!;
 
   if (!encodedContent) {
     return content;
   }
 
   const sanitisedEncodedContent: string = encodedContent.replace(/_/g, " ");
-  const encodingType: string = (encoding ?? "Q").toUpperCase();
+  const encodingType: string = encoding.toUpperCase();
 
   switch (encodingType) {
     case "B":
@@ -150,7 +150,7 @@ const quotedPrintableDecoder = (content: string): string => {
 
     if (
       char === "=" &&
-      (hexValue = content.substr(increment + 1, 2)) &&
+      (hexValue = content.slice(increment + 1, 3)) &&
       /[\da-fA-F]{2}/.test(hexValue)
     ) {
       increment += 2;

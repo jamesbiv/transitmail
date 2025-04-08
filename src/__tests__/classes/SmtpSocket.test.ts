@@ -2,12 +2,9 @@ import { WebSocketServer, WebSocket } from "ws";
 
 import { ESmtpResponseStatus, ISmtpSettings } from "interfaces";
 import { SmtpSocket } from "classes";
-import { overloadWebSocketConstructor, restoreWebSocketClass } from "__tests__/fixtures";
+import { overloadWebSocketConstructor, restoreWebSocketClass, sleep } from "__tests__/fixtures";
 
 jest.mock("contexts/DependenciesContext");
-
-const sleep = async (milliSeconds: number) =>
-  new Promise((resolve: (value: unknown) => void) => setTimeout(resolve, milliSeconds));
 
 const settings: ISmtpSettings = {
   host: "localhost",

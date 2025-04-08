@@ -39,7 +39,7 @@ describe("Settings Component", () => {
         wrapper: ContainerMain
       });
 
-      const containerMain: Element = container.querySelector("#container-main")! as Element;
+      const containerMain: Element = container.querySelector("#container-main")!;
       containerMain.scroll = jest.fn();
 
       fireEvent.click(getByText(/Save/i));
@@ -92,7 +92,7 @@ describe("Settings Component", () => {
         wrapper: ContainerMain
       });
 
-      const containerMain: Element = container.querySelector("#container-main")! as Element;
+      const containerMain: Element = container.querySelector("#container-main")!;
       containerMain.scroll = jest.fn();
 
       const formDisplayName = container.querySelector("#formDisplayName")!;
@@ -178,7 +178,7 @@ describe("Settings Component", () => {
         contextSpyHelper<SmtpSocket>("smtpSocket"),
         "smtpClose"
       );
-      
+
       smtpCloseSpy.mockImplementationOnce(() => true);
       smtpCloseSpy.mockImplementationOnce(() => true);
     });
@@ -333,7 +333,7 @@ describe("Settings Component", () => {
         wrapper: ContainerMain
       });
 
-      const containerMain: Element = container.querySelector("#container-main")! as Element;
+      const containerMain: Element = container.querySelector("#container-main")!;
       containerMain.scroll = jest.fn();
 
       fireEvent.click(getByText(/Save/i));
@@ -378,7 +378,7 @@ describe("Settings Component", () => {
         wrapper: ContainerMain
       });
 
-      const containerMain: Element = container.querySelector("#container-main")! as Element;
+      const containerMain: Element = container.querySelector("#container-main")!;
       containerMain.scroll = jest.fn();
 
       fireEvent.click(getByText(/Save/i));
@@ -433,7 +433,7 @@ describe("Settings Component", () => {
         wrapper: ContainerMain
       });
 
-      const containerMain: Element = container.querySelector("#container-main")! as Element;
+      const containerMain: Element = container.querySelector("#container-main")!;
       containerMain.scroll = jest.fn();
 
       fireEvent.click(getByText(/Save/i));

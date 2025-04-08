@@ -1,44 +1,52 @@
+import { IEmailAttachment } from "interfaces";
 import { convertAttachments } from "lib";
+import { TextDecoder } from "util";
 
 describe("Testing convertAttachments", () => {
-  test("With a valid attachment", async () => {
-    const mockConvertAttachmentsContent: any = [
+  it("with a valid attachment", async () => {
+    const attachments: IEmailAttachment[] = [
       {
         contentRaw:
-          'Content-Type: text/plain; name="testattachment.txt"\r\n' +
-          'Content-Disposition: attachment; filename="testattachment.txt"\r\n' +
+          'Content-Type: text/plain; name="testAttachment.txt"\r\n' +
+          'Content-Disposition: attachment; filename="testAttachment.txt"\r\n' +
           "Content-Transfer-Encoding: base64\r\n\r\n" +
           "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n",
         headers: {
-          "content-type": 'text/plain; name="testattachment.txt"',
-          "content-disposition": 'attachment; filename="testattachment.txt"',
+          "content-type": 'text/plain; name="testAttachment.txt"',
+          "content-disposition": 'attachment; filename="testAttachment.txt"',
           "content-transfer-encoding": "base64",
           content: "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n\r\n"
         },
         content: "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n\r\n",
         mimeType: "text/plain",
         isAttachment: true,
-        filename: "testattachment.txt",
+        filename: "testAttachment.txt",
         encoding: "base64"
       }
     ];
 
-    const mockConvertAttachmentsResponse: any = [
+    const convertAttachmentsResponse = await convertAttachments(attachments);
+
+    const textDecoder = new TextDecoder();
+
+    const extractDataResponse = convertAttachmentsResponse?.[0]?.data as ArrayBuffer | undefined;
+
+    const decodedDataResponse = extractDataResponse
+      ? textDecoder.decode(extractDataResponse)
+      : undefined;
+
+    expect(decodedDataResponse).toEqual("Test Attachment\n");
+    expect(convertAttachmentsResponse).toMatchObject([
       {
-        data: "Test Attachment\n",
-        filename: "testattachment.txt",
         id: 0,
-        mimeType: "text/plain",
-        size: 0
+        size: 0,
+        filename: "testAttachment.txt",
+        mimeType: "text/plain"
       }
-    ];
-
-    const convertAttachmentsResponse = await convertAttachments(mockConvertAttachmentsContent);
-
-    expect(convertAttachmentsResponse).toEqual(mockConvertAttachmentsResponse);
+    ]);
   });
 
-  test("Without an attachment", async () => {
+  it("without a valid attachment", async () => {
     const convertAttachmentsResponse = await convertAttachments(undefined);
 
     expect(convertAttachmentsResponse).toEqual(undefined);

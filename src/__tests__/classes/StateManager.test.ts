@@ -128,7 +128,7 @@ describe("Testing the StateManager class", () => {
       expect(afterUpdateCurrentFolder).toBe(beforelUpdateCurrentFolder);
     });
 
-    it("successful getting and setting", () => {
+    it("getCurrentFolder() returns successful result for both getting and setting", () => {
       const folderId: string = "folder";
 
       const folderEmails: IFolderEmail[] = [
@@ -152,10 +152,10 @@ describe("Testing the StateManager class", () => {
 
       stateManager.updateCurrentFolder(folderEmails, "1");
 
-      const updateCurrentFolderResponse: IFolderEmails | undefined =
+      const getCurrentFolderResponse: IFolderEmails | undefined =
         stateManager.getCurrentFolder();
 
-      expect(updateCurrentFolderResponse).toEqual({
+      expect(getCurrentFolderResponse).toEqual({
         latestUid: "1",
         emails: [
           {
