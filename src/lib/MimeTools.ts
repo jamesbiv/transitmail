@@ -54,7 +54,7 @@ const decodeMimeWord = (content: string): string => {
   }
 
   const sanitisedEncodedContent: string = encodedContent.replace(/_/g, " ");
-  const encodingType: string = (encoding ?? "Q").toUpperCase();
+  const encodingType: string = encoding.toUpperCase();
 
   switch (encodingType) {
     case "B":

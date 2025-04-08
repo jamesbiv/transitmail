@@ -10,7 +10,7 @@ describe("Testing MimeTools", () => {
       expect(parseMimeWordsResponse).toEqual("test quoted printable");
     });
 
-    test("with valid bas64 string content", () => {
+    test("with valid base64 string content", () => {
       const content: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?=";
 
       const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
@@ -24,6 +24,14 @@ describe("Testing MimeTools", () => {
       const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
 
       expect(parseMimeWordsResponse).toEqual("test base64");
+    });
+
+    test("with invalid content", () => {
+      const content: string = "=?UTF-8?B??=";
+
+      const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
+
+      expect(parseMimeWordsResponse).toEqual("=?UTF-8?B??=");
     });
   });
 
