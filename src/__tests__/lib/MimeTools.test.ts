@@ -10,6 +10,13 @@ describe("Testing MimeTools", () => {
       expect(parseMimeWordsResponse).toEqual("test quoted printable");
     });
 
+    it("with a valid quoted printable with hex value as string content", () => {});
+    const content: string = "=?UTF-8?Q?=3F_string_with_hex_value?=";
+
+    const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
+
+    expect(parseMimeWordsResponse).toEqual("? string with hex value");
+
     test("with valid base64 string content", () => {
       const content: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?=";
 
