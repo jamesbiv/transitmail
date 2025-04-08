@@ -129,7 +129,7 @@ describe("Test ComposeActions", () => {
       });
     });
 
-    it("an unsuccessful response because UID FETCH FLAGS failed", async () => {
+    it("an unsuccessful response because UID FETCH FLAGS request failed", async () => {
       const imapRequestSpy: jest.SpyInstance = jest.spyOn(ImapSocket.prototype, "imapRequest");
 
       imapRequestSpy.mockImplementationOnce((request: string) => {
@@ -157,7 +157,7 @@ describe("Test ComposeActions", () => {
       expect(downloadEmailResponse).toEqual(undefined);
     });
 
-    it("an unsuccessful response because UID FETCH failed", async () => {
+    it("an unsuccessful response because UID FETCH request failed", async () => {
       const imapRequestSpy: jest.SpyInstance = jest.spyOn(ImapSocket.prototype, "imapRequest");
 
       imapRequestSpy.mockImplementation((request: string) => {
@@ -246,7 +246,7 @@ describe("Test ComposeActions", () => {
       });
     });
 
-    it("an unsuccessful response because MAIL from: failed", async () => {
+    it("an unsuccessful response because MAIL from: request failed", async () => {
       const smtpRequestSpy: jest.SpyInstance = jest.spyOn(SmtpSocket.prototype, "smtpRequest");
 
       smtpRequestSpy.mockImplementationOnce((request: string) => {
@@ -278,7 +278,7 @@ describe("Test ComposeActions", () => {
     });
   });
 
-  it("an unsuccessful response because RCPT to: failed", async () => {
+  it("an unsuccessful response because RCPT to: request failed", async () => {
     const smtpRequestSpy: jest.SpyInstance = jest.spyOn(SmtpSocket.prototype, "smtpRequest");
 
     smtpRequestSpy.mockImplementation((request: string) => {
@@ -318,7 +318,7 @@ describe("Test ComposeActions", () => {
     });
   });
 
-  it("an unsuccessful response because MAIL from: failed", async () => {
+  it("an unsuccessful response because DATA request failed", async () => {
     const smtpRequestSpy: jest.SpyInstance = jest.spyOn(SmtpSocket.prototype, "smtpRequest");
 
     smtpRequestSpy.mockImplementation((request: string) => {
@@ -364,7 +364,7 @@ describe("Test ComposeActions", () => {
     });
   });
 
-  it("an unsuccessful response because MAIL from: failed", async () => {
+  it("an unsuccessful response because data payload failed", async () => {
     const smtpRequestSpy: jest.SpyInstance = jest.spyOn(SmtpSocket.prototype, "smtpRequest");
 
     smtpRequestSpy.mockImplementation((request: string) => {
@@ -416,7 +416,7 @@ describe("Test ComposeActions", () => {
     });
   });
 
-  it("an unsuccessful response because MAIL from: failed", async () => {
+  it("an unsuccessful response because QUIT request failed", async () => {
     const smtpRequestSpy: jest.SpyInstance = jest.spyOn(SmtpSocket.prototype, "smtpRequest");
 
     smtpRequestSpy.mockImplementation((request: string) => {

@@ -1,21 +1,17 @@
 import React, { Fragment, FunctionComponent, useContext, useEffect, useState } from "react";
-import { Card, ProgressBar, Alert, CardBody, CardHeader } from "react-bootstrap";
+import { Card, ProgressBar, CardBody, CardHeader } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEnvelopeOpen,
-  faTimes,
-  faCheck,
-  faExclamationTriangle
-} from "@fortawesome/free-solid-svg-icons";
+import { faEnvelopeOpen } from "@fortawesome/free-solid-svg-icons";
 import { DependenciesContext } from "contexts";
 import {
   IEmail,
   EImapResponseStatus,
   IImapResponse,
   IEmailFlags,
-  EComposePresetType
+  EComposePresetType,
+  IViewMessage
 } from "interfaces";
-import { ViewActions, EViewActionType, ViewAttachments, ViewHeader } from ".";
+import { ViewActions, EViewActionType, ViewAttachments, ViewHeader, ViewMessage } from ".";
 import { initiateProgressBar } from "lib";
 
 /**
@@ -30,8 +26,7 @@ export const View: FunctionComponent = () => {
 
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
-  const [message, setMessage] = useState<string>("");
-  const [messageType, setMessageType] = useState<string>("");
+  const [viewMessage, setViewMessage] = useState<IViewMessage | undefined>(undefined);
 
   const [showEmail, setShowEmail] = useState<boolean>(false);
 
@@ -40,13 +35,11 @@ export const View: FunctionComponent = () => {
   const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
   useEffect(() => {
-    (async () => {
-      if (imapSocket.getReadyState() !== 1) {
-        imapSocket.imapConnect();
-      }
+    if (imapSocket.getReadyState() !== WebSocket.OPEN) {
+      imapSocket.imapConnect();
+    }
 
-      await getEmail();
-    })();
+    getEmail();
   }, []);
 
   const getEmail = async (): Promise<void> => {
@@ -165,29 +158,12 @@ export const View: FunctionComponent = () => {
           <ViewAttachments attachments={email!.attachments} />
         </CardBody>
         <CardBody>
-          <Alert
-            className={!message.length ? "d-none" : "d-block"}
-            variant={
-              messageType === "info" ? "success" : messageType === "warning" ? "warning" : "danger"
-            }
-          >
-            <FontAwesomeIcon
-              icon={
-                messageType === "info"
-                  ? faCheck
-                  : messageType === "warning"
-                    ? faExclamationTriangle
-                    : faTimes
-              }
-            />{" "}
-            {message}
-          </Alert>
+          <ViewMessage viewMessage={viewMessage} />
           {email?.bodyHtml ? (
             <iframe
               id="emailBody"
               title="emailBody"
               className="email-body"
-              frameBorder="0"
               onLoad={() => {
                 const emailBodyFrame: HTMLIFrameElement = document.getElementById(
                   "emailBody"

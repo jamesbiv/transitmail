@@ -43,7 +43,7 @@ interface IFolderEmailActionComponents {
 interface IFolderEmailActionComponent {
   label: string;
   icon: IconDefinition;
-  element: React.FC<IFolderEmailActionProps>;
+  element: React.FC<TFolderEmailActionProps>;
 }
 
 export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
@@ -120,16 +120,26 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
   );
 };
 
-interface IFolderEmailActionProps {
+/**
+ * @type TFolderEmailActionProps
+ */
+type TFolderEmailActionProps = IFolderEmailActionMoveProps &
+  IFolderEmailActionCopyProps &
+  IFolderEmailActionDeleteProps &
+  IFolderEmailActionFlagProps;
+
+/**
+ * @interface IFolderEmailActionMoveProps
+ */
+interface IFolderEmailActionMoveProps {
   actionUids?: number[];
   folders: IFoldersEntry[];
-  imapSocket: ImapSocket;
   submit: boolean;
   changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
   successfulSubmit: () => void;
 }
 
-export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
+export const FolderEmailActionMove: React.FC<IFolderEmailActionMoveProps> = ({
   actionUids,
   folders,
   submit,
@@ -182,7 +192,19 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionProps> = ({
   );
 };
 
-export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
+/**
+ * @interface IFolderEmailActionCopyProps
+ */
+interface IFolderEmailActionCopyProps {
+  actionUids?: number[];
+  folders: IFoldersEntry[];
+  imapSocket: ImapSocket;
+  submit: boolean;
+  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  successfulSubmit: () => void;
+}
+
+export const FolderEmailActionCopy: React.FC<IFolderEmailActionCopyProps> = ({
   actionUids,
   folders,
   submit,
@@ -240,7 +262,17 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionProps> = ({
   );
 };
 
-export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
+/**
+ * @interface IFolderEmailActionFlagProps
+ */
+interface IFolderEmailActionFlagProps {
+  actionUids?: number[];
+  submit: boolean;
+  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  successfulSubmit: () => void;
+}
+
+export const FolderEmailActionFlag: React.FC<IFolderEmailActionFlagProps> = ({
   actionUids,
   submit,
   changeSubmit,
@@ -289,7 +321,17 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionProps> = ({
   );
 };
 
-export const FolderEmailActionDelete: React.FC<IFolderEmailActionProps> = ({
+/**
+ * @interface IFolderEmailActionDeleteProps
+ */
+interface IFolderEmailActionDeleteProps {
+  actionUids?: number[];
+  submit: boolean;
+  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  successfulSubmit: () => void;
+}
+
+export const FolderEmailActionDelete: React.FC<IFolderEmailActionDeleteProps> = ({
   actionUids,
   submit,
   changeSubmit,

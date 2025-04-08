@@ -35,3 +35,4 @@ export * from "./ISmtpResponseData";
 export * from "./ISmtpSession";
 export * from "./ISmtpSettings";
 export * from "./ITouchState";
+export * from "./IViewMessage";
