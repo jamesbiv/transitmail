@@ -40,14 +40,9 @@ describe("Test FlagActions", () => {
       imapRequestSpy.mockImplementation((request: string) => {
         switch (true) {
           case /UID STORE (.*) +FLAGS \((.*)\)/i.test(request):
-            return {
-              data: [[""]],
-              status: EImapResponseStatus.OK
-            };
-
           case /UID STORE (.*) -FLAGS \((.*)\)/i.test(request):
             return {
-              data: [[" "]],
+              data: [[""]],
               status: EImapResponseStatus.OK
             };
         }
