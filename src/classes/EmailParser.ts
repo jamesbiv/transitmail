@@ -56,7 +56,7 @@ export class EmailParser {
 
     email.boundaries = this.parseBoundaries(email.contentRaw, email.boundaryIds);
 
-    email.boundaries.length
+    email.boundaries?.length
       ? this.extractContentFromBoundaries(email)
       : this.extractContentFromBody(email);
 
@@ -217,9 +217,12 @@ export class EmailParser {
    * @param {string} contentRaw
    * @returns IEmailBoundary[]
    */
-  private parseBoundaries(contentRaw: string, boundaryIds?: string[]): IEmailBoundary[] {
+  private parseBoundaries(
+    contentRaw: string,
+    boundaryIds?: string[]
+  ): IEmailBoundary[] | undefined {
     if (!boundaryIds?.length || !contentRaw.length) {
-      return [];
+      return undefined;
     }
 
     return boundaryIds.reduce(

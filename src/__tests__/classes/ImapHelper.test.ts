@@ -53,7 +53,6 @@ describe("Testing the ImapHelper class", () => {
         headersRaw: "Test email header",
         contentRaw: "Test email body\r\n\r\n",
         headers: undefined,
-        boundaries: [],
         bodyText: "Test email body\r\n\r\n"
       });
     });
@@ -73,8 +72,6 @@ describe("Testing the ImapHelper class", () => {
         emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
         headersRaw: "Test email header",
         contentRaw: "Test email body\r\n\r\n",
-        headers: undefined,
-        boundaries: [],
         bodyText: "Test email body\r\n\r\n"
       });
     });

@@ -65,7 +65,6 @@ describe("Test ComposeActions", () => {
         headersRaw: "Test email header",
         contentRaw: "Test email body\r\n\r\n",
         headers: undefined,
-        boundaries: [],
         bodyText: "Test email body\r\n\r\n"
       });
     });
@@ -123,8 +122,6 @@ describe("Test ComposeActions", () => {
         emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
         headersRaw: "Test email header",
         contentRaw: "Test email body\r\n\r\n",
-        headers: undefined,
-        boundaries: [],
         bodyText: "Test email body\r\n\r\n"
       });
     });
