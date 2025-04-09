@@ -35,9 +35,7 @@ export const View: FunctionComponent = () => {
   const [showActionModal, setShowActionModal] = useState<boolean>(false);
 
   useEffect(() => {
-    if (imapSocket.getReadyState() !== WebSocket.OPEN) {
-      imapSocket.imapConnect();
-    }
+    imapSocket.imapCheckOrConnect();
 
     getEmail();
   }, []);
@@ -186,7 +184,7 @@ export const View: FunctionComponent = () => {
         email={email!}
         emailFlags={emailFlags!}
         showActionModal={showActionModal}
-        onHide={() => setShowActionModal(false)}
+        hideActionModal={() => setShowActionModal(false)}
       />
     </Fragment>
   );

@@ -58,7 +58,7 @@ interface IViewActionsProps {
   showActionModal: boolean;
   email: IEmail;
   emailFlags: IEmailFlags;
-  onHide: () => void;
+  hideActionModal: () => void;
 }
 
 /**
@@ -100,7 +100,7 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
   email,
   emailFlags,
   showActionModal,
-  onHide
+  hideActionModal
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
 
@@ -119,7 +119,7 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
     }
   }, [showActionModal]);
 
-  const successfulSubmit = onHide;
+  const successfulSubmit = hideActionModal;
 
   const ViewAction: IViewActionComponents = {
     [EViewActionType.MOVE]: {
@@ -152,7 +152,7 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <ModalHeader closeButton onClick={() => onHide()}>
+      <ModalHeader closeButton onClick={() => hideActionModal()}>
         <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={ViewAction[actionType].icon} /> {ViewAction[actionType].label}
         </ModalTitle>
@@ -177,7 +177,7 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
         </Button>
         <Button
           className={`${ViewAction[actionType].hideSubmit && "btn-block"}`}
-          onClick={() => onHide()}
+          onClick={() => hideActionModal()}
         >
           Close
         </Button>

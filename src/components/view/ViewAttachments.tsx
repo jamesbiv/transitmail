@@ -82,7 +82,7 @@ export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ atta
       </div>
       <Collapse in={attachmentsCollapsed} timeout={100}>
         <div className="p-0 m-0">
-          {attachments ? (
+          {attachments?.length ? (
             attachments.map((attachment: IEmailAttachment) => (
               <div
                 key={attachment.key}

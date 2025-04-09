@@ -22,7 +22,7 @@ describe("ViewActions Component", () => {
       };
 
       const showActionModal: boolean = true;
-      const onHide = () => undefined;
+      const hideActionModal = () => undefined;
 
       const { getByText } = render(
         <ViewActions
@@ -31,7 +31,7 @@ describe("ViewActions Component", () => {
           email={email}
           emailFlags={emailFlags}
           showActionModal={showActionModal}
-          onHide={onHide}
+          hideActionModal={hideActionModal}
         />
       );
 
@@ -54,7 +54,7 @@ describe("ViewActions Component", () => {
       };
 
       const showActionModal: boolean = true;
-      const onHide = () => undefined;
+      const hideActionModal = () => undefined;
 
       const { getByText } = render(
         <ViewActions
@@ -63,7 +63,7 @@ describe("ViewActions Component", () => {
           email={email}
           emailFlags={emailFlags}
           showActionModal={showActionModal}
-          onHide={onHide}
+          hideActionModal={hideActionModal}
         />
       );
 
@@ -86,7 +86,7 @@ describe("ViewActions Component", () => {
       };
 
       const showActionModal: boolean = true;
-      const onHide = () => undefined;
+      const hideActionModal = () => undefined;
 
       const { getByText } = render(
         <ViewActions
@@ -95,7 +95,7 @@ describe("ViewActions Component", () => {
           email={email}
           emailFlags={emailFlags}
           showActionModal={showActionModal}
-          onHide={onHide}
+          hideActionModal={hideActionModal}
         />
       );
 
@@ -120,7 +120,7 @@ describe("ViewActions Component", () => {
       };
 
       const showActionModal: boolean = true;
-      const onHide = () => undefined;
+      const hideActionModal = () => undefined;
 
       const { getByText } = render(
         <ViewActions
@@ -129,7 +129,7 @@ describe("ViewActions Component", () => {
           email={email}
           emailFlags={emailFlags}
           showActionModal={showActionModal}
-          onHide={onHide}
+          hideActionModal={hideActionModal}
         />
       );
 
@@ -152,7 +152,7 @@ describe("ViewActions Component", () => {
       };
 
       const showActionModal: boolean = true;
-      const onHide = () => undefined;
+      const hideActionModal = () => undefined;
 
       const { getByText } = render(
         <ViewActions
@@ -161,7 +161,7 @@ describe("ViewActions Component", () => {
           email={email}
           emailFlags={emailFlags}
           showActionModal={showActionModal}
-          onHide={onHide}
+          hideActionModal={hideActionModal}
         />
       );
 

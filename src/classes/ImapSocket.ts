@@ -49,6 +49,25 @@ export class ImapSocket {
   }
 
   /**
+   * @name imapCheckOrConnect
+   * @param {boolean} authorise
+   * @param {TImapCallback} success
+   * @param {TImapCallback} error
+   * @returns boolean
+   */
+  public imapCheckOrConnect(
+    authorise: boolean = true,
+    success?: TImapCallback,
+    error?: TImapCallback
+  ): boolean {
+    if (this.getReadyState() === WebSocket.OPEN) {
+      return true;
+    }
+
+    return this.imapConnect(authorise, success, error);
+  }
+
+  /**
    * @name imapConnect
    * @param {boolean} authorise
    * @param {TImapCallback} success
@@ -60,6 +79,10 @@ export class ImapSocket {
     success?: TImapCallback,
     error?: TImapCallback
   ): boolean {
+    if (this.getReadyState() === WebSocket.OPEN) {
+      return true;
+    }
+
     this.session.socket = new WebSocket(
       `wss://${this.settings.host}:${this.settings.port}`,
       "binary"

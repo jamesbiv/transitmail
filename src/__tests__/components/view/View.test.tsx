@@ -1,29 +1,22 @@
 import React from "react";
 
-import { render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { contextSpyHelper, sleep } from "__tests__/fixtures";
 import { ImapHelper, ImapSocket, StateManager } from "classes";
-import { EImapResponseStatus } from "interfaces";
+import { EComposePresetType, EImapResponseStatus, IComposePresets } from "interfaces";
 
 import { View } from "components";
 
 describe("View Component", () => {
-  it("showing an incoming email", async () => {
-    const imapConnectSpy: jest.SpyInstance = jest.spyOn(
+  beforeEach(() => {
+    const imapCheckOrConnectSpy: jest.SpyInstance = jest.spyOn(
       contextSpyHelper<ImapSocket>("imapSocket"),
-      "imapConnect"
+      "imapCheckOrConnect"
     );
 
-    imapConnectSpy.mockImplementationOnce(() => true);
-
-    const getReadyStateSpy: jest.SpyInstance = jest.spyOn(
-      contextSpyHelper<ImapSocket>("imapSocket"),
-      "getReadyState"
-    );
-
-    getReadyStateSpy.mockImplementationOnce(() => 1);
+    imapCheckOrConnectSpy.mockImplementationOnce(() => true);
 
     const getStreamAmountSpy: jest.SpyInstance = jest.spyOn(
       contextSpyHelper<ImapSocket>("imapSocket"),
@@ -54,41 +47,312 @@ describe("View Component", () => {
     );
 
     updateActiveKeySpy.mockImplementationOnce(() => undefined);
+  });
 
-    const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
-      contextSpyHelper<ImapHelper>("imapHelper"),
-      "formatFetchEmailFlagsResponse"
-    );
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
-    formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
-      return {
-        deleted: false,
-        flags: "\\Seen",
-        seen: true,
-        size: 100
-      };
+  describe("test getEmail() function", () => {
+    it("showing an incoming email as text/html", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyHtml: "<p>Test email body</p>\r\n\r\n"
+        };
+      });
+
+      const { container } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        const iFrame: Element = container.querySelector("#emailBody")!;
+
+        expect(iFrame).toBeInTheDocument();
+      });
     });
 
-    const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
-      contextSpyHelper<ImapHelper>("imapHelper"),
-      "formatFetchEmailResponse"
-    );
+    it("showing an incoming email as text/plain (default)", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
 
-    formatFetchEmailResponseSpy.mockImplementation(() => {
-      return {
-        emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
-        headersRaw: "Test email header",
-        contentRaw: "Test email body\r\n\r\n",
-        bodyText: "Test email body\r\n\r\n"
-      };
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        };
+      });
+
+      const { getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/Test email body/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("test replyToEmail() function", () => {
+    it("as normal reply (all: false)", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        };
+      });
+
+      const setComposePresetsSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "setComposePresets"
+      );
+
+      setComposePresetsSpy.mockImplementation((composePresets?: IComposePresets) => undefined);
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/Test email body/i)).toBeInTheDocument();
+      });
+
+      const replyIcon = container.querySelector('[data-icon="reply"]')!;
+      fireEvent.click(replyIcon);
+
+      expect(setComposePresetsSpy).toHaveBeenCalledWith({
+        type: EComposePresetType.Reply,
+        email: {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        }
+      });
     });
 
-    const { getByText } = render(<View />);
+    it("as reply all (all: true)", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
 
-    await sleep(100);
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
 
-    await waitFor(() => {
-      expect(getByText(/Test email body/i)).toBeInTheDocument();
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        };
+      });
+
+      const setComposePresetsSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "setComposePresets"
+      );
+
+      setComposePresetsSpy.mockImplementation((composePresets?: IComposePresets) => undefined);
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/Test email body/i)).toBeInTheDocument();
+      });
+
+      const replyIcons = container.querySelectorAll('[data-icon="reply-all"]');
+      replyIcons.forEach((replyIcon: Element) => fireEvent.click(replyIcon));
+
+      expect(setComposePresetsSpy).toHaveBeenCalledWith({
+        type: EComposePresetType.ReplyAll,
+        email: {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        }
+      });
+    });
+  });
+
+  describe("test forwardEmail() function", () => {
+    it("", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        };
+      });
+
+      const setComposePresetsSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "setComposePresets"
+      );
+
+      setComposePresetsSpy.mockImplementation((composePresets?: IComposePresets) => undefined);
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/Test email body/i)).toBeInTheDocument();
+      });
+
+      const shareIcons = container.querySelectorAll('[data-icon="share"]');
+      shareIcons.forEach((shareIcon: Element) => fireEvent.click(shareIcon));
+
+      expect(setComposePresetsSpy).toHaveBeenCalledWith({
+        type: EComposePresetType.Forward,
+        email: {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        }
+      });
+    });
+  });
+
+  describe("test toggleActionModal() function", () => {
+    it("", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        };
+      });
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/Test email body/i)).toBeInTheDocument();
+      });
+
+      const trashIcons = container.querySelectorAll('[data-icon="trash"]');
+      trashIcons.forEach((trashIcon: Element) => fireEvent.click(trashIcon));
+
+      expect(1).toBe(1);
     });
   });
 });

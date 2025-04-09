@@ -20,6 +20,7 @@ describe("Testing convertAttachments", () => {
         content: "VGVzdCBBdHRhY2htZW50Cg==\r\n\r\n\r\n",
         mimeType: "text/plain",
         isAttachment: true,
+        key: "uuid-v4-randomKey",
         filename: "testAttachment.txt",
         encoding: "base64"
       }
