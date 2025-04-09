@@ -6,6 +6,7 @@ import {
   IEmailBoundaryContent,
   IEmailHeaders
 } from "interfaces";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * @class EmailParser
@@ -313,7 +314,12 @@ export class EmailParser {
             email.attachments = [];
           }
 
-          email.attachments.push(contentRow as IEmailAttachment);
+          const attachment: IEmailAttachment = {
+            key: uuidv4(),
+            ...(contentRow as Required<IEmailBoundaryContent>)
+          };
+
+          email.attachments.push(attachment);
         }
       });
     });

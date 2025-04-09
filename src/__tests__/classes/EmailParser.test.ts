@@ -3,6 +3,10 @@ import { IEmail } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
+jest.mock("uuid", () => {
+  return { v4: () => "uuid-v4-randomKey" };
+});
+
 describe("Testing the EmailParser class", () => {
   it("Test getEmail", () => {
     const emailParser = new EmailParser();
@@ -627,6 +631,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             mimeType: "text/plain",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             filename: "testFile.txt",
             encoding: "base64"
           }
@@ -717,6 +722,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             mimeType: "text/plain",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             filename: "testFile.txt",
             encoding: "base64"
           },
@@ -737,6 +743,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             mimeType: "text/plain",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             filename: "testFile.txt",
             encoding: "base64"
           }
@@ -1180,6 +1187,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             isAttachment: true,
             filename: "Untitled",
+            key: "uuid-v4-randomKey",
             encoding: "base64"
           }
         ]);
@@ -1232,6 +1240,7 @@ describe("Testing the EmailParser class", () => {
             },
             content: "MQo=\r\n\r\n\r\n",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             encoding: "base64"
           }
         ]);

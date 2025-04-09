@@ -240,7 +240,7 @@ export const ViewActionMove: FunctionComponent<IViewActionMoveProps> = ({
   return (
     <FormGroup controlId="formDisplayName">
       <FormLabel>
-      Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
+        Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
         as="select"
@@ -381,7 +381,7 @@ export const ViewActionFlag: FunctionComponent<IViewActionFlagProps> = ({
     <FormGroup controlId="formEmailFlagType">
       <ul>
         {flags.map((flag: IEmailFlagType, flagIndex: number) => (
-          <li key={flagIndex}>
+          <li key={flag.name}>
             <FormCheck
               type="switch"
               id={flags[flagIndex].name}
