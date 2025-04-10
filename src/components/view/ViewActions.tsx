@@ -238,7 +238,7 @@ export const ViewActionMove: FunctionComponent<IViewActionMoveProps> = ({
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formMoveFolderTo">
       <FormLabel>
         Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
@@ -308,7 +308,7 @@ export const ViewActionCopy: FunctionComponent<IViewActionCopyProps> = ({
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formCopyFolderTo">
       <FormLabel>
         Copy folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
