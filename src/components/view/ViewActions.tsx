@@ -44,7 +44,6 @@ import {
   copyEmailToFolder,
   moveEmailToFolder,
   deleteEmailFromFolder,
-  getFlagString,
   updateFlags,
   setFlagDefaults
 } from "lib";

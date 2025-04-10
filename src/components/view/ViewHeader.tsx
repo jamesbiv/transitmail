@@ -15,6 +15,9 @@ import {
 import { IEmail } from "interfaces";
 import { EViewActionType } from "./";
 
+/**
+ * @interface IViewHeaderProps
+ */
 interface IViewHeaderProps {
   email: IEmail;
   toggleActionModal: (actionType: EViewActionType) => void;
