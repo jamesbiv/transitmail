@@ -40,7 +40,7 @@ describe("View Component", () => {
   });
 
   describe("test getEmail() function", () => {
-    it("returns void because SELECT call failed", async () => {
+    it("returns nothing because SELECT call failed", async () => {
       const imapRequestSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapRequest"
@@ -85,7 +85,7 @@ describe("View Component", () => {
       expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
     });
 
-    it("returns void because UID FETCH RFC822.SIZE FLAGS call failed", async () => {
+    it("returns nothing because UID FETCH RFC822.SIZE FLAGS call failed", async () => {
       const imapRequestSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapRequest"
@@ -130,7 +130,7 @@ describe("View Component", () => {
       expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
     });
 
-    it("returns void because UID FETCH RFC822 call failed", async () => {
+    it("returns nothing because UID FETCH RFC822 call failed", async () => {
       const imapRequestSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapSocket>("imapSocket"),
         "imapRequest"
@@ -175,7 +175,7 @@ describe("View Component", () => {
       expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
     });
 
-    it("returns void because formatFetchEmailFlagsResponse() call failed", async () => {
+    it("returns nothing because formatFetchEmailFlagsResponse() call failed", async () => {
       const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<StateManager>("stateManager"),
         "getFolderId"
@@ -629,7 +629,7 @@ describe("View Component", () => {
       expect(setComposePresetsSpy).not.toHaveBeenCalled();
     });
 
-    it("", async () => {
+    it("a successful response", async () => {
       const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatFetchEmailFlagsResponse"
@@ -689,7 +689,7 @@ describe("View Component", () => {
   });
 
   describe("test toggleActionModal() function", () => {
-    it("", async () => {
+    it("a successful response with the trash modal opening", async () => {
       const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatFetchEmailFlagsResponse"
@@ -729,7 +729,61 @@ describe("View Component", () => {
       const trashIcons = container.querySelectorAll('[data-icon="trash"]');
       trashIcons.forEach((trashIcon: Element) => fireEvent.click(trashIcon));
 
-      expect(1).toBe(1);
+      await waitFor(() => {
+        expect(getByText(/Are you sure you want to delete this email?/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("test hideActionModal() function", () => {
+    it("a successful response modal opening and closing", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n"
+        };
+      });
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/Test email body/i)).toBeInTheDocument();
+      });
+
+      const slidersIcon = container.querySelector('[data-icon="sliders"]')!;
+      fireEvent.click(slidersIcon);
+
+      const penToSquareIcon = container.querySelector('[data-icon="pen-to-square"]')!;
+      fireEvent.click(penToSquareIcon);
+
+      await waitFor(() => {
+        expect(getByText(/Move folder to/i)).toBeInTheDocument();
+      });
+
+      fireEvent.click(getByText(/Close/i));
     });
   });
 });

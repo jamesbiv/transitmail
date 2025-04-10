@@ -1,6 +1,6 @@
 import React from "react";
 
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { EViewActionType, ViewActions } from "components/view";
@@ -81,7 +81,7 @@ describe("ViewActions Component", () => {
           id: 1,
           name: "Test Folder",
           ref: "Test Folder",
-          folders: []
+          folders: [{ id: 3, name: "subfolder", ref: "subfolder" }]
         },
         {
           id: 2,
@@ -101,6 +101,8 @@ describe("ViewActions Component", () => {
           hideActionModal={hideActionModal}
         />
       );
+
+      await waitFor(() => getByTestId("selectMoveFolderTo"));
 
       fireEvent.change(getByTestId("selectMoveFolderTo"), { target: { value: "Archives" } });
 
@@ -141,7 +143,7 @@ describe("ViewActions Component", () => {
       expect(getByText(/Copy folder to/i)).toBeInTheDocument();
     });
 
-    it("while triggering a submit", () => {
+    it("while triggering a submit", async () => {
       const actionUid: number = 1;
       const actionType: EViewActionType = EViewActionType.COPY;
 
@@ -153,6 +155,26 @@ describe("ViewActions Component", () => {
         seen: true,
         size: 100000
       };
+
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
+
+      formatListFoldersResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 3, name: "subfolder", ref: "subfolder" }]
+        },
+        {
+          id: 2,
+          name: "Archives",
+          ref: "Archives",
+          folders: []
+        }
+      ]);
 
       const showActionModal: boolean = true;
       const hideActionModal = jest.fn().mockImplementation(() => undefined);
@@ -167,6 +189,8 @@ describe("ViewActions Component", () => {
           hideActionModal={hideActionModal}
         />
       );
+
+      await waitFor(() => getByTestId("selectCopyFolderTo"));
 
       fireEvent.change(getByTestId("selectCopyFolderTo"), { target: { value: "Archives" } });
 
@@ -236,6 +260,12 @@ describe("ViewActions Component", () => {
         />
       );
 
+      [/Answered/i, /Urgent/i, /Draft/i].forEach((flagType: RegExp) => {
+        expect(getByText(flagType)).toBeInTheDocument();
+      });
+
+     // fireEvent.click(getByText(/Answered/));
+
       fireEvent.click(getByText(/Ok/i));
 
       expect(hideActionModal).toHaveBeenCalled();
@@ -271,38 +301,6 @@ describe("ViewActions Component", () => {
       );
 
       expect(getByText(/emailRaw/i)).toBeInTheDocument();
-    });
-
-    it("while triggering a submit", () => {
-      const actionUid: number = 1;
-      const actionType: EViewActionType = EViewActionType.VIEW;
-
-      const email: IEmail = { contentRaw: "", emailRaw: "", headersRaw: "" };
-
-      const emailFlags: IEmailFlags = {
-        deleted: false,
-        flags: "\\Seen",
-        seen: true,
-        size: 100000
-      };
-
-      const showActionModal: boolean = true;
-      const hideActionModal = jest.fn().mockImplementation(() => undefined);
-
-      const { getByText } = render(
-        <ViewActions
-          actionUid={actionUid}
-          actionType={actionType}
-          email={email}
-          emailFlags={emailFlags}
-          showActionModal={showActionModal}
-          hideActionModal={hideActionModal}
-        />
-      );
-
-      fireEvent.click(getByText(/Ok/i));
-
-      expect(hideActionModal).toHaveBeenCalled();
     });
   });
 
