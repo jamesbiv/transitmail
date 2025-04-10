@@ -1,6 +1,7 @@
 import { IEmailHeaders } from "interfaces";
 
 export interface IEmailAttachment {
+  key: string;
   id?: number;
   filename: string;
   size?: number;
@@ -9,5 +10,5 @@ export interface IEmailAttachment {
   content: string;
   contentRaw?: string;
   headers?: IEmailHeaders;
-  isAttachment?: true;
+  isAttachment?: boolean;
 }

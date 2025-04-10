@@ -70,15 +70,22 @@ export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ atta
 
   return (
     <Fragment>
-      <div onClick={toggleAttachmentsCollapsed} className="pointer">
+      <div
+        onClick={toggleAttachmentsCollapsed}
+        onKeyUp={() => {}}
+        onKeyDown={() => {}}
+        role="menuitem"
+        tabIndex={0}
+        className="pointer"
+      >
         <FontAwesomeIcon icon={attachmentsCollapsed ? faMinusSquare : faPlusSquare} /> Attachments
       </div>
       <Collapse in={attachmentsCollapsed} timeout={100}>
         <div className="p-0 m-0">
-          {attachments ? (
-            attachments.map((attachment: IEmailAttachment, attachmentKey: number) => (
+          {attachments?.length ? (
+            attachments.map((attachment: IEmailAttachment) => (
               <div
-                key={attachmentKey}
+                key={attachment.key}
                 className="attachment float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-3"
               >
                 <div className="title text-truncate float-start">

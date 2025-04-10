@@ -6,6 +6,7 @@ import {
   IEmailBoundaryContent,
   IEmailHeaders
 } from "interfaces";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * @class EmailParser
@@ -55,7 +56,7 @@ export class EmailParser {
 
     email.boundaries = this.parseBoundaries(email.contentRaw, email.boundaryIds);
 
-    email.boundaries.length
+    email.boundaries?.length
       ? this.extractContentFromBoundaries(email)
       : this.extractContentFromBody(email);
 
@@ -216,9 +217,12 @@ export class EmailParser {
    * @param {string} contentRaw
    * @returns IEmailBoundary[]
    */
-  private parseBoundaries(contentRaw: string, boundaryIds?: string[]): IEmailBoundary[] {
+  private parseBoundaries(
+    contentRaw: string,
+    boundaryIds?: string[]
+  ): IEmailBoundary[] | undefined {
     if (!boundaryIds?.length || !contentRaw.length) {
-      return [];
+      return undefined;
     }
 
     return boundaryIds.reduce(
@@ -313,7 +317,12 @@ export class EmailParser {
             email.attachments = [];
           }
 
-          email.attachments.push(contentRow as IEmailAttachment);
+          const attachment: IEmailAttachment = {
+            key: uuidv4(),
+            ...(contentRow as Required<IEmailBoundaryContent>)
+          };
+
+          email.attachments.push(attachment);
         }
       });
     });

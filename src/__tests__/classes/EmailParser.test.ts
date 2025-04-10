@@ -3,6 +3,10 @@ import { IEmail } from "interfaces";
 
 jest.mock("contexts/DependenciesContext");
 
+jest.mock("uuid", () => {
+  return { v4: () => "uuid-v4-randomKey" };
+});
+
 describe("Testing the EmailParser class", () => {
   it("Test getEmail", () => {
     const emailParser = new EmailParser();
@@ -25,8 +29,6 @@ describe("Testing the EmailParser class", () => {
           emailRaw: "\r\n \r\n\r\n",
           headersRaw: "\r\n ",
           contentRaw: "",
-          headers: undefined,
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -43,7 +45,6 @@ describe("Testing the EmailParser class", () => {
           headersRaw: "Test-Header: test header",
           contentRaw: "",
           headers: { "test-header": "test header" },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -60,7 +61,6 @@ describe("Testing the EmailParser class", () => {
           headersRaw: "Test-Header:",
           contentRaw: "",
           headers: { "test-header": "" },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -77,7 +77,6 @@ describe("Testing the EmailParser class", () => {
           headersRaw: "Test-Header: test header\r\n multi line header",
           contentRaw: "",
           headers: { "test-header": "test header multi line header" },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -109,7 +108,6 @@ describe("Testing the EmailParser class", () => {
               "test header test header test header test header test header " +
               "test header test header"
           },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -127,7 +125,6 @@ describe("Testing the EmailParser class", () => {
           headersRaw: "Test-Header: original header\r\nTest-Header: duplicate header",
           contentRaw: "",
           headers: { "test-header": "original header duplicate header" },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -156,7 +153,6 @@ describe("Testing the EmailParser class", () => {
           headers: {
             "test-header": "original header duplicate header multi line header"
           },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -176,7 +172,6 @@ describe("Testing the EmailParser class", () => {
           contentRaw: "",
           headers: { date: "Thu, 01 Apr 2021 00:00:00 -0300" },
           date: "Thu, 01 Apr 2021 00:00:00 -0300",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -194,7 +189,6 @@ describe("Testing the EmailParser class", () => {
           contentRaw: "",
           headers: { to: "Test Display Name <test@emailAddress.com>" },
           to: "Test Display Name <test@emailAddress.com>",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -215,7 +209,6 @@ describe("Testing the EmailParser class", () => {
             cc: "Test Display Name <test@emailAddress.com>, test@emailAddress.com"
           },
           cc: "Test Display Name <test@emailAddress.com>, test@emailAddress.com",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -235,7 +228,6 @@ describe("Testing the EmailParser class", () => {
           headers: {
             bcc: "Test Display Name <test@emailAddress.com>, test@emailAddress.com"
           },
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -253,7 +245,6 @@ describe("Testing the EmailParser class", () => {
           contentRaw: "",
           headers: { from: "Test Display Name <test@emailAddress.com>" },
           from: "Test Display Name <test@emailAddress.com>",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -271,7 +262,6 @@ describe("Testing the EmailParser class", () => {
           contentRaw: "",
           headers: { "reply-to": "Test Display Name <test@emailAddress.com>" },
           replyTo: "Test Display Name <test@emailAddress.com>",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -289,7 +279,6 @@ describe("Testing the EmailParser class", () => {
           contentRaw: "",
           headers: { subject: "Test Subject" },
           subject: "Test Subject",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -307,7 +296,6 @@ describe("Testing the EmailParser class", () => {
           contentRaw: "",
           headers: { "content-transfer-encoding": "quoted-printable" },
           encoding: "quoted-printable",
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -326,7 +314,6 @@ describe("Testing the EmailParser class", () => {
           headers: { "content-type": 'text/html; charset="utf-8"' },
           mimeType: "text/html",
           charset: "utf-8",
-          boundaries: [],
           bodyHtml: ""
         });
       });
@@ -345,7 +332,6 @@ describe("Testing the EmailParser class", () => {
           headers: { "content-type": "" },
           mimeType: undefined,
           charset: undefined,
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -364,7 +350,6 @@ describe("Testing the EmailParser class", () => {
           headers: { "content-type": "text/html; charset-" },
           mimeType: "text/html",
           charset: undefined,
-          boundaries: [],
           bodyHtml: ""
         });
       });
@@ -389,7 +374,6 @@ describe("Testing the EmailParser class", () => {
           mimeType: "multipart/alternative",
           charset: undefined,
           boundaryIds: ["transit--client--6ohw29r5"],
-          boundaries: [],
           bodyText: ""
         });
       });
@@ -412,7 +396,6 @@ describe("Testing the EmailParser class", () => {
           headers: { "content-type": 'text/html; charset="utf-8"' },
           mimeType: "text/html",
           charset: "utf-8",
-          boundaries: [],
           bodyHtml: "<p>Test email content</p>\n\n"
         });
       });
@@ -445,7 +428,6 @@ describe("Testing the EmailParser class", () => {
           mimeType: "text/html",
           charset: "utf-8",
           encoding: "quoted-printable",
-          boundaries: [],
           bodyHtml: "<p>Test email content</p>\n\n"
         });
       });
@@ -477,7 +459,6 @@ describe("Testing the EmailParser class", () => {
           mimeType: "text/html",
           charset: "utf-8",
           encoding: "base64",
-          boundaries: [],
           bodyHtml: "<p>Test email content</p>"
         });
       });
@@ -498,7 +479,6 @@ describe("Testing the EmailParser class", () => {
           headers: { "content-type": 'text/plain; charset="utf-8"' },
           mimeType: "text/plain",
           charset: "utf-8",
-          boundaries: [],
           bodyText: "<p>Test email content</p>\r\n\r\n"
         });
       });
@@ -531,7 +511,6 @@ describe("Testing the EmailParser class", () => {
           mimeType: "text/plain",
           charset: "utf-8",
           encoding: "quoted-printable",
-          boundaries: [],
           bodyText: "<p>Test email content</p>\r\n\r\n"
         });
       });
@@ -563,7 +542,6 @@ describe("Testing the EmailParser class", () => {
           mimeType: "text/plain",
           charset: "utf-8",
           encoding: "base64",
-          boundaries: [],
           bodyText: "<p>Test email content</p>"
         });
       });
@@ -627,6 +605,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             mimeType: "text/plain",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             filename: "testFile.txt",
             encoding: "base64"
           }
@@ -717,6 +696,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             mimeType: "text/plain",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             filename: "testFile.txt",
             encoding: "base64"
           },
@@ -737,6 +717,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             mimeType: "text/plain",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             filename: "testFile.txt",
             encoding: "base64"
           }
@@ -1180,6 +1161,7 @@ describe("Testing the EmailParser class", () => {
             content: "MQo=\r\n\r\n\r\n",
             isAttachment: true,
             filename: "Untitled",
+            key: "uuid-v4-randomKey",
             encoding: "base64"
           }
         ]);
@@ -1232,6 +1214,7 @@ describe("Testing the EmailParser class", () => {
             },
             content: "MQo=\r\n\r\n\r\n",
             isAttachment: true,
+            key: "uuid-v4-randomKey",
             encoding: "base64"
           }
         ]);
@@ -1290,7 +1273,6 @@ describe("Testing the EmailParser class", () => {
           headers: { "content-type": 'text/html; charset="utf-8"' },
           mimeType: "text/html",
           charset: "utf-8",
-          boundaries: [],
           bodyHtml: "\n\n"
         });
       });

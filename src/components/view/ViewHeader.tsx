@@ -15,6 +15,9 @@ import {
 import { IEmail } from "interfaces";
 import { EViewActionType } from "./";
 
+/**
+ * @interface IViewHeaderProps
+ */
 interface IViewHeaderProps {
   email: IEmail;
   toggleActionModal: (actionType: EViewActionType) => void;
@@ -90,16 +93,16 @@ export const ViewHeader: FunctionComponent<IViewHeaderProps> = ({
         </Dropdown>
       </div>
       <p className="m-0">
-        Date: {new Date(email.date!).toDateString()}{" "}
-        {new Date(email.date!).toTimeString().split(" ")[0]}
+        Date: {new Date(email?.date ?? "").toDateString()}{" "}
+        {new Date(email?.date ?? "").toTimeString().split(" ")[0]}
       </p>
-      <p className="m-0">From: {email.from}</p>
-      <p className={`m-0 ${!email.replyTo?.length ? "d-none" : ""}`}>
-        <small>Reply to: {email.replyTo}</small>
+      <p className="m-0">From: {email?.from}</p>
+      <p className={`m-0 ${!email?.replyTo?.length ? "d-none" : ""}`}>
+        <small>Reply to: {email?.replyTo}</small>
       </p>
-      <p className="m-0">To: {email.to}</p>
-      <p className={`m-0 ${!email.cc?.length ? "d-none" : ""}`}>
-        <small>Cc: {email.cc}</small>
+      <p className="m-0">To: {email?.to}</p>
+      <p className={`m-0 ${!email?.cc?.length ? "d-none" : ""}`}>
+        <small>Cc: {email?.cc}</small>
       </p>
       <div className="mt-2 d-block d-sm-none">
         <Button variant="primary" type="button" onClick={() => replyToEmail()}>

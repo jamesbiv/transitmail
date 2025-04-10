@@ -44,7 +44,6 @@ import {
   copyEmailToFolder,
   moveEmailToFolder,
   deleteEmailFromFolder,
-  getFlagString,
   updateFlags,
   setFlagDefaults
 } from "lib";
@@ -58,7 +57,7 @@ interface IViewActionsProps {
   showActionModal: boolean;
   email: IEmail;
   emailFlags: IEmailFlags;
-  onHide: () => void;
+  hideActionModal: () => void;
 }
 
 /**
@@ -85,7 +84,7 @@ interface IViewActionComponents {
 interface IViewActionComponent {
   label: string;
   icon: IconDefinition;
-  element: FunctionComponent<IViewActionProps>;
+  element: FunctionComponent<TViewActionProps>;
   hideSubmit?: boolean;
 }
 
@@ -100,12 +99,12 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
   email,
   emailFlags,
   showActionModal,
-  onHide
+  hideActionModal
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
 
-  const [submit, changeSubmit] = useState(false);
-  const [folders, updateFolders] = useState<IFoldersEntry[]>([]);
+  const [submit, setSubmit] = useState(false);
+  const [folders, setFolders] = useState<IFoldersEntry[]>([]);
 
   useEffect(() => {
     if (showActionModal && folders.length == 0) {
@@ -114,12 +113,12 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
 
         const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
-        updateFolders(folders);
+        setFolders(folders);
       })();
     }
   }, [showActionModal]);
 
-  const successfulSubmit = onHide;
+  const successfulSubmit = hideActionModal;
 
   const ViewAction: IViewActionComponents = {
     [EViewActionType.MOVE]: {
@@ -152,7 +151,7 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <ModalHeader closeButton onClick={() => onHide()}>
+      <ModalHeader closeButton onClick={() => hideActionModal()}>
         <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={ViewAction[actionType].icon} /> {ViewAction[actionType].label}
         </ModalTitle>
@@ -164,20 +163,20 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
           email,
           emailFlags,
           submit,
-          changeSubmit,
+          setSubmit,
           successfulSubmit
         })}
       </ModalBody>
       <ModalFooter>
         <Button
           className={`${ViewAction[actionType].hideSubmit && "d-none"}`}
-          onClick={() => changeSubmit(true)}
+          onClick={() => setSubmit(true)}
         >
           Ok
         </Button>
         <Button
           className={`${ViewAction[actionType].hideSubmit && "btn-block"}`}
-          onClick={() => onHide()}
+          onClick={() => hideActionModal()}
         >
           Close
         </Button>
@@ -187,15 +186,22 @@ export const ViewActions: FunctionComponent<IViewActionsProps> = ({
 };
 
 /**
- * @interface IViewActionProps
+ * @type TViewActionProps
  */
-interface IViewActionProps {
+type TViewActionProps = IViewActionMoveProps &
+  IViewActionCopyProps &
+  IViewActionFlagProps &
+  IViewActionViewProps &
+  IViewActionDeleteProps;
+
+/**
+ * @interface IViewActionMoveProps
+ */
+interface IViewActionMoveProps {
   actionUid?: number;
   folders: IFoldersEntry[];
-  email: IEmail;
-  emailFlags: IEmailFlags;
   submit: boolean;
-  changeSubmit: Dispatch<boolean>;
+  setSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
@@ -204,11 +210,11 @@ interface IViewActionProps {
  * @param {IViewActionProps} properties
  * @returns FunctionComponent
  */
-export const ViewActionMove: FunctionComponent<IViewActionProps> = ({
+export const ViewActionMove: FunctionComponent<IViewActionMoveProps> = ({
   actionUid,
   folders,
   submit,
-  changeSubmit,
+  setSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
@@ -216,7 +222,7 @@ export const ViewActionMove: FunctionComponent<IViewActionProps> = ({
   useEffect(() => {
     if (submit) {
       submitAction();
-      changeSubmit(false);
+      setSubmit(false);
     }
   });
 
@@ -231,11 +237,12 @@ export const ViewActionMove: FunctionComponent<IViewActionProps> = ({
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formMoveFolderTo">
       <FormLabel>
-        Copy folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
+        Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
+        data-testid="selectMoveFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -259,15 +266,26 @@ export const ViewActionMove: FunctionComponent<IViewActionProps> = ({
 };
 
 /**
+ * @interface IViewActionCopyProps
+ */
+interface IViewActionCopyProps {
+  actionUid?: number;
+  folders: IFoldersEntry[];
+  submit: boolean;
+  setSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * ViewActionCopy
  * @param {IViewActionProps} properties
  * @returns FunctionComponent
  */
-export const ViewActionCopy: FunctionComponent<IViewActionProps> = ({
+export const ViewActionCopy: FunctionComponent<IViewActionCopyProps> = ({
   actionUid,
   folders,
   submit,
-  changeSubmit,
+  setSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
@@ -275,7 +293,7 @@ export const ViewActionCopy: FunctionComponent<IViewActionProps> = ({
   useEffect(() => {
     if (submit) {
       submitAction();
-      changeSubmit(false);
+      setSubmit(false);
     }
   });
 
@@ -290,11 +308,12 @@ export const ViewActionCopy: FunctionComponent<IViewActionProps> = ({
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formCopyFolderTo">
       <FormLabel>
-        Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
+        Copy folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
+        data-testid="selectCopyFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -318,15 +337,26 @@ export const ViewActionCopy: FunctionComponent<IViewActionProps> = ({
 };
 
 /**
+ * @interface IViewActionFlagProps
+ */
+interface IViewActionFlagProps {
+  actionUid?: number;
+  emailFlags: IEmailFlags;
+  submit: boolean;
+  setSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * ViewActionFlag
  * @param {IViewActionProps} properties
  * @returns FunctionComponent
  */
-export const ViewActionFlag: FunctionComponent<IViewActionProps> = ({
+export const ViewActionFlag: FunctionComponent<IViewActionFlagProps> = ({
   actionUid,
   emailFlags,
   submit,
-  changeSubmit,
+  setSubmit,
   successfulSubmit
 }) => {
   const [flags, setFlags] = useState<IEmailFlagType[]>(setFlagDefaults(emailFlags.flags));
@@ -334,7 +364,7 @@ export const ViewActionFlag: FunctionComponent<IViewActionProps> = ({
   useEffect(() => {
     if (submit) {
       submitAction();
-      changeSubmit(false);
+      setSubmit(false);
     }
   });
 
@@ -349,23 +379,15 @@ export const ViewActionFlag: FunctionComponent<IViewActionProps> = ({
   };
 
   return (
-    <FormGroup controlId="formEmailAutoLogin">
+    <FormGroup controlId="formEmailFlagType">
       <ul>
         {flags.map((flag: IEmailFlagType, flagIndex: number) => (
-          <li key={flagIndex}>
+          <li key={flag.name}>
             <FormCheck
               type="switch"
               id={flags[flagIndex].name}
               label={flags[flagIndex].name}
               defaultChecked={flags[flagIndex].enabled}
-              onChange={() => {
-                flags[flagIndex].enabled = !flags[flagIndex].enabled;
-                flags[flagIndex].flagChanged = true;
-
-                emailFlags.flags = getFlagString(flags);
-
-                setFlags(flags);
-              }}
             />
           </li>
         ))}
@@ -375,11 +397,18 @@ export const ViewActionFlag: FunctionComponent<IViewActionProps> = ({
 };
 
 /**
+ * @interface IViewActionViewProps
+ */
+interface IViewActionViewProps {
+  email: IEmail;
+}
+
+/**
  * ViewActionView
  * @param {IViewActionProps} properties
  * @returns FunctionComponent
  */
-export const ViewActionView: FunctionComponent<IViewActionProps> = ({ email }) => {
+export const ViewActionView: FunctionComponent<IViewActionViewProps> = ({ email }) => {
   return (
     <div className="overflow-auto" style={{ height: 300 }}>
       <pre>{email.emailRaw}</pre>
@@ -388,20 +417,30 @@ export const ViewActionView: FunctionComponent<IViewActionProps> = ({ email }) =
 };
 
 /**
+ * @interface IViewActionDeleteProps
+ */
+interface IViewActionDeleteProps {
+  actionUid?: number;
+  submit: boolean;
+  setSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * ViewActionDelete
  * @param {IViewActionProps} properties
  * @returns FunctionComponent
  */
-export const ViewActionDelete: FunctionComponent<IViewActionProps> = ({
+export const ViewActionDelete: FunctionComponent<IViewActionDeleteProps> = ({
   actionUid,
   submit,
-  changeSubmit,
+  setSubmit,
   successfulSubmit
 }) => {
   useEffect(() => {
     if (submit) {
       submitAction();
-      changeSubmit(false);
+      setSubmit(false);
     }
   });
 
