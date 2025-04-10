@@ -1,6 +1,6 @@
 import React from "react";
 
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { contextSpyHelper, sleep } from "__tests__/fixtures";
@@ -33,20 +33,6 @@ describe("View Component", () => {
     imapRequestSpy.mockImplementation(async () => {
       return { data: [[]], status: EImapResponseStatus.OK };
     });
-
-    const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
-      contextSpyHelper<StateManager>("stateManager"),
-      "getFolderId"
-    );
-
-    getFolderIdSpy.mockImplementationOnce(() => "1");
-
-    const updateActiveKeySpy: jest.SpyInstance = jest.spyOn(
-      contextSpyHelper<StateManager>("stateManager"),
-      "updateActiveKey"
-    );
-
-    updateActiveKeySpy.mockImplementationOnce(() => undefined);
   });
 
   afterEach(() => {
@@ -54,7 +40,220 @@ describe("View Component", () => {
   });
 
   describe("test getEmail() function", () => {
+    it("returns void because SELECT call failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation((request: string) => {
+        if (/SELECT (.*)/i.test(request)) {
+          return { data: [[]], status: EImapResponseStatus.BAD };
+        }
+
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      render(<View />);
+
+      expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
+    });
+
+    it("returns void because UID FETCH RFC822.SIZE FLAGS call failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation((request: string) => {
+        if (/UID FETCH (.*) \(RFC822.SIZE FLAGS\)/i.test(request)) {
+          return { data: [[]], status: EImapResponseStatus.BAD };
+        }
+
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      render(<View />);
+
+      expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
+    });
+
+    it("returns void because UID FETCH RFC822 call failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation((request: string) => {
+        if (/UID FETCH (.*) RFC822/i.test(request)) {
+          return { data: [[]], status: EImapResponseStatus.BAD };
+        }
+
+        return { data: [[]], status: EImapResponseStatus.OK };
+      });
+
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      render(<View />);
+
+      expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
+    });
+
+    it("returns void because formatFetchEmailFlagsResponse() call failed", async () => {
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => undefined);
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      render(<View />);
+
+      expect(formatFetchEmailResponseSpy).not.toHaveBeenCalled();
+    });
+
+    it("selecting updateActiveKey as inbox since getFolderId was undefined", async () => {
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => undefined);
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyHtml: "<p>Test email body</p>\r\n\r\n"
+        };
+      });
+
+      const updateActiveKeySpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "updateActiveKey"
+      );
+
+      render(<View />);
+
+      expect(updateActiveKeySpy).toHaveBeenCalledWith("inbox");
+    });
+
     it("showing an incoming email as text/html", async () => {
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
       const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatFetchEmailFlagsResponse"
@@ -131,9 +330,144 @@ describe("View Component", () => {
         expect(getByText(/Test email body/i)).toBeInTheDocument();
       });
     });
+
+    it("including an attachment", async () => {
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n",
+          attachments: [
+            { data: "", filename: "testFileName.txt", id: 0, mimeType: "text/plain", size: 1 }
+          ]
+        };
+      });
+
+      const { getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/testFileName.txt/i)).toBeInTheDocument();
+      });
+    });
+
+    it("including a subject field", async () => {
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "inbox");
+
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => {
+        return {
+          emailRaw: "Test email header\r\n\r\nTest email body\r\n\r\n",
+          headersRaw: "Test email header",
+          contentRaw: "Test email body\r\n\r\n",
+          bodyText: "Test email body\r\n\r\n",
+          subject: "This is a test subject"
+        };
+      });
+
+      const { getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/This is a test subject/i)).toBeInTheDocument();
+      });
+    });
   });
 
   describe("test replyToEmail() function", () => {
+    it("to not have been called because formatFetchEmailResponse() was empty", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => undefined);
+
+      const setComposePresetsSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "setComposePresets"
+      );
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/(no subject)/i)).toBeInTheDocument();
+      });
+
+      const replyIcon = container.querySelector('[data-icon="reply"]')!;
+      fireEvent.click(replyIcon);
+
+      expect(setComposePresetsSpy).not.toHaveBeenCalled();
+    });
+
     it("as normal reply (all: false)", async () => {
       const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
@@ -252,6 +586,49 @@ describe("View Component", () => {
   });
 
   describe("test forwardEmail() function", () => {
+    it("to not have been called because formatFetchEmailResponse() was empty", async () => {
+      const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailFlagsResponse"
+      );
+
+      formatFetchEmailFlagsResponseSpy.mockImplementation(() => {
+        return {
+          deleted: false,
+          flags: "\\Seen",
+          seen: true,
+          size: 100
+        };
+      });
+
+      const formatFetchEmailResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchEmailResponse"
+      );
+
+      formatFetchEmailResponseSpy.mockImplementation(() => undefined);
+
+      const setComposePresetsSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "setComposePresets"
+      );
+
+      setComposePresetsSpy.mockImplementation((composePresets?: IComposePresets) => undefined);
+
+      const { container, getByText } = render(<View />);
+
+      await sleep(100);
+
+      await waitFor(() => {
+        expect(getByText(/(no subject)/i)).toBeInTheDocument();
+      });
+
+      const shareIcons = container.querySelectorAll('[data-icon="share"]');
+      shareIcons.forEach((shareIcon: Element) => fireEvent.click(shareIcon));
+
+      expect(setComposePresetsSpy).not.toHaveBeenCalled();
+    });
+
     it("", async () => {
       const formatFetchEmailFlagsResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),

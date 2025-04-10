@@ -153,7 +153,7 @@ export const View: FunctionComponent = () => {
             !email?.attachments?.length ? "d-none" : "d-block"
           }`}
         >
-          <ViewAttachments attachments={email!.attachments} />
+          <ViewAttachments attachments={email?.attachments} />
         </CardBody>
         <CardBody>
           <ViewMessage viewMessage={viewMessage} />

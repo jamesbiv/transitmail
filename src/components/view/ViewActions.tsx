@@ -243,6 +243,7 @@ export const ViewActionMove: FunctionComponent<IViewActionMoveProps> = ({
         Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
+        data-testid="selectMoveFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -313,6 +314,7 @@ export const ViewActionCopy: FunctionComponent<IViewActionCopyProps> = ({
         Copy folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
+        data-testid="selectCopyFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)

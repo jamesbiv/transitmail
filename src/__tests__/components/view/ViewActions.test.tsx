@@ -1,6 +1,6 @@
 import React from "react";
 
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { EViewActionType, ViewActions } from "components/view";
@@ -91,7 +91,7 @@ describe("ViewActions Component", () => {
         }
       ]);
 
-      const { container, getByText } = render(
+      const { getByTestId, getByText } = render(
         <ViewActions
           actionUid={actionUid}
           actionType={actionType}
@@ -102,12 +102,7 @@ describe("ViewActions Component", () => {
         />
       );
 
-      await waitFor(() => {
-        container.querySelector("#formMoveFolderTo");
-      });
-
-      const selectBox = container.querySelector("#formMoveFolderTo")!;
-      fireEvent.change(selectBox, { target: { value: "Archives" } });
+      fireEvent.change(getByTestId("selectMoveFolderTo"), { target: { value: "Archives" } });
 
       fireEvent.click(getByText(/Ok/i));
 
@@ -162,7 +157,7 @@ describe("ViewActions Component", () => {
       const showActionModal: boolean = true;
       const hideActionModal = jest.fn().mockImplementation(() => undefined);
 
-      const { container, getByText } = render(
+      const { getByTestId, getByText } = render(
         <ViewActions
           actionUid={actionUid}
           actionType={actionType}
@@ -173,8 +168,7 @@ describe("ViewActions Component", () => {
         />
       );
 
-      const selectBox = container.querySelector("#formCopyFolderTo")!;
-      fireEvent.change(selectBox, { target: { value: "Archives" } });
+      fireEvent.change(getByTestId("selectCopyFolderTo"), { target: { value: "Archives" } });
 
       fireEvent.click(getByText(/Ok/i));
 
