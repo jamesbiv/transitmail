@@ -389,14 +389,6 @@ export const ViewActionFlag: FunctionComponent<IViewActionFlagProps> = ({
               id={flags[flagIndex].name}
               label={flags[flagIndex].name}
               defaultChecked={flags[flagIndex].enabled}
-              onChange={() => {
-                flags[flagIndex].enabled = !flags[flagIndex].enabled;
-                flags[flagIndex].flagChanged = true;
-
-                emailFlags.flags = getFlagString(flags);
-
-                setFlags({ ...flags });
-              }}
             />
           </li>
         ))}

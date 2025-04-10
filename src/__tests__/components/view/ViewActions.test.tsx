@@ -24,6 +24,72 @@ describe("ViewActions Component", () => {
     jest.restoreAllMocks();
   });
 
+  describe("ViewAction Component", () => {
+    it("testing hideActionModal on top close icon", () => {
+      const actionUid: number = 1;
+      const actionType: EViewActionType = EViewActionType.VIEW;
+
+      const email: IEmail = { contentRaw: "", emailRaw: "emailRaw", headersRaw: "" };
+
+      const emailFlags: IEmailFlags = {
+        deleted: false,
+        flags: "\\Seen",
+        seen: true,
+        size: 100000
+      };
+
+      const showActionModal: boolean = true;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByLabelText } = render(
+        <ViewActions
+          actionUid={actionUid}
+          actionType={actionType}
+          email={email}
+          emailFlags={emailFlags}
+          showActionModal={showActionModal}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByLabelText(/Close/i));
+
+      expect(hideActionModal).toHaveBeenCalled();
+    });
+
+    it("testing hideActionModal on bottom close button", () => {
+      const actionUid: number = 1;
+      const actionType: EViewActionType = EViewActionType.VIEW;
+
+      const email: IEmail = { contentRaw: "", emailRaw: "emailRaw", headersRaw: "" };
+
+      const emailFlags: IEmailFlags = {
+        deleted: false,
+        flags: "\\Seen",
+        seen: true,
+        size: 100000
+      };
+
+      const showActionModal: boolean = true;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <ViewActions
+          actionUid={actionUid}
+          actionType={actionType}
+          email={email}
+          emailFlags={emailFlags}
+          showActionModal={showActionModal}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Close/i));
+
+      expect(hideActionModal).toHaveBeenCalled();
+    });
+  });
+
   describe("ViewActionMove Component", () => {
     it("a successful result", () => {
       const actionUid: number = 1;
@@ -109,6 +175,58 @@ describe("ViewActions Component", () => {
       fireEvent.click(getByText(/Ok/i));
 
       expect(hideActionModal).toHaveBeenCalled();
+    });
+
+    it("unable to trigger a submit becuase destinationFolder was not set", async () => {
+      const actionUid: number = 1;
+      const actionType: EViewActionType = EViewActionType.MOVE;
+
+      const email: IEmail = { contentRaw: "", emailRaw: "", headersRaw: "" };
+
+      const emailFlags: IEmailFlags = {
+        deleted: false,
+        flags: "\\Seen",
+        seen: true,
+        size: 100000
+      };
+
+      const showActionModal: boolean = true;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
+
+      formatListFoldersResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 3, name: "subfolder", ref: "subfolder" }]
+        },
+        {
+          id: 2,
+          name: "Archives",
+          ref: "Archives",
+          folders: []
+        }
+      ]);
+
+      const { getByText } = render(
+        <ViewActions
+          actionUid={actionUid}
+          actionType={actionType}
+          email={email}
+          emailFlags={emailFlags}
+          showActionModal={showActionModal}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      expect(hideActionModal).not.toHaveBeenCalled();
     });
   });
 
@@ -198,6 +316,58 @@ describe("ViewActions Component", () => {
 
       expect(hideActionModal).toHaveBeenCalled();
     });
+
+    it("unable to trigger a submit becuase destinationFolder was not set", async () => {
+      const actionUid: number = 1;
+      const actionType: EViewActionType = EViewActionType.COPY;
+
+      const email: IEmail = { contentRaw: "", emailRaw: "", headersRaw: "" };
+
+      const emailFlags: IEmailFlags = {
+        deleted: false,
+        flags: "\\Seen",
+        seen: true,
+        size: 100000
+      };
+
+      const formatListFoldersResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatListFoldersResponse"
+      );
+
+      formatListFoldersResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 3, name: "subfolder", ref: "subfolder" }]
+        },
+        {
+          id: 2,
+          name: "Archives",
+          ref: "Archives",
+          folders: []
+        }
+      ]);
+
+      const showActionModal: boolean = true;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <ViewActions
+          actionUid={actionUid}
+          actionType={actionType}
+          email={email}
+          emailFlags={emailFlags}
+          showActionModal={showActionModal}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      expect(hideActionModal).not.toHaveBeenCalled();
+    });
   });
 
   describe("the ViewActionFlag Component", () => {
@@ -264,11 +434,45 @@ describe("ViewActions Component", () => {
         expect(getByText(flagType)).toBeInTheDocument();
       });
 
-     // fireEvent.click(getByText(/Answered/));
-
       fireEvent.click(getByText(/Ok/i));
 
       expect(hideActionModal).toHaveBeenCalled();
+    });
+
+    it("unable to trigger a submit because actionUid was undefined", () => {
+      const actionUid: undefined = undefined;
+      const actionType: EViewActionType = EViewActionType.FLAG;
+
+      const email: IEmail = { contentRaw: "", emailRaw: "", headersRaw: "" };
+
+      const emailFlags: IEmailFlags = {
+        deleted: false,
+        flags: "\\Seen",
+        seen: true,
+        size: 100000
+      };
+
+      const showActionModal: boolean = true;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <ViewActions
+          actionUid={actionUid}
+          actionType={actionType}
+          email={email}
+          emailFlags={emailFlags}
+          showActionModal={showActionModal}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      [/Answered/i, /Urgent/i, /Draft/i].forEach((flagType: RegExp) => {
+        expect(getByText(flagType)).toBeInTheDocument();
+      });
+
+      fireEvent.click(getByText(/Ok/i));
+
+      expect(hideActionModal).not.toHaveBeenCalled();
     });
   });
 
@@ -336,6 +540,38 @@ describe("ViewActions Component", () => {
     });
 
     it("while triggering a submit", () => {
+      const actionUid: number = 1;
+      const actionType: EViewActionType = EViewActionType.DELETE;
+
+      const email: IEmail = { contentRaw: "", emailRaw: "", headersRaw: "" };
+
+      const emailFlags: IEmailFlags = {
+        deleted: false,
+        flags: "\\Seen",
+        seen: true,
+        size: 100000
+      };
+
+      const showActionModal: boolean = true;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <ViewActions
+          actionUid={actionUid}
+          actionType={actionType}
+          email={email}
+          emailFlags={emailFlags}
+          showActionModal={showActionModal}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      expect(hideActionModal).toHaveBeenCalled();
+    });
+
+    it("unable to trigger a delete becuase actionUid was not set", async () => {
       const actionUid: undefined = undefined;
       const actionType: EViewActionType = EViewActionType.DELETE;
 
