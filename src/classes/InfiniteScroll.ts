@@ -1,10 +1,16 @@
 import { IFolderPlaceholder, IFolderScrollSpinner, IInfinateScrollHandler } from "interfaces";
 
+/**
+ * @interface IInfiniteScrollSlice
+ */
 interface IInfiniteScrollSlice {
   minIndex: number;
   maxIndex: number;
 }
 
+/**
+ * @interface IInfiniteScrollSettings
+ */
 interface IInfiniteScrollSettings {
   pageSize: number;
   increment: number;
@@ -15,19 +21,22 @@ interface IInfiniteScrollSettings {
   navbarOffset: number;
 }
 
+/**
+ * @class InfiniteScroll
+ */
 export class InfiniteScroll {
   /**
-   * @var {number} defaultPageSize
+   * @protected {number} defaultPageSize
    */
   protected defaultPageSize: number = 15;
 
   /**
-   * @var {number} totalEntries
+   * @protected {number} totalEntries
    */
   protected totalEntries: number = 0;
 
   /**
-   * @var {IntersectionObserverInit} observerDefaults
+   * @protected {IntersectionObserverInit} observerDefaults
    */
   protected observerDefaults: IntersectionObserverInit = {
     rootMargin: "0px",
@@ -35,57 +44,57 @@ export class InfiniteScroll {
   };
 
   /**
-   * @var {string} topElementId
+   * @protected {string} topElementId
    */
   protected topElementId: string | undefined;
 
   /**
-   * @var {HTMLElement} topObserverElement
+   * @protected {HTMLElement} topObserverElement
    */
   protected topObserverElement: HTMLElement | undefined;
 
   /**
-   * @var {IntersectionObserver} topObserver
+   * @protected {IntersectionObserver} topObserver
    */
   protected topObserver: IntersectionObserver;
 
   /**
-   * @var {string} bottomElementId
+   * @protected {string} bottomElementId
    */
   protected bottomElementId: string | undefined;
 
   /**
-   * @var {HTMLElement} bottomObserverElement
+   * @protected {HTMLElement} bottomObserverElement
    */
   protected bottomObserverElement: HTMLElement | undefined;
 
   /**
-   * @var {IntersectionObserver} bottomObserver
+   * @protected {IntersectionObserver} bottomObserver
    */
   protected bottomObserver: IntersectionObserver;
 
   /**
-   * @var {string} scrollElementId
+   * @protected {string} scrollElementId
    */
   protected scrollElementId: string | undefined;
 
   /**
-   * @var {HTMLElement} scrollElement
+   * @protected {HTMLElement} scrollElement
    */
   protected scrollElement: HTMLElement | undefined;
 
   /**
-   * @var {IInfiniteScrollSettings} settings
+   * @protected {IInfiniteScrollSettings} settings
    */
   protected settings: IInfiniteScrollSettings;
 
   /**
-   * @var {IInfiniteScrollSlice} slice
+   * @protected {IInfiniteScrollSlice} slice
    */
   protected slice: IInfiniteScrollSlice;
 
   /**
-   * @var {(args: IInfinateScrollHandler) => void} stateHander
+   * @protected {(args: IInfinateScrollHandler) => void} stateHander
    */
   protected scrollHandler: ((args: IInfinateScrollHandler) => void) | undefined;
 
@@ -223,7 +232,7 @@ export class InfiniteScroll {
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
-  private topObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
+  private readonly topObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
         const minIndex: number = this.slice.minIndex - this.settings.increment;
@@ -255,7 +264,7 @@ export class InfiniteScroll {
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
-  private bottomObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
+  private readonly bottomObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
         const maxIndex: number = this.slice.maxIndex + this.settings.increment;
@@ -278,7 +287,7 @@ export class InfiniteScroll {
    * @param {Event} event
    * @returns void
    */
-  private handleDesktopScroll = (event: Event): void => {
+  private readonly handleDesktopScroll = (event: Event): void => {
     if (window.innerWidth <= this.settings.desktopBreakpoint) {
       return;
     }

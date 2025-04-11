@@ -1,8 +1,11 @@
-import React from "react";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import React, { ChangeEvent, FunctionComponent } from "react";
+import { Button, Card, CardHeader, Col, Form, FormControl, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInbox, faSync } from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * @interface FolderCardHeaderProps
+ */
 interface FolderCardHeaderProps {
   folderName: string;
   folderSpinner: boolean;
@@ -10,14 +13,18 @@ interface FolderCardHeaderProps {
   searchEmails: (searchQuery: string) => void;
 }
 
-export const FolderCardHeader: React.FC<FolderCardHeaderProps> = ({
+/**
+ * FolderCardHeader
+ * @returns FunctionComponent
+ */
+export const FolderCardHeader: FunctionComponent<FolderCardHeaderProps> = ({
   folderName,
   folderSpinner,
   checkEmail,
   searchEmails
 }) => {
   return (
-    <Card.Header>
+    <CardHeader>
       <Row className="pt-2 pt-sm-0">
         <Col xs={12} sm={6} md={7} lg={9}>
           <h4 className="p-0 m-0 text-nowrap text-truncate">
@@ -34,15 +41,13 @@ export const FolderCardHeader: React.FC<FolderCardHeaderProps> = ({
           </h4>
         </Col>
         <Col xs={12} sm={6} md={5} lg={3} className="mt-3 mt-sm-0">
-          <Form.Control
+          <FormControl
             type="text"
             placeholder="Search &hellip;"
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-              searchEmails(event.target.value)
-            }
+            onChange={(event: ChangeEvent<HTMLInputElement>) => searchEmails(event.target.value)}
           />
         </Col>
       </Row>
-    </Card.Header>
+    </CardHeader>
   );
 };

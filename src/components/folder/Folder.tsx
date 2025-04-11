@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { Fragment, FunctionComponent, useContext, useEffect, useState } from "react";
 import { DependenciesContext } from "contexts";
 import { EComposePresetType, EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
 import { Card, CardBody, Spinner } from "react-bootstrap";
@@ -7,13 +7,20 @@ import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { FolderEmailActions, EFolderEmailActionType, FolderCardHeader } from ".";
 import { FolderScrollContainer } from "./FolderScrollContainer";
 
+/**
+ * @interface IFolderEmailActionState
+ */
 interface IFolderEmailActionState {
   actionUids?: number[];
   actionType: EFolderEmailActionType;
   showActionModal: boolean;
 }
 
-export const Folder: React.FC = () => {
+/**
+ * Folder
+ * @returns FunctionComponent
+ */
+export const Folder: FunctionComponent = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
 
   const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(undefined);
@@ -60,9 +67,7 @@ export const Folder: React.FC = () => {
   const checkEmail = async (): Promise<void> => {
     setFolderSpinner(true);
 
-    const latestEmails: IFolderEmail[] | undefined = await getLatestEmails(
-      folderEmails && folderEmails[0]?.uid
-    );
+    const latestEmails: IFolderEmail[] | undefined = await getLatestEmails(folderEmails?.[0]?.uid);
 
     if (latestEmails && latestEmails[0]?.uid === folderEmails?.[0]?.uid) {
       latestEmails.shift();
@@ -144,7 +149,7 @@ export const Folder: React.FC = () => {
       showActionModal: true
     });
 
-  const replyToEmail = async (emailUid: number): Promise<void> => {
+  const replyToEmail = (emailUid: number): void => {
     stateManager.setComposePresets({
       type: EComposePresetType.Reply,
       uid: emailUid
@@ -153,7 +158,7 @@ export const Folder: React.FC = () => {
     stateManager.updateActiveKey("compose");
   };
 
-  const forwardEmail = async (emailUid: number): Promise<void> => {
+  const forwardEmail = (emailUid: number): void => {
     stateManager.setComposePresets({
       type: EComposePresetType.Forward,
       uid: emailUid
@@ -194,7 +199,7 @@ export const Folder: React.FC = () => {
   };
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Card className={`${displayCardHeader ? "p-0 mt-0 mt-sm-3" : ""} mb-3`}>
         {displayCardHeader && (
           <FolderCardHeader
@@ -204,9 +209,10 @@ export const Folder: React.FC = () => {
             searchEmails={searchEmails}
           />
         )}
-        {!folderEmails ? (
+        {!folderEmails && (
           <Spinner className="mt-3 mb-3 ms-auto me-auto" animation="grow" variant="dark" />
-        ) : !folderEmails.length ? (
+        )}
+        {!folderEmails?.length ? (
           <CardBody className="text-center text-secondary">
             <FontAwesomeIcon icon={faFolderOpen} size="lg" />
             <br />
@@ -230,6 +236,6 @@ export const Folder: React.FC = () => {
         folderEmailActionState={folderEmailActionState}
         onHide={updateFolderActionState}
       />
-    </React.Fragment>
+    </Fragment>
   );
 };

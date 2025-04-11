@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Button, ButtonGroup, Row, Col, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -10,6 +10,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IFolderEmail, IFolderEmailActions, IFolderLongPress } from "interfaces";
 
+/**
+ * @interface IFolderEmailEntryProps
+ */
 interface IFolderEmailEntryProps {
   email: IFolderEmail;
   toggleSelection: (uid: number) => void;
@@ -17,7 +20,12 @@ interface IFolderEmailEntryProps {
   folderLongPress: IFolderLongPress;
 }
 
-export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
+/**
+ * FolderEmailEntry
+ * @param {IFolderEmailEntryProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailEntry: FunctionComponent<IFolderEmailEntryProps> = ({
   email,
   toggleSelection,
   folderEmailActions,
@@ -73,10 +81,10 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           }
         }}
       >
-        {email.from.match(/(.*) <(.*)>/)?.[1] ?? undefined}
+        {/(.*) <(.*)>/.exec(email.from)?.[1] ?? undefined}
         <br />
         <small>
-          <em>{email.from.match(/<(.*)>/)?.[1] ?? undefined}</em>
+          <em>{/(.*) <(.*)>/.exec(email.from)?.[1] ?? undefined}</em>
         </small>
       </Col>
       <Col className="text-truncate">

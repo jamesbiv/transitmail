@@ -1,9 +1,12 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Row, Col, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLongArrowAltUp, faLongArrowAltDown } from "@fortawesome/free-solid-svg-icons";
 import { IFolderEmail } from "interfaces";
 
+/**
+ * @interface IFolderTableHeaderProps
+ */
 interface IFolderTableHeaderProps {
   folderEmails: IFolderEmail[];
   toggleSelectionAll: boolean;
@@ -11,7 +14,12 @@ interface IFolderTableHeaderProps {
   updateVisibleEmails: (definedLength?: number) => void;
 }
 
-export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
+/**
+ * FolderTableHeader
+ * @param {IFolderTableHeaderProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderTableHeader: FunctionComponent<IFolderTableHeaderProps> = ({
   folderEmails,
   toggleSelectionAll,
   toggleSelection,
