@@ -131,6 +131,8 @@ export class FolderScrollContainer extends PureComponent<
   public componentWillUnmount = () => {
     this.infiniteScroll.stopHandleScroll();
     this.infiniteScroll.stopObservertions();
+
+    this.clearAllSelections();
   };
 
   public componentDidUpdate = (prevProps: IFolderScrollContainerProps) => {

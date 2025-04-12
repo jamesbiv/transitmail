@@ -40,12 +40,10 @@ export const Folder: FunctionComponent = () => {
     if (!initalizeFoldersRun) {
       initalizeFoldersRun = true;
 
-      if (imapSocket.getReadyState() !== 1) {
-        try {
-          imapSocket.imapConnect();
-        } catch (error: unknown) {
-          throw new Error(`Websockets: ${(error as Error).message}`);
-        }
+      try {
+        imapSocket.imapConnect();
+      } catch (error: unknown) {
+        throw new Error(`Websockets: ${(error as Error).message}`);
       }
 
       updateFolder();

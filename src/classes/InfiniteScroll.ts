@@ -232,7 +232,9 @@ export class InfiniteScroll {
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
-  private readonly topObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
+  private readonly topObservationCallback = (
+    intersectionEntries: IntersectionObserverEntry[]
+  ): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
         const minIndex: number = this.slice.minIndex - this.settings.increment;
@@ -264,7 +266,9 @@ export class InfiniteScroll {
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
-  private readonly bottomObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
+  private readonly bottomObservationCallback = (
+    intersectionEntries: IntersectionObserverEntry[]
+  ): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
         const maxIndex: number = this.slice.maxIndex + this.settings.increment;
@@ -332,9 +336,17 @@ export class InfiniteScroll {
         bottom: (this.totalEntries - this.slice.maxIndex) * this.settings.placeholderDesktopHeight
       };
     } else {
+      const placeHolderSize = this.defaultPageSize * this.settings.placeholderMobileHeight;
+
+      folderPlaceholder = {
+        top: this.slice.minIndex > 0 ? placeHolderSize : 0,
+        bottom:
+          this.totalEntries - this.defaultPageSize >= this.slice.maxIndex ? 0 : placeHolderSize
+      };
+
       folderScrollSpinner = {
         top: this.slice.minIndex > 0,
-        bottom: true
+        bottom: this.totalEntries - this.defaultPageSize >= this.slice.maxIndex
       };
     }
 
