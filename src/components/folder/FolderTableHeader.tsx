@@ -25,7 +25,7 @@ export const FolderTableHeader: FunctionComponent<IFolderTableHeaderProps> = ({
   toggleSelection,
   updateVisibleEmails
 }) => {
-  const sortFolder: (field: string, direction?: string) => void = (field, direction = "asc") => {
+  const sortFolder: (field: string, direction?: string) => void = (field, direction) => {
     if (direction === "asc") {
       folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] > b[field] ? 1 : -1));
     } else {
@@ -40,7 +40,7 @@ export const FolderTableHeader: FunctionComponent<IFolderTableHeaderProps> = ({
       <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
         <Form.Check
           type="checkbox"
-          id=""
+          id="formFolderSelectAll"
           label=""
           checked={toggleSelectionAll}
           onChange={(event: React.SyntheticEvent) => {
