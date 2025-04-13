@@ -1,5 +1,5 @@
 import React, { ChangeEvent, FunctionComponent } from "react";
-import { Button, Card, CardHeader, Col, FormControl, Row } from "react-bootstrap";
+import { Button, CardHeader, Col, FormControl, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInbox, faSync } from "@fortawesome/free-solid-svg-icons";
 
@@ -42,6 +42,7 @@ export const FolderCardHeader: FunctionComponent<FolderCardHeaderProps> = ({
         </Col>
         <Col xs={12} sm={6} md={5} lg={3} className="mt-3 mt-sm-0">
           <FormControl
+            id="formSearchFolders"
             type="text"
             placeholder="Search &hellip;"
             onChange={(event: ChangeEvent<HTMLInputElement>) => searchEmails(event.target.value)}

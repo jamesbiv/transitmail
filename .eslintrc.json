@@ -27,6 +27,7 @@
   ],
   "rules": {
     "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": "off",
     "no-null/no-null": "error",
     "no-console": "error",
     "sort-imports": "off",

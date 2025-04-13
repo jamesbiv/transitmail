@@ -41,7 +41,7 @@ export const Folder: FunctionComponent = () => {
       initalizeFoldersRun = true;
 
       try {
-        imapSocket.imapConnect();
+        imapSocket.imapCheckOrConnect();
       } catch (error: unknown) {
         throw new Error(`Websockets: ${(error as Error).message}`);
       }
