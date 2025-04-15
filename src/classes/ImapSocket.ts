@@ -10,12 +10,12 @@ type TImapCallback = (event: IImapResponseData | Event) => void;
 
 export class ImapSocket {
   /**
-   * @var {IImapSession} session
+   * @public {IImapSession} session
    */
   public session: IImapSession;
 
   /**
-   * @var {IImapSettings} settings
+   * @public {IImapSettings} settings
    */
   public settings: IImapSettings;
 
@@ -49,7 +49,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapCheckOrConnect
+   * @method imapCheckOrConnect
    * @param {boolean} authorise
    * @param {TImapCallback} success
    * @param {TImapCallback} error
@@ -68,7 +68,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapConnect
+   * @method imapConnect
    * @param {boolean} authorise
    * @param {TImapCallback} success
    * @param {TImapCallback} error
@@ -162,7 +162,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapClose
+   * @method imapClose
    * @returns boolean
    */
   public imapClose(): boolean {
@@ -172,7 +172,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapRequest
+   * @method imapRequest
    * @param {string} request
    * @returns Promise<IImapResponse>
    */
@@ -203,7 +203,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapProcessRequest
+   * @method imapProcessRequest
    * @param {string} request
    * @param {TImapCallback} ok
    * @param {TImapCallback} no
@@ -248,7 +248,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapResponseHandler
+   * @method imapResponseHandler
    * @param {string} response
    * @returns void
    */
@@ -325,7 +325,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name imapAuthorise
+   * @method imapAuthorise
    * @returns Promise<IImapResponse>
    */
   public async imapAuthorise(): Promise<IImapResponse> {
@@ -333,7 +333,7 @@ export class ImapSocket {
   }
 
   /**
-   * @name getReadyState
+   * @method getReadyState
    * @returns number | false
    */
   public getReadyState(): number | false {
@@ -345,16 +345,23 @@ export class ImapSocket {
   }
 
   /**
-   * @name getStreamAmount
-   * @param {number} cumlative
+   * @method getStreamAmount
    * @returns number
    */
-  public getStreamAmount(cumlative = false): number {
-    return cumlative === true ? this.session.streamCumlative : this.session.stream;
+  public getStreamAmount(): number {
+    return this.session.stream;
   }
 
   /**
-   * @name getBufferedAmount
+   * @method getStreamCumlativeAmount
+   * @returns number
+   */
+  public getStreamCumlativeAmount(): number {
+    return this.session.streamCumlative;
+  }
+
+  /**
+   * @method getBufferedAmount
    * @returns number | false
    */
   public getBufferedAmount(): number | false {

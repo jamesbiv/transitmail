@@ -38,7 +38,7 @@ interface IFolderEmailActionsProps {
     actionType: EFolderEmailActionType;
     showActionModal: boolean;
   };
-  onHide: () => void;
+  hideActionModal: () => void;
 }
 
 /**
@@ -74,17 +74,17 @@ interface IFolderEmailActionComponent {
  */
 export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = ({
   folderEmailActionState,
-  onHide
+  hideActionModal
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
 
   const { actionUids, actionType, showActionModal } = folderEmailActionState;
 
-  const [submit, setSubmit] = useState<boolean>(false);
+  const [triggerSubmit, setTriggerSubmit] = useState<boolean>(false);
   const [folders, setFolders] = useState<IFoldersEntry[]>([]);
 
   useEffect(() => {
-    if (showActionModal && folders.length == 0) {
+    if (showActionModal && !folders.length) {
       (async () => {
         const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
@@ -95,7 +95,7 @@ export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = (
     }
   }, [showActionModal]);
 
-  const successfulSubmit = onHide;
+  const successfulSubmit = hideActionModal;
 
   const FolderEmailAction: IFolderEmailActionComponents = {
     [EFolderEmailActionType.MOVE]: {
@@ -122,7 +122,7 @@ export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = (
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <Modal.Header closeButton onClick={() => onHide()}>
+      <Modal.Header closeButton onClick={() => hideActionModal()}>
         <Modal.Title id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={FolderEmailAction[actionType].icon} />{" "}
           {FolderEmailAction[actionType].label}
@@ -133,14 +133,14 @@ export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = (
           actionUids,
           folders,
           imapSocket,
-          submit,
-          setSubmit,
+          triggerSubmit,
+          setTriggerSubmit,
           successfulSubmit
         })}
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => setSubmit(true)}>Ok</Button>
-        <Button onClick={() => onHide()}>Close</Button>
+        <Button onClick={() => setTriggerSubmit(true)}>Ok</Button>
+        <Button onClick={() => hideActionModal()}>Close</Button>
       </Modal.Footer>
     </Modal>
   );
@@ -160,8 +160,8 @@ type TFolderEmailActionProps = IFolderEmailActionMoveProps &
 interface IFolderEmailActionMoveProps {
   actionUids?: number[];
   folders: IFoldersEntry[];
-  submit: boolean;
-  setSubmit: Dispatch<boolean>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
@@ -173,16 +173,17 @@ interface IFolderEmailActionMoveProps {
 export const FolderEmailActionMove: FunctionComponent<IFolderEmailActionMoveProps> = ({
   actionUids,
   folders,
-  submit,
-  setSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      setSubmit(false);
     }
   });
 
@@ -230,8 +231,8 @@ interface IFolderEmailActionCopyProps {
   actionUids?: number[];
   folders: IFoldersEntry[];
   imapSocket: ImapSocket;
-  submit: boolean;
-  setSubmit: Dispatch<boolean>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
@@ -243,17 +244,18 @@ interface IFolderEmailActionCopyProps {
 export const FolderEmailActionCopy: FunctionComponent<IFolderEmailActionCopyProps> = ({
   actionUids,
   folders,
-  submit,
+  triggerSubmit,
   imapSocket,
-  setSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      setSubmit(false);
     }
   });
 
@@ -303,8 +305,8 @@ export const FolderEmailActionCopy: FunctionComponent<IFolderEmailActionCopyProp
  */
 interface IFolderEmailActionFlagProps {
   actionUids?: number[];
-  submit: boolean;
-  setSubmit: Dispatch<boolean>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
@@ -315,16 +317,17 @@ interface IFolderEmailActionFlagProps {
  */
 export const FolderEmailActionFlag: FunctionComponent<IFolderEmailActionFlagProps> = ({
   actionUids,
-  submit,
-  setSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [flags, setFlags] = useState<IEmailFlagType[]>(setFlagDefaults(""));
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      setSubmit(false);
     }
   });
 
@@ -367,8 +370,8 @@ export const FolderEmailActionFlag: FunctionComponent<IFolderEmailActionFlagProp
  */
 interface IFolderEmailActionDeleteProps {
   actionUids?: number[];
-  submit: boolean;
-  setSubmit: Dispatch<boolean>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
@@ -379,14 +382,15 @@ interface IFolderEmailActionDeleteProps {
  */
 export const FolderEmailActionDelete: FunctionComponent<IFolderEmailActionDeleteProps> = ({
   actionUids,
-  submit,
-  setSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      setSubmit(false);
     }
   });
 

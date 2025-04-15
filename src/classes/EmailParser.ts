@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
  */
 export class EmailParser {
   /**
-   * @var {IEmail} email
+   * @protected {IEmail} email
    */
   protected email: IEmail;
 
@@ -25,15 +25,15 @@ export class EmailParser {
   }
 
   /**
-   * @name getEmail
-   * return IEmail
+   * @method getEmail
+   * @returns IEmail
    */
   public getEmail(): IEmail {
     return this.email;
   }
 
   /**
-   * @name processEmail
+   * @method processEmail
    * @param {string} emailRaw
    * @reuturns IEmail
    * @description The key method for processing raw email data which should
@@ -70,10 +70,10 @@ export class EmailParser {
   }
 
   /**
-   * @name splitHeaders
+   * @method splitHeaders
    * @param {string} contentRaw
    * @param {boolean} returnContent
-   * @returns {content?: string, headers? IEmailHeaders}
+   * @returns {{ content?: string, headers?: IEmailHeaders }}
    */
   private splitHeaders(
     headerRaw: string,
@@ -147,7 +147,7 @@ export class EmailParser {
   }
 
   /**
-   * extractDetailsFromHeaders
+   * @method extractDetailsFromHeaders
    * @param {IEmail} email
    * @returns void
    */
@@ -212,7 +212,7 @@ export class EmailParser {
   }
 
   /**
-   * @name parseBoundaries
+   * @method parseBoundaries
    * @param {string} boundaryIds
    * @param {string} contentRaw
    * @returns IEmailBoundary[]
@@ -255,7 +255,7 @@ export class EmailParser {
   }
 
   /**
-   * extractContentFromBoundaries
+   * @method extractContentFromBoundaries
    * @param {IEmail} email
    * @returns void
    */
@@ -329,7 +329,7 @@ export class EmailParser {
   }
 
   /**
-   * extractContentFromBody
+   * @method extractContentFromBody
    * @param {IEmail} email
    * @returns void
    */
@@ -366,7 +366,7 @@ export class EmailParser {
   }
 
   /**
-   * @name filterContentByBoundaries
+   * @method filterContentByBoundaries
    * @param {string} boundaryId
    * @param {string} contentRaw
    * @returns IEmailBoundary
@@ -406,7 +406,7 @@ export class EmailParser {
   }
 
   /**
-   * @name sanitiseRawBoundry
+   * @method sanitiseRawBoundry
    * @param {IEmailBoundary} boundary
    * @returns true
    */
@@ -491,7 +491,7 @@ export class EmailParser {
   }
 
   /**
-   * @name stripScripts
+   * @method stripScripts
    * @param {string} content
    * @returns string
    */
@@ -511,7 +511,7 @@ export class EmailParser {
   }
 
   /**
-   * @name getHeaderAttribute
+   * @method getHeaderAttribute
    * @param {string} attribute
    * @param {string} data
    * @returns string | undefined

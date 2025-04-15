@@ -144,7 +144,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name startTopObservation
+   * @method startTopObservation
    * @returns void
    */
   public startTopObservation(): void {
@@ -160,7 +160,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name startBottomObservation
+   * @method startBottomObservation
    * @returns void
    */
   public startBottomObservation(): void {
@@ -176,7 +176,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name startHandleScroll
+   * @method startHandleScroll
    * @returns void
    */
   public startHandleScroll = (): void => {
@@ -192,7 +192,7 @@ export class InfiniteScroll {
   };
 
   /**
-   * @name stopHandleScroll
+   * @method stopHandleScroll
    * @returns void
    */
   public stopHandleScroll = (): void => {
@@ -202,7 +202,7 @@ export class InfiniteScroll {
   };
 
   /**
-   * @name stopObservertions
+   * @method stopObservertions
    * @returns void
    */
   public stopObservertions(): void {
@@ -211,7 +211,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name setTotalEntries
+   * @method setTotalEntries
    * @params {number} totalEntries
    * @returns void
    */
@@ -220,7 +220,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name getCurrentSlice
+   * @method getCurrentSlice
    * @returns IInfiniteScrollSlice
    */
   public getCurrentSlice(): IInfiniteScrollSlice {
@@ -228,7 +228,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name topObservationCallback
+   * @method topObservationCallback
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
@@ -262,7 +262,7 @@ export class InfiniteScroll {
   };
 
   /**
-   * @name bottomObservationCallback
+   * @method bottomObservationCallback
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
@@ -287,7 +287,7 @@ export class InfiniteScroll {
   };
 
   /**
-   * @name handleDesktopScroll
+   * @method handleDesktopScroll
    * @param {Event} event
    * @returns void
    */
@@ -312,7 +312,7 @@ export class InfiniteScroll {
   };
 
   /**
-   * @name triggerStateHandler
+   * @method triggerStateHandler
    * @param {number} minIndex
    * @param {number } maxIndex
    * @param {() => void} callback

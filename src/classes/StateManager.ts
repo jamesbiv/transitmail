@@ -47,7 +47,7 @@ export class StateManager {
   protected folderEmails: { [key: string]: IFolderEmails | undefined } = {};
 
   /**
-   * @name updateActiveKey
+   * @method updateActiveKey
    * @param {string} activeKey
    * @returns void
    */
@@ -71,7 +71,7 @@ export class StateManager {
   }
 
   /**
-   * @name setActiveUid
+   * @method setActiveUid
    * @param {string} activeUid
    * @returns void
    */
@@ -80,7 +80,7 @@ export class StateManager {
   }
 
   /**
-   * @name getActiveUid
+   * @method getActiveUid
    * @returns void
    */
   public getActiveUid(): number | undefined {
@@ -88,7 +88,7 @@ export class StateManager {
   }
 
   /**
-   * @name setFolderId
+   * @method setFolderId
    * @param {string} folderId
    * @returns void
    */
@@ -97,7 +97,7 @@ export class StateManager {
   }
 
   /**
-   * @name getFolderId
+   * @method getFolderId
    * @returns void
    */
   public getFolderId(): string | undefined {
@@ -105,7 +105,7 @@ export class StateManager {
   }
 
   /**
-   * @name getCurrentFolder
+   * @method getCurrentFolder
    * @returns IFolderEmails | undefined
    */
   public getCurrentFolder(): IFolderEmails | undefined {
@@ -124,7 +124,7 @@ export class StateManager {
   }
 
   /**
-   * @name updateCurrentFolder
+   * @method updateCurrentFolder
    * @param {IFolderEmail[]} folderEmails
    * @returns void
    */
@@ -135,7 +135,7 @@ export class StateManager {
   }
 
   /**
-   * @name showMessageModal
+   * @method showMessageModal
    * @param {IMessageModalState} messageModalState
    * @returns void
    */
@@ -144,7 +144,7 @@ export class StateManager {
   }
 
   /**
-   * @name setComposePresets
+   * @method setComposePresets
    * @param {IComposePresets} setComposePresets
    * @returns void
    */
@@ -153,7 +153,7 @@ export class StateManager {
   }
 
   /**
-   * @name getComposePresets
+   * @method getComposePresets
    * @returns IComposePresets
    */
   public getComposePresets(): IComposePresets | undefined {

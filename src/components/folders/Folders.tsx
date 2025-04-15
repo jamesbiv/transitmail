@@ -57,7 +57,8 @@ export const Folders: FunctionComponent = () => {
 
   const toggleActionModal = (actionType: EFolderEntryActionType, actionFolderId?: string): void => {
     setActionFolderId(actionFolderId);
-    setActionType(actionType), setShowActionModal(true);
+    setActionType(actionType);
+    setShowActionModal(true);
   };
 
   return (

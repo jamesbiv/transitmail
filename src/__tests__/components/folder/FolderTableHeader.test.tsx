@@ -19,7 +19,7 @@ describe("FolderTableOptions Component", () => {
       ["From", "from", "desc"],
       ["Subject", "subject", "asc"],
       ["Subject", "subject", "desc"]
-    ])("with a successful response", (tyupe, field, direction) => {
+    ])("with a successful response for %s using %s in %s order", (tyupe, field, direction) => {
       const folderEmails: IFolderEmail[] = [
         {
           id: 1,

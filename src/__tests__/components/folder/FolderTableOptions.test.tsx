@@ -12,11 +12,11 @@ describe("FolderTableOptions Component", () => {
 
   describe("testing toggleActionModal() function", () => {
     it.each([
-      ["copy", EFolderEmailActionType.COPY],
       ["suitcase", EFolderEmailActionType.MOVE],
+      ["copy", EFolderEmailActionType.COPY],
       ["flag", EFolderEmailActionType.FLAG],
       ["trash", EFolderEmailActionType.DELETE]
-    ])("with a successful response", (icon, folderEmailActionType) => {
+    ])("with a successful response for %s using %d", (icon, folderEmailActionType) => {
       const displayTableOptions: boolean = true;
 
       const toggleSelection = (uid: number, forceToogle?: boolean) => undefined;

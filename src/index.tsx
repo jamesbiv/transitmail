@@ -1,4 +1,12 @@
-import React, { FunctionComponent, StrictMode, useContext, useEffect, useState } from "react";
+import React, {
+  createElement,
+  FunctionComponent,
+  StrictMode,
+  TouchEvent,
+  useContext,
+  useEffect,
+  useState
+} from "react";
 import { createRoot, Root } from "react-dom/client";
 import {
   Container,
@@ -84,11 +92,11 @@ export const Index: FunctionComponent = () => {
     };
   }, []);
 
-  const onTouchStartTrigger = (event: React.TouchEvent) => {
+  const onTouchStartTrigger = (event: TouchEvent) => {
     touchState.start = event.targetTouches[0].screenX;
   };
 
-  const onTouchMoveTrigger = (event: React.TouchEvent) => {
+  const onTouchMoveTrigger = (event: TouchEvent) => {
     touchState.end = event.targetTouches[0].screenX;
   };
 
@@ -165,7 +173,7 @@ export const Index: FunctionComponent = () => {
                         unmountOnExit={true}
                         eventKey={component.eventKey}
                       >
-                        {React.createElement(component.element)}
+                        {createElement(component.element)}
                       </TabPane>
                     ))}
                   </ErrorBoundary>
