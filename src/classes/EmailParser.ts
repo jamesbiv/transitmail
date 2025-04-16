@@ -268,10 +268,7 @@ export class EmailParser {
 
         switch (contentRow.mimeType) {
           case "text/html":
-            if (!email.bodyHtml) {
-              email.bodyHtml = "";
-            }
-
+            email.bodyHtml ??= "";
             email.bodyHtmlHeaders = contentRow.headers;
 
             switch (contentRow.encoding?.toLowerCase()) {
@@ -290,10 +287,7 @@ export class EmailParser {
             break;
 
           case "text/plain":
-            if (!email.bodyText) {
-              email.bodyText = "";
-            }
-
+            email.bodyText ??= "";
             email.bodyTextHeaders = contentRow.headers;
 
             switch (contentRow.encoding?.toLowerCase()) {
@@ -313,9 +307,7 @@ export class EmailParser {
         }
 
         if (contentRow.isAttachment) {
-          if (!email.attachments) {
-            email.attachments = [];
-          }
+          email.attachments ??= [];
 
           const attachment: IEmailAttachment = {
             key: uuidv4(),

@@ -26,11 +26,12 @@ export const FolderTableHeader: FunctionComponent<IFolderTableHeaderProps> = ({
   updateVisibleEmails
 }) => {
   const sortFolder: (field: string, direction?: string) => void = (field, direction) => {
-    if (direction === "asc") {
-      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] > b[field] ? 1 : -1));
-    } else {
-      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] < b[field] ? 1 : -1));
-    }
+    const sortDirection =
+      direction === "asc"
+        ? (first: IFolderEmail, second: IFolderEmail) => (first[field] > second[field] ? 1 : -1)
+        : (first: IFolderEmail, second: IFolderEmail) => (first[field] < second[field] ? 1 : -1);
+
+    folderEmails.sort(sortDirection);
 
     updateVisibleEmails();
   };

@@ -2,54 +2,65 @@ import { InfiniteScroll } from "classes";
 
 jest.mock("contexts/DependenciesContext");
 
-(global.IntersectionObserver as any) = class IntersectionObserver {
-  constructor() {}
-
-  observe = () => {
-    return undefined;
-  };
-
-  disconnect = () => {
-    return undefined;
-  };
-
-  unobserve = () => {
-    return undefined;
-  };
-};
-
-const mockEmailRaw: any = {};
-
-const infiniteScroll = new InfiniteScroll(
-  "container-main",
-  "topObserver",
-  "bottomObserver",
-  ({ minIndex, maxIndex, folderPlaceholder, folderScrollSpinner, callback }) => {},
-  1
-);
-
 describe("Testing the InfiniteScroll class", () => {
-  describe("Test startObservation", () => {
-    test("", () => {
-      // infiniteScroll.startObservation();
+  const originalIntersectionObserver = global.IntersectionObserver;
+
+  beforeEach(() => {
+    global.IntersectionObserver = class {
+      readonly root = document.createElement("root");
+      readonly rootMargin: string = "";
+      readonly thresholds: ReadonlyArray<number> = [];
+
+      disconnect() {
+        return undefined;
+      }
+      observe(target: Element) {
+        return undefined;
+      }
+      takeRecords() {
+        return [];
+      }
+      unobserve(target: Element) {
+        return undefined;
+      }
+    };
+  });
+
+  afterEach(() => {
+    global.IntersectionObserver = originalIntersectionObserver;
+
+    jest.restoreAllMocks();
+  });
+
+  describe("Test startTopObservation", () => {
+    it("", () => {
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.startTopObservation();
     });
   });
 
-  describe("Test stopObservertion", () => {
-    test("", () => {
-      // infiniteScroll.stopObservertion();
+  describe("Test startBottomObservation", () => {
+    it("", () => {
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.startBottomObservation();
     });
   });
 
   describe("Test startHandleScroll", () => {
-    test("", () => {
-      // infiniteScroll.startHandleScroll();
+    it("", () => {
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.startHandleScroll();
     });
   });
 
   describe("Test stopHandleScroll", () => {
-    test("", () => {
-      //  infiniteScroll.stopHandleScroll();
+    it("", () => {
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.stopHandleScroll();
     });
   });
 
@@ -57,13 +68,17 @@ describe("Testing the InfiniteScroll class", () => {
     test("", () => {
       const totalEntries: number = 100;
 
+      const infiniteScroll = new InfiniteScroll();
+
       infiniteScroll.setTotalEntries(totalEntries);
     });
   });
 
   describe("Test stopHandleScroll", () => {
     test("", () => {
-      const getCurrentSliceResponse: any = infiniteScroll.getCurrentSlice();
+      const infiniteScroll = new InfiniteScroll();
+
+      const getCurrentSliceResponse = infiniteScroll.getCurrentSlice();
 
       expect(getCurrentSliceResponse).toEqual({
         maxIndex: 15,

@@ -6,7 +6,7 @@ import "@testing-library/jest-dom";
 import { FolderTableHeader } from "components/folder";
 import { IFolderEmail } from "interfaces";
 
-describe("FolderTableOptions Component", () => {
+describe("FolderTableHeader Component", () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
@@ -19,7 +19,7 @@ describe("FolderTableOptions Component", () => {
       ["From", "from", "desc"],
       ["Subject", "subject", "asc"],
       ["Subject", "subject", "desc"]
-    ])("with a successful response for %s using %s in %s order", (tyupe, field, direction) => {
+    ])("with a successful response for %s using %s in %s order", (type, field, direction) => {
       const folderEmails: IFolderEmail[] = [
         {
           id: 1,
@@ -72,7 +72,7 @@ describe("FolderTableOptions Component", () => {
         />
       );
 
-      const fieldToSort = getByText(new RegExp(tyupe, "i"));
+      const fieldToSort = getByText(new RegExp(type, "i"));
       const icon: string = direction === "asc" ? "up-long" : "down-long";
 
       const folderEmailsBefore: IFolderEmail[] = [...folderEmails];

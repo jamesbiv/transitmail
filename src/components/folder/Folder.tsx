@@ -46,11 +46,11 @@ export const Folder: FunctionComponent = () => {
         throw new Error(`Websockets: ${(error as Error).message}`);
       }
 
-      updateFolder();
+      getFolderEmails();
     }
   }, []);
 
-  const updateFolder = async (): Promise<void> => {
+  const getFolderEmails = async (): Promise<void> => {
     setFolderSpinner(true);
 
     const currentFolder: IFolderEmail[] | undefined =
@@ -65,11 +65,16 @@ export const Folder: FunctionComponent = () => {
   const checkEmail = async (): Promise<void> => {
     setFolderSpinner(true);
 
-    const latestEmails: IFolderEmail[] | undefined = await getLatestEmails(folderEmails?.[0]?.uid);
+    const heighestUid: number =
+      folderEmails?.reduce((currentHighestUid, folderEmail) => {
+        if (folderEmail.uid > currentHighestUid) {
+          currentHighestUid = folderEmail.uid;
+        }
 
-    if (latestEmails && latestEmails[0]?.uid === folderEmails?.[0]?.uid) {
-      latestEmails.shift();
-    }
+        return currentHighestUid;
+      }, 0) ?? 0;
+
+    const latestEmails: IFolderEmail[] | undefined = await getLatestEmails(heighestUid);
 
     const currentEmails: IFolderEmail[] = stateManager.getCurrentFolder()?.emails ?? [];
 
@@ -77,10 +82,17 @@ export const Folder: FunctionComponent = () => {
       ? [...latestEmails, ...currentEmails]
       : currentEmails;
 
-    setFolderSpinner(false);
+    const allCurrentEmailsUnqiue: IFolderEmail[] = allCurrentEmails.filter(
+      (currentEmail, currentEmailIndex) =>
+        allCurrentEmails.findIndex(
+          (currentEmailComparison) => currentEmailComparison.uid === currentEmail.uid
+        ) === currentEmailIndex
+    );
 
-    setFolderEmails(allCurrentEmails);
-    stateManager.updateCurrentFolder(allCurrentEmails);
+    setFolderSpinner(false);
+    setFolderEmails(allCurrentEmailsUnqiue);
+
+    stateManager.updateCurrentFolder(allCurrentEmailsUnqiue);
   };
 
   const getLatestEmails = async (lastUid?: number): Promise<IFolderEmail[] | undefined> => {
@@ -89,7 +101,7 @@ export const Folder: FunctionComponent = () => {
     const selectResponse: IImapResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
-      return undefined;
+      return;
     }
 
     const fetchUid: number = (lastUid ?? 0) + 1;
@@ -99,14 +111,16 @@ export const Folder: FunctionComponent = () => {
     );
 
     if (fetchResponse.status !== EImapResponseStatus.OK) {
-      return undefined;
+      return;
     }
 
     const latestEmails: IFolderEmail[] = imapHelper.formatFetchFolderEmailsResponse(
       fetchResponse.data
     );
 
-    latestEmails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
+    latestEmails.sort(
+      (first: IFolderEmail, second: IFolderEmail) => [1, -1][Number(first.epoch > second.epoch)]
+    );
 
     return latestEmails;
   };
@@ -232,7 +246,7 @@ export const Folder: FunctionComponent = () => {
       </Card>
       <FolderEmailActions
         folderEmailActionState={folderEmailActionState}
-        onHide={updateFolderActionState}
+        hideActionModal={updateFolderActionState}
       />
     </Fragment>
   );

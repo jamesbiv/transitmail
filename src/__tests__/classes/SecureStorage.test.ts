@@ -4,6 +4,10 @@ import { IImapSettings, ISettings, ISmtpSettings } from "interfaces";
 jest.mock("contexts/DependenciesContext");
 
 describe("Testing the SecureStorage class", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe("test setData() and getData() methods", () => {
     it("successful getting and setting", () => {
       const secureStorage = new SecureStorage();
@@ -105,6 +109,31 @@ describe("Testing the SecureStorage class", () => {
       const getSettingsResponse = secureStorage.getSettings();
 
       expect(getSettingsResponse).toEqual(settings);
+    });
+  });
+
+  describe("test getSettings() methods and getData() methods", () => {
+    it("when JSON.prase throws an error", () => {
+      const originalJsonParse = JSON.parse;
+
+      JSON.parse = jest
+        .fn()
+        .mockImplementationOnce(() => {
+          throw new Error("Invalid");
+        })
+        .mockImplementationOnce(() => {
+          throw new Error("Invalid");
+        });
+
+      const secureStorage = new SecureStorage();
+
+      const getSettingsResponse = secureStorage.getSettings();
+      const getDataResponse = secureStorage.getData("activeUid");
+
+      expect(getSettingsResponse).toEqual({});
+      expect(getDataResponse).toEqual(undefined);
+
+      JSON.parse = originalJsonParse;
     });
   });
 });

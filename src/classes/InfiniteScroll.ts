@@ -94,7 +94,7 @@ export class InfiniteScroll {
   protected slice: IInfiniteScrollSlice;
 
   /**
-   * @protected {(args: IInfinateScrollHandler) => void} stateHander
+   * @protected {((args: IInfinateScrollHandler) => void) | undefined} scrollHandler
    */
   protected scrollHandler: ((args: IInfinateScrollHandler) => void) | undefined;
 
@@ -128,7 +128,12 @@ export class InfiniteScroll {
   }
 
   /**
-   * @param {IInfiniteScrollInitiateHandlers} args
+   * @method initiateHandlers
+   * @param {string} scrollElementId
+   * @param {string} topElementId
+   * @param {string} bottomElementId
+   * @param {(args: IInfinateScrollHandler) => void} scrollHandler
+   * @returns void
    */
   public initiateHandlers(
     scrollElementId: string,

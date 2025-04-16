@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { Button, ButtonGroup, Row, Col, Form } from "react-bootstrap";
+import { Button, ButtonGroup, Row, Col, FormCheck } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEnvelopeOpen,
@@ -37,7 +37,7 @@ export const FolderEmailEntry: FunctionComponent<IFolderEmailEntryProps> = ({
       ${!email.flags.includes("Seen") || email.flags.includes("Recent") ? "font-weight-bold" : ""}`}
     >
       <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
-        <Form.Check
+        <FormCheck
           type="checkbox"
           id=""
           label=""

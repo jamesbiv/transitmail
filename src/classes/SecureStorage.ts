@@ -62,9 +62,9 @@ export class SecureStorage {
    * @constructor
    */
   constructor() {
-    this.data = this.getSecureStorage("data");
+    this.data = this.getSecureStorage("data") ?? ({} as Pick<IData, TDataKeys>);
 
-    this.settings = this.getSecureStorage("settings");
+    this.settings = this.getSecureStorage("settings") ?? ({} as Pick<ISettings, TSettingsKeys>);
   }
 
   /**
@@ -171,19 +171,27 @@ export class SecureStorage {
   /**
    * @method getSecureStorage
    * @param {string} name
-   * @returns T
+   * @returns T | undefined
    */
-  private getSecureStorage<T>(name: string): T {
-    const data: string = localStorage.getItem(name) ?? "";
+  private getSecureStorage<T>(name: string): T | undefined {
+    const data: string | undefined = localStorage.getItem(name) ?? undefined;
+
+    if (!data) {
+      return;
+    }
 
     const decryptedData: string = CryptoES.AES.decrypt(data, this.passPhrase).toString(
       CryptoES.enc.Utf8
     );
 
+    let parsedDecryptedData: { json?: T; error?: Error };
+
     try {
-      return JSON.parse(decryptedData);
-    } catch (error) {
-      return {} as T;
+      parsedDecryptedData = { json: JSON.parse(decryptedData) };
+    } catch (error: unknown) {
+      parsedDecryptedData = { json: undefined, error: error as Error };
     }
+
+    return parsedDecryptedData.json;
   }
 }

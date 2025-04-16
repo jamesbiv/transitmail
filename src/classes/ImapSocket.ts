@@ -79,10 +79,6 @@ export class ImapSocket {
     success?: TImapCallback,
     error?: TImapCallback
   ): boolean {
-    if (this.getReadyState() === WebSocket.OPEN) {
-      return true;
-    }
-
     this.session.socket = new WebSocket(
       `wss://${this.settings.host}:${this.settings.port}`,
       "binary"

@@ -8,7 +8,19 @@ import React, {
   useEffect,
   useState
 } from "react";
-import { Alert, Form, Modal, Button } from "react-bootstrap";
+import {
+  Alert,
+  Modal,
+  Button,
+  FormLabel,
+  FormControl,
+  FormGroup,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter,
+  FormCheck
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ImapSocket } from "classes";
 import {
@@ -122,13 +134,13 @@ export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = (
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <Modal.Header closeButton onClick={() => hideActionModal()}>
-        <Modal.Title id="contained-modal-title-vcenter">
+      <ModalHeader closeButton onClick={() => hideActionModal()}>
+        <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={FolderEmailAction[actionType].icon} />{" "}
           {FolderEmailAction[actionType].label}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+        </ModalTitle>
+      </ModalHeader>
+      <ModalBody>
         {createElement(FolderEmailAction[actionType].element, {
           actionUids,
           folders,
@@ -137,11 +149,11 @@ export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = (
           setTriggerSubmit,
           successfulSubmit
         })}
-      </Modal.Body>
-      <Modal.Footer>
+      </ModalBody>
+      <ModalFooter>
         <Button onClick={() => setTriggerSubmit(true)}>Ok</Button>
         <Button onClick={() => hideActionModal()}>Close</Button>
-      </Modal.Footer>
+      </ModalFooter>
     </Modal>
   );
 };
@@ -198,12 +210,13 @@ export const FolderEmailActionMove: FunctionComponent<IFolderEmailActionMoveProp
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
         Move email(s) to{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
+        data-testid="selectMoveFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -219,8 +232,8 @@ export const FolderEmailActionMove: FunctionComponent<IFolderEmailActionMoveProp
             ))}
           </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
@@ -274,12 +287,13 @@ export const FolderEmailActionCopy: FunctionComponent<IFolderEmailActionCopyProp
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
-        Move email(s) to{" "}
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
+        Copy email(s) to{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
+        data-testid="selectCopyFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -295,8 +309,8 @@ export const FolderEmailActionCopy: FunctionComponent<IFolderEmailActionCopyProp
             ))}
           </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
@@ -342,26 +356,20 @@ export const FolderEmailActionFlag: FunctionComponent<IFolderEmailActionFlagProp
   };
 
   return (
-    <Form.Group controlId="formEmailAutoLogin">
+    <FormGroup controlId="formEmailAutoLogin">
       <ul>
         {flags.map((flag: IEmailFlagType, flagIndex: number) => (
           <li key={flag.name}>
-            <Form.Check
+            <FormCheck
               type="switch"
               id={flags[flagIndex].name}
               label={flags[flagIndex].name}
               defaultChecked={flags[flagIndex].enabled}
-              onChange={() => {
-                flags[flagIndex].enabled = !flags[flagIndex].enabled;
-                flags[flagIndex].flagChanged = true;
-
-                setFlags({ ...flags });
-              }}
             />
           </li>
         ))}
       </ul>
-    </Form.Group>
+    </FormGroup>
   );
 };
 

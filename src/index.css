@@ -173,6 +173,7 @@ pre {
   .btn-group-vertical-xs > .btn {
     margin-left: -1px;
     width: 100%;
+    display: block;
   }
 
   .btn-group-vertical-xs > .btn:first-child {
@@ -187,9 +188,5 @@ pre {
     border-top-right-radius: 0;
     border-bottom-left-radius: 0.21em;
     border-bottom-right-radius: 0.21em;
-  }
-
-  .btn-group-vertical-xs > .btn {
-    display: block;
   }
 }

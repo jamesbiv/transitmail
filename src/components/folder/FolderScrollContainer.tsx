@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { Dispatch, PureComponent } from "react";
 import { InfiniteScroll } from "classes";
 import {
   IFolderEmail,
@@ -23,7 +23,7 @@ import {
 interface IFolderScrollContainerProps {
   folderEmails?: IFolderEmail[];
   folderEmailActions: IFolderEmailActions;
-  setDisplayCardHeader: React.Dispatch<boolean>;
+  setDisplayCardHeader: Dispatch<boolean>;
   toggleActionModal: (actionType: EFolderEmailActionType) => void;
 }
 
