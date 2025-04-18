@@ -152,8 +152,7 @@ describe("Testing the StateManager class", () => {
 
       stateManager.updateCurrentFolder(folderEmails, "1");
 
-      const getCurrentFolderResponse: IFolderEmails | undefined =
-        stateManager.getCurrentFolder();
+      const getCurrentFolderResponse: IFolderEmails | undefined = stateManager.getCurrentFolder();
 
       expect(getCurrentFolderResponse).toEqual({
         latestUid: "1",

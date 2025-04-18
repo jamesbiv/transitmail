@@ -1,5 +1,5 @@
 export interface ISmtpResponseData {
-  responseCodes:  number[];
+  responseCodes: number[];
   request: string;
   response: string[][];
   responseCode: string;
