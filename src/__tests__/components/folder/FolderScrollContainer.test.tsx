@@ -67,7 +67,7 @@ describe("FolderTableOptions Component", () => {
   });
 
   describe("testing toggleSelection() function", () => {
-    it("", () => {
+    it("", async () => {
       const initiateHandlersSpy: jest.SpyInstance = jest.spyOn(
         InfiniteScroll.prototype,
         "initiateHandlers"

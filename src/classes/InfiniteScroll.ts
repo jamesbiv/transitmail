@@ -341,7 +341,7 @@ export class InfiniteScroll {
         bottom: (this.totalEntries - this.slice.maxIndex) * this.settings.placeholderDesktopHeight
       };
     } else {
-      const placeHolderSize = this.defaultPageSize * this.settings.placeholderMobileHeight;
+      const placeHolderSize = 4 * this.settings.placeholderMobileHeight;
 
       folderPlaceholder = {
         top: this.slice.minIndex > 0 ? placeHolderSize : 0,

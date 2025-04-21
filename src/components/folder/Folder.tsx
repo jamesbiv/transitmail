@@ -224,13 +224,14 @@ export const Folder: FunctionComponent = () => {
         {!folderEmails && (
           <Spinner className="mt-3 mb-3 ms-auto me-auto" animation="grow" variant="dark" />
         )}
-        {!folderEmails?.length ? (
+        {folderEmails && !folderEmails.length && (
           <CardBody className="text-center text-secondary">
             <FontAwesomeIcon icon={faFolderOpen} size="lg" />
             <br />
             <em>Folder empty</em>
           </CardBody>
-        ) : (
+        )}
+        {folderEmails && folderEmails.length > 0 && (
           <FolderScrollContainer
             folderEmails={folderEmails}
             setDisplayCardHeader={setDisplayCardHeader}
