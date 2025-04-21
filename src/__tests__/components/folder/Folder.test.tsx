@@ -363,51 +363,134 @@ describe("Folder Component", () => {
 
   describe("testing folderEmailActions functions", () => {
     it.each([
-      ["viewEmail", "envelope-open"],
-      ["replyToEmail", "reply"],
-      ["forwardEmail", "share"],
-      ["deleteEmail", "trash"]
-    ])("testing folderEmailActions. %s", async (action, icon) => {
+      ["viewEmail", "envelope-open", true],
+      ["replyToEmail", "reply", true],
+      ["forwardEmail", "share", true],
+      ["deleteEmail", "trash", false]
+    ])(
+      "testing folderEmailActions.%s",
+      async (action, icon, expectUpdateActiveKeyToHaveBeenCalled = true) => {
+        const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+          contextSpyHelper<StateManager>("stateManager"),
+          "getCurrentFolder"
+        );
+
+        getCurrentFolderSpy.mockImplementation(() => {
+          return {
+            emails: [
+              {
+                id: 1,
+                date: "Fri, 24 Jul 2020 00:00:00 -0300",
+                epoch: 1595559600000,
+                from: "Test Display Name <test@emailAddress.com>",
+                subject: "(no subject)",
+                uid: 1,
+                ref: "1",
+                flags: "\\Seen",
+                hasAttachment: false,
+                selected: false
+              }
+            ]
+          };
+        });
+
+        const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+          contextSpyHelper<ImapHelper>("imapHelper"),
+          "formatFetchFolderEmailsResponse"
+        );
+
+        formatFetchFolderEmailsResponseSpy.mockImplementation(() => undefined);
+
+        const updateCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+          contextSpyHelper<StateManager>("stateManager"),
+          "updateCurrentFolder"
+        );
+
+        const updateActiveKeySpy: jest.SpyInstance = jest.spyOn(
+          contextSpyHelper<StateManager>("stateManager"),
+          "updateActiveKey"
+        );
+
+        const { container, getAllByText } = render(<Folder />);
+
+        await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
+
+        const formSearchFolders = container.querySelector("#formSearchFolders")!;
+        fireEvent.change(formSearchFolders, { target: { value: "(no subject)" } });
+
+        expect(getAllByText(/Test Display Name/i)[0]).toBeInTheDocument();
+
+        const actionIcons = container.querySelectorAll(`[data-icon="${icon}"]`);
+        actionIcons.forEach((actionIcon) => fireEvent.click(actionIcon));
+
+        expectUpdateActiveKeyToHaveBeenCalled
+          ? expect(updateActiveKeySpy).toHaveBeenCalled()
+          : expect(updateActiveKeySpy).not.toHaveBeenCalled();
+      }
+    );
+  });
+
+  describe("testing toggleActionModal() and updateFolderActionState()", () => {
+    it("a successful response", async () => {
       const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<StateManager>("stateManager"),
         "getCurrentFolder"
       );
 
-      getCurrentFolderSpy.mockImplementation(() => {
-        return {
-          emails: [
-            {
-              id: 1,
-              date: "Fri, 24 Jul 2020 00:00:00 -0300",
-              epoch: 1595559600000,
-              from: "Test Display Name <test@emailAddress.com>",
-              subject: "(no subject)",
-              uid: 1,
-              ref: "1",
-              flags: "\\Seen",
-              hasAttachment: false,
-              selected: false
-            }
-          ]
-        };
-      });
+      getCurrentFolderSpy.mockImplementationOnce(() => undefined);
 
       const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<ImapHelper>("imapHelper"),
         "formatFetchFolderEmailsResponse"
       );
 
-      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => undefined);
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "(no subject)",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        }
+      ]);
 
-      const { container, getAllByText } = render(<Folder />);
+      const updateCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "updateCurrentFolder"
+      );
 
-      const formSearchFolders = container.querySelector("#formSearchFolders")!;
-      fireEvent.change(formSearchFolders, { target: { value: "(no subject)" } });
+      const { container, getByText } = render(<Folder />);
 
-      await waitFor(() => expect(getAllByText(/Test Display Name/i)[0]).toBeInTheDocument());
+      await waitFor(() =>
+        expect(updateCurrentFolderSpy).toHaveBeenCalledWith([
+          {
+            date: "Fri, 24 Jul 2020 00:00:00 -0300",
+            epoch: 1595559600000,
+            flags: "\\Seen",
+            from: "Test Display Name <test@emailAddress.com>",
+            hasAttachment: false,
+            id: 1,
+            ref: "1",
+            selected: false,
+            subject: "(no subject)",
+            uid: 1
+          }
+        ])
+      );
 
-      const envelopeOpenIcon = container.querySelector(`[data-icon="${icon}"]`)!;
-      fireEvent.click(envelopeOpenIcon);
+      const moveIcon = container.querySelector(`[data-icon="suitcase"]`)!;
+      fireEvent.click(moveIcon);
+
+      // insert a watching a redering change to validate here
+
+      fireEvent.click(getByText(/Close/i));
+
+      // insert a watching a redering change to validate here
     });
   });
 });
