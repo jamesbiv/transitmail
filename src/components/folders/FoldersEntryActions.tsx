@@ -185,8 +185,9 @@ export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionAddProp
 
   useEffect(() => {
     if (triggerSubmit) {
-      submitAction();
       setTriggerSubmit(false);
+
+      submitAction();
     }
   });
 
@@ -267,8 +268,9 @@ export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionCopyPr
 
   useEffect(() => {
     if (triggerSubmit) {
-      submitAction();
       setTriggerSubmit(false);
+
+      submitAction();
     }
   });
 
@@ -366,8 +368,9 @@ export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionMovePr
 
   useEffect(() => {
     if (triggerSubmit) {
-      submitAction();
       setTriggerSubmit(false);
+
+      submitAction();
     }
   });
 
@@ -436,8 +439,9 @@ export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionRena
 
   useEffect(() => {
     if (triggerSubmit) {
-      submitAction();
       setTriggerSubmit(false);
+
+      submitAction();
     }
   });
 
@@ -494,8 +498,9 @@ export const FoldersEntryActionDelete: FunctionComponent<IFoldersEntryActionDele
 }) => {
   useEffect(() => {
     if (triggerSubmit) {
-      submitAction();
       setTriggerSubmit(false);
+
+      submitAction();
     }
   });
 

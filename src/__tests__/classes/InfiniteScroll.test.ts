@@ -1,4 +1,5 @@
 import { fireEvent } from "@testing-library/dom";
+import { sleep } from "__tests__/fixtures";
 import { InfiniteScroll } from "classes";
 import { IInfinateScrollHandler } from "interfaces";
 
@@ -25,7 +26,10 @@ describe("Testing the InfiniteScroll class", () => {
 
     global.IntersectionObserver = class {
       constructor(callback: IntersectionObserverCallback) {
-        callback([{ intersectionRatio: 1 }] as IntersectionObserverEntry[], undefined!);
+        callback(
+          [{ intersectionRatio: 1 }, { intersectionRatio: 0 }] as IntersectionObserverEntry[],
+          undefined!
+        );
       }
 
       readonly root = document.createElement("root");
@@ -55,7 +59,7 @@ describe("Testing the InfiniteScroll class", () => {
     jest.restoreAllMocks();
   });
 
-  describe("Test initiateHandlers", () => {
+  describe("Test initiateHandlers()", () => {
     it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
@@ -97,7 +101,7 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test startTopObservation", () => {
+  describe("Test startTopObservation()", () => {
     it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
@@ -143,7 +147,7 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test startBottomObservation", () => {
+  describe("Test startBottomObservation()", () => {
     it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
@@ -189,8 +193,12 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test startHandleScroll", () => {
-    it("", () => {
+  describe("Test handleHeavyDesktopScroll()", () => {
+    it("", async () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
@@ -208,9 +216,84 @@ describe("Testing the InfiniteScroll class", () => {
 
       infiniteScroll.startHandleScroll();
 
-      fireEvent.scroll(document.getElementById("container-main")!, { target: { scrollLeft: 500 } });
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 0 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 100 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 1000 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 10000 }
+      });
+
+      window.innerWidth = originalWindowInnerWidth;
     });
 
+    it("", async () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      jest
+        .spyOn(document.getElementById("container-main")!, "scrollTop", "get")
+        .mockImplementationOnce(() => 200);
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        ({
+          minIndex,
+          maxIndex,
+          folderPlaceholder,
+          folderScrollSpinner,
+          callback
+        }: IInfinateScrollHandler) => {}
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 0 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 100 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 1000 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 10000 }
+      });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+  });
+
+  describe("Test startHandleScroll()", () => {
     it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
@@ -237,7 +320,7 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test stopHandleScroll", () => {
+  describe("Test stopHandleScroll()", () => {
     it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
@@ -279,7 +362,7 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test stopObservertions", () => {
+  describe("Test stopObservertions()", () => {
     it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
@@ -300,7 +383,7 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test setTotalEntries", () => {
+  describe("Test setTotalEntries()", () => {
     test("", () => {
       const totalEntries: number = 100;
 
@@ -323,7 +406,7 @@ describe("Testing the InfiniteScroll class", () => {
     });
   });
 
-  describe("Test stopHandleScroll", () => {
+  describe("Test stopHandleScroll()", () => {
     test("", () => {
       const infiniteScroll = new InfiniteScroll();
 

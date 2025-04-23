@@ -38,8 +38,9 @@ import { IComponent, IMessageModalState, ISliderState, ITouchState } from "inter
 
 /**
  * Replace with custom service worker
+ *
+ * import * as serviceWorker from "serviceWorker";
  */
-// import * as serviceWorker from "serviceWorker";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
