@@ -9,7 +9,7 @@ import { IFolderEmail, IFolderEmailActions } from "interfaces";
 import { InfiniteScroll } from "classes";
 import { sleep } from "__tests__/fixtures";
 
-describe("FolderTableOptions Component", () => {
+describe("FolderScrollContainer Component", () => {
   const originalIntersectionObserver = global.IntersectionObserver;
 
   beforeEach(() => {

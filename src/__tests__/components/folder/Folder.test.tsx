@@ -6,8 +6,8 @@ import "@testing-library/jest-dom";
 import { contextSpyHelper } from "__tests__/fixtures";
 
 import { Folder } from "components/folder";
-import { ImapHelper, ImapSocket, StateManager } from "classes";
-import { EImapResponseStatus } from "interfaces";
+import { ImapHelper, ImapSocket, InfiniteScroll, StateManager } from "classes";
+import { EImapResponseStatus, IFolderEmail } from "interfaces";
 
 // jest.mock("contexts/DependenciesContext");
 
@@ -260,7 +260,7 @@ describe("Folder Component", () => {
       );
     });
 
-    it("a successful response", async () => {
+    it("a successful response with email(s) found in the folder", async () => {
       const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<StateManager>("stateManager"),
         "getCurrentFolder"
@@ -316,6 +316,45 @@ describe("Folder Component", () => {
           }
         ])
       );
+    });
+
+    it("a successful response with no emails in the folder", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementationOnce(() => undefined);
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => undefined);
+
+      const updateCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "updateCurrentFolder"
+      );
+
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const { container } = render(<Folder />);
+
+      await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
+
+      const checkEmailIcon = container.querySelector('[data-icon="arrows-rotate"]')!;
+      fireEvent.click(checkEmailIcon);
+
+      await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
     });
   });
 
@@ -491,6 +530,62 @@ describe("Folder Component", () => {
       fireEvent.click(getByText(/Close/i));
 
       // insert a watching a redering change to validate here
+    });
+  });
+
+  describe("testing displayCardHeader and setDisplayCardHeader()", () => {
+    it("sucessfully hiding CardHeader component after scrolling moves minIndex higher than 0", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementationOnce(() => undefined);
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "(no subject)",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        }
+      ]);
+
+      const updateCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "updateCurrentFolder"
+      );
+
+      const initiateHandlersSpy: jest.SpyInstance = jest.spyOn(
+        InfiniteScroll.prototype,
+        "initiateHandlers"
+      );
+
+      initiateHandlersSpy.mockImplementation(
+        (scrollElementId, topElementId, bottomElementId, scrollHandler) => {
+          scrollHandler(1, 2);
+        }
+      );
+
+      const { container } = render(<Folder />);
+
+      const formSearchFolders = container.querySelector("#formSearchFolders")!;
+
+      expect(formSearchFolders).toBeInTheDocument();
+
+      await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
+      await waitFor(() => expect(formSearchFolders).not.toBeInTheDocument());
     });
   });
 });
