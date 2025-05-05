@@ -28,8 +28,8 @@ describe("FoldersEntryOptions Component", () => {
         <FoldersEntryOptions folderId={folderId} toggleActionModal={toggleActionModal} />
       );
 
-      const envelopeOpenIcon = container.querySelector(`[data-icon="sliders"]`)!;
-      fireEvent.click(envelopeOpenIcon);
+      const slidersIcon = container.querySelector(`[data-icon="sliders"]`)!;
+      fireEvent.click(slidersIcon);
 
       const copyIcon = container.querySelector(`[data-icon="${icon}"]`)!;
       fireEvent.click(copyIcon);

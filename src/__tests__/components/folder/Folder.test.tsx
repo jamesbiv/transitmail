@@ -1,4 +1,4 @@
-import React from "react";
+import React, { act, StrictMode } from "react";
 
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
@@ -7,9 +7,9 @@ import { contextSpyHelper } from "__tests__/fixtures";
 
 import { Folder } from "components/folder";
 import { ImapHelper, ImapSocket, InfiniteScroll, StateManager } from "classes";
-import { EImapResponseStatus, IFolderEmail } from "interfaces";
+import { EImapResponseStatus } from "interfaces";
 
-// jest.mock("contexts/DependenciesContext");
+jest.mock("contexts/DependenciesContext");
 
 describe("Folder Component", () => {
   const originalIntersectionObserver = global.IntersectionObserver;
@@ -34,13 +34,6 @@ describe("Folder Component", () => {
       }
     };
 
-    const imapCheckOrConnectSpy: jest.SpyInstance = jest.spyOn(
-      contextSpyHelper<ImapSocket>("imapSocket"),
-      "imapCheckOrConnect"
-    );
-
-    imapCheckOrConnectSpy.mockImplementationOnce(() => true);
-
     const getStreamAmountSpy: jest.SpyInstance = jest.spyOn(
       contextSpyHelper<ImapSocket>("imapSocket"),
       "getStreamAmount"
@@ -62,6 +55,74 @@ describe("Folder Component", () => {
     global.IntersectionObserver = originalIntersectionObserver;
 
     jest.restoreAllMocks();
+  });
+
+  describe("testing useEffect()", () => {
+    it("when initalizeFoldersRun is true by using StrictMode to trigger 2nd render", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementationOnce(() => []);
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => []);
+
+      const getFolderIdSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getFolderId"
+      );
+
+      getFolderIdSpy.mockImplementationOnce(() => "Test Folder");
+
+      const { getByText } = await act(() =>
+        render(
+          <StrictMode>
+            <Folder />
+          </StrictMode>
+        )
+      );
+
+      expect(getByText(/Folder empty/i)).toBeInTheDocument;
+    });
+
+    it("testing try and catch on imapCheckOrConnect()", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementationOnce(() => undefined);
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => undefined);
+
+      const imapCheckOrConnectSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapCheckOrConnect"
+      );
+
+      imapCheckOrConnectSpy.mockImplementationOnce(() => {
+        throw new Error("network level error");
+      });
+
+      try {
+        await act(() => render(<Folder />));
+      } catch (error: unknown) {
+        const _ = error;
+      }
+
+      await waitFor(() => expect(imapCheckOrConnectSpy).toHaveBeenCalled());
+    });
   });
 
   describe("testing getFolderEmails()", () => {
@@ -273,7 +334,7 @@ describe("Folder Component", () => {
         "formatFetchFolderEmailsResponse"
       );
 
-      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => [
+      formatFetchFolderEmailsResponseSpy.mockImplementation(() => [
         {
           id: 1,
           date: "Fri, 24 Jul 2020 00:00:00 -0300",
@@ -351,6 +412,14 @@ describe("Folder Component", () => {
 
       await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
 
+      imapRequestSpy
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.OK };
+        })
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.BAD };
+        });
+
       const checkEmailIcon = container.querySelector('[data-icon="arrows-rotate"]')!;
       fireEvent.click(checkEmailIcon);
 
@@ -359,7 +428,7 @@ describe("Folder Component", () => {
   });
 
   describe("testing searchEmails()", () => {
-    it("a successful response", async () => {
+    it("a successful response finding a valid email", async () => {
       const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
         contextSpyHelper<StateManager>("stateManager"),
         "getCurrentFolder"
@@ -397,6 +466,81 @@ describe("Folder Component", () => {
       fireEvent.change(formSearchFolders, { target: { value: "(no subject)" } });
 
       expect(getAllByText(/Test Display Name/i)[0]).toBeInTheDocument();
+    });
+
+    it("a successful response trying to search an empty email box", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementation(() => undefined);
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => []);
+
+      const { container, getByText } = render(<Folder />);
+
+      const formSearchFolders = container.querySelector("#formSearchFolders")!;
+
+      fireEvent.change(formSearchFolders, { target: { value: "Search for something" } });
+
+      expect(getByText(/Folder empty/i)).toBeInTheDocument();
+    });
+
+    it("a successful response after clearning search", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementation(() => {
+        return {
+          emails: [
+            {
+              id: 1,
+              date: "Fri, 24 Jul 2020 00:00:00 -0300",
+              epoch: 1595559600000,
+              from: "Test Display Name <test@emailAddress.com>",
+              subject: "(no subject)",
+              uid: 1,
+              ref: "1",
+              flags: "\\Seen",
+              hasAttachment: false,
+              selected: false
+            }
+          ]
+        };
+      });
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementation(() => []);
+
+      const updateCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "updateCurrentFolder"
+      );
+
+      const { container, getAllByText } = render(<Folder />);
+
+      await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
+
+      const formSearchFolders = container.querySelector("#formSearchFolders")!;
+
+      fireEvent.change(formSearchFolders, { target: { value: "Something not valid" } });
+      fireEvent.change(formSearchFolders, { target: { value: "" } });
+
+      fireEvent.change(formSearchFolders, { target: { value: "(no subject)" } });
+
+      await waitFor(() => expect(getAllByText(/Test Display Name/i)[0]).toBeInTheDocument());
     });
   });
 
@@ -523,6 +667,68 @@ describe("Folder Component", () => {
       );
 
       const moveIcon = container.querySelector(`[data-icon="suitcase"]`)!;
+      fireEvent.click(moveIcon);
+
+      // insert a watching a redering change to validate here
+
+      fireEvent.click(getByText(/Close/i));
+
+      // insert a watching a redering change to validate here
+    });
+
+    it("a successful response", async () => {
+      const getCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "getCurrentFolder"
+      );
+
+      getCurrentFolderSpy.mockImplementationOnce(() => undefined);
+
+      const formatFetchFolderEmailsResponseSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapHelper>("imapHelper"),
+        "formatFetchFolderEmailsResponse"
+      );
+
+      formatFetchFolderEmailsResponseSpy.mockImplementationOnce(() => [
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "(no subject)",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: true
+        }
+      ]);
+
+      const updateCurrentFolderSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<StateManager>("stateManager"),
+        "updateCurrentFolder"
+      );
+
+      const { container, getByText } = render(<Folder />);
+
+      await waitFor(() =>
+        expect(updateCurrentFolderSpy).toHaveBeenCalledWith([
+          {
+            date: "Fri, 24 Jul 2020 00:00:00 -0300",
+            epoch: 1595559600000,
+            flags: "\\Seen",
+            from: "Test Display Name <test@emailAddress.com>",
+            hasAttachment: false,
+            id: 1,
+            ref: "1",
+            selected: true,
+            subject: "(no subject)",
+            uid: 1
+          }
+        ])
+      );
+
+      const moveIcon = container.querySelector(`[data-icon="copy"]`)!;
       fireEvent.click(moveIcon);
 
       // insert a watching a redering change to validate here

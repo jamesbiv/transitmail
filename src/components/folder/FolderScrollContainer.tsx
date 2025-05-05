@@ -166,18 +166,14 @@ export class FolderScrollContainer extends PureComponent<
     }
 
     this.props.folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
-      if (!this.props.folderEmails?.[emailKey]) {
-        return;
-      }
-
       if (emailUid === -1) {
-        this.props.folderEmails[emailKey].selected = this.toggleSelectionAll;
+        this.props.folderEmails![emailKey].selected = this.toggleSelectionAll;
+
         return;
       }
 
       if (folderEmail.uid === emailUid) {
-        this.props.folderEmails[emailKey].selected =
-          forceToogle ?? !this.props.folderEmails[emailKey].selected;
+        this.props.folderEmails![emailKey].selected = forceToogle ?? !folderEmail.selected;
       }
     });
 
@@ -186,12 +182,11 @@ export class FolderScrollContainer extends PureComponent<
     this.toggleTableOptionsDisplay();
   };
 
-  public clearAllSelections = (): void =>
+  public clearAllSelections = (): void => {
     this.props.folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
-      if (this.props.folderEmails?.[emailKey]) {
-        this.props.folderEmails[emailKey].selected = false;
-      }
+      this.props.folderEmails![emailKey].selected = false;
     });
+  };
 
   public handleLongPress: (emailUid: number, delay?: number) => void = (emailUid, delay = 1000) => {
     this.folderLongPress.isReturned = false;

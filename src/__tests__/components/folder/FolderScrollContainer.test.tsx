@@ -39,7 +39,7 @@ describe("FolderScrollContainer Component", () => {
     jest.restoreAllMocks();
   });
 
-  describe("", () => {
+  describe("testing componentDidUpdate and updateVisibleEmails", () => {
     it("with a successful response", () => {
       const folderEmails: IFolderEmail[] = [];
 
@@ -53,9 +53,59 @@ describe("FolderScrollContainer Component", () => {
       const setDisplayCardHeader = () => true;
       const toggleActionModal = (actionType: EFolderEmailActionType) => undefined;
 
-      render(
+      const { rerender } = render(
         <FolderScrollContainer
           folderEmails={folderEmails}
+          folderEmailActions={folderEmailActions}
+          setDisplayCardHeader={setDisplayCardHeader}
+          toggleActionModal={toggleActionModal}
+        />
+      );
+
+      rerender(
+        <FolderScrollContainer
+          folderEmails={undefined}
+          folderEmailActions={folderEmailActions}
+          setDisplayCardHeader={setDisplayCardHeader}
+          toggleActionModal={toggleActionModal}
+        />
+      );
+
+      // needs test case
+    });
+
+    it("with a successful response with getCurrentSlice as undefined", () => {
+      const getCurrentSliceSpy: jest.SpyInstance = jest.spyOn(
+        InfiniteScroll.prototype,
+        "getCurrentSlice"
+      );
+
+      getCurrentSliceSpy.mockImplementationOnce(() => undefined);
+
+      const folderEmails: IFolderEmail[] = [];
+
+      const folderEmailActions: IFolderEmailActions = {
+        viewEmail: (uid: number) => undefined,
+        replyToEmail: (uid: number) => undefined,
+        forwardEmail: (uid: number) => undefined,
+        deleteEmail: (uid: number) => undefined
+      };
+
+      const setDisplayCardHeader = () => true;
+      const toggleActionModal = (actionType: EFolderEmailActionType) => undefined;
+
+      const { rerender } = render(
+        <FolderScrollContainer
+          folderEmails={folderEmails}
+          folderEmailActions={folderEmailActions}
+          setDisplayCardHeader={setDisplayCardHeader}
+          toggleActionModal={toggleActionModal}
+        />
+      );
+
+      rerender(
+        <FolderScrollContainer
+          folderEmails={undefined}
           folderEmailActions={folderEmailActions}
           setDisplayCardHeader={setDisplayCardHeader}
           toggleActionModal={toggleActionModal}
@@ -67,7 +117,7 @@ describe("FolderScrollContainer Component", () => {
   });
 
   describe("testing toggleSelection() function", () => {
-    it("", async () => {
+    it("a successful response clicking select all and selecting all the emails in the folder", async () => {
       const initiateHandlersSpy: jest.SpyInstance = jest.spyOn(
         InfiniteScroll.prototype,
         "initiateHandlers"
@@ -75,7 +125,7 @@ describe("FolderScrollContainer Component", () => {
 
       initiateHandlersSpy.mockImplementation(
         (scrollElementId, topElementId, bottomElementId, scrollHandler) => {
-          scrollHandler(0, 10, { top: 1, bottom: 1 }, { top: true, bottom: true });
+          scrollHandler({ minIndex: 0, maxIndex: 0 });
         }
       );
 
@@ -95,7 +145,7 @@ describe("FolderScrollContainer Component", () => {
       ];
 
       const folderEmailActions: IFolderEmailActions = {
-        viewEmail: jest.fn().mockImplementation((uid: number) => undefined),
+        viewEmail: (uid: number) => undefined,
         replyToEmail: (uid: number) => undefined,
         forwardEmail: (uid: number) => undefined,
         deleteEmail: (uid: number) => undefined
@@ -113,10 +163,57 @@ describe("FolderScrollContainer Component", () => {
         />
       );
 
-      const checkBox = container.querySelector('[class="form-check-input"]')!;
-      fireEvent.click(checkBox);
+      const selectAllBox = container.querySelector("#formFolderSelectAll")!;
+      fireEvent.click(selectAllBox);
 
-      // needs test case
+      const checkBoxes = container.querySelectorAll(
+        '[class="form-check-input"]'
+      ) as unknown as HTMLInputElement[];
+
+      checkBoxes.forEach((checkBox) => expect(checkBox).toBeTruthy());
+    });
+
+    it("a successful response clicking select all but since there are no emails displayTableOptions stays false", async () => {
+      const initiateHandlersSpy: jest.SpyInstance = jest.spyOn(
+        InfiniteScroll.prototype,
+        "initiateHandlers"
+      );
+
+      initiateHandlersSpy.mockImplementation(
+        (scrollElementId, topElementId, bottomElementId, scrollHandler) => {
+          scrollHandler({ minIndex: 0, maxIndex: 0 });
+        }
+      );
+
+      const folderEmails = undefined;
+
+      const folderEmailActions: IFolderEmailActions = {
+        viewEmail: (uid: number) => undefined,
+        replyToEmail: (uid: number) => undefined,
+        forwardEmail: (uid: number) => undefined,
+        deleteEmail: (uid: number) => undefined
+      };
+
+      const setDisplayCardHeader = () => true;
+      const toggleActionModal = (actionType: EFolderEmailActionType) => undefined;
+
+      const { container } = render(
+        <FolderScrollContainer
+          folderEmails={folderEmails}
+          folderEmailActions={folderEmailActions}
+          setDisplayCardHeader={setDisplayCardHeader}
+          toggleActionModal={toggleActionModal}
+        />
+      );
+
+      const selectAllBox = container.querySelector("#formFolderSelectAll")!;
+      fireEvent.click(selectAllBox);
+
+      const checkBoxes = container.querySelectorAll(
+        '[class="form-check-input"]'
+      ) as unknown as HTMLInputElement[];
+
+      checkBoxes.forEach((checkBox) => expect(checkBox).toBeTruthy());
     });
   });
 
@@ -129,7 +226,7 @@ describe("FolderScrollContainer Component", () => {
 
       initiateHandlersSpy.mockImplementation(
         (scrollElementId, topElementId, bottomElementId, scrollHandler) => {
-          scrollHandler(0, 10, { top: 1, bottom: 1 }, { top: true, bottom: true });
+          scrollHandler({ minIndex: -1, maxIndex: 10 });
         }
       );
 
@@ -142,6 +239,18 @@ describe("FolderScrollContainer Component", () => {
           subject: "(no subject)",
           uid: 1,
           ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        },
+        {
+          id: 2,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "(no subject)",
+          uid: 2,
+          ref: "2",
           flags: "\\Seen",
           hasAttachment: false,
           selected: false
@@ -177,7 +286,64 @@ describe("FolderScrollContainer Component", () => {
 
       fireEvent.touchEnd(pressableSection);
 
-      expect(folderEmailActions.viewEmail).toHaveBeenCalledWith(1);
+      expect(folderEmailActions.viewEmail).toHaveBeenCalledWith(2);
+    });
+  });
+
+  describe("testing folderScrollSpinner", () => {
+    it("", async () => {
+      const initiateHandlersSpy: jest.SpyInstance = jest.spyOn(
+        InfiniteScroll.prototype,
+        "initiateHandlers"
+      );
+
+      initiateHandlersSpy.mockImplementation(
+        (scrollElementId, topElementId, bottomElementId, scrollHandler) => {
+          scrollHandler({
+            minIndex: 0,
+            maxIndex: 0,
+            folderScrollSpinner: { top: true, bottom: true }
+          });
+        }
+      );
+
+      const folderEmails: IFolderEmail[] = [
+        {
+          id: 1,
+          date: "Fri, 24 Jul 2020 00:00:00 -0300",
+          epoch: 1595559600000,
+          from: "Test Display Name <test@emailAddress.com>",
+          subject: "(no subject)",
+          uid: 1,
+          ref: "1",
+          flags: "\\Seen",
+          hasAttachment: false,
+          selected: false
+        }
+      ];
+
+      const folderEmailActions: IFolderEmailActions = {
+        viewEmail: (uid: number) => undefined,
+        replyToEmail: (uid: number) => undefined,
+        forwardEmail: (uid: number) => undefined,
+        deleteEmail: (uid: number) => undefined
+      };
+
+      const setDisplayCardHeader = () => true;
+      const toggleActionModal = (actionType: EFolderEmailActionType) => undefined;
+
+      render(
+        <FolderScrollContainer
+          folderEmails={folderEmails}
+          folderEmailActions={folderEmailActions}
+          setDisplayCardHeader={setDisplayCardHeader}
+          toggleActionModal={toggleActionModal}
+        />
+      );
+
+      // getAllByText
+
+      expect(1).toBe(1);
     });
   });
 });

@@ -96,9 +96,7 @@ export const Folders: FunctionComponent = () => {
           variant="dark"
         />
         <Accordion
-          onSelect={(id: AccordionEventKey) =>
-            setActiveFolderId((id ?? undefined) as string | undefined)
-          }
+          onSelect={(id: AccordionEventKey) => setActiveFolderId(id as string)}
           className={!folders?.length ? "d-none" : ""}
         >
           <ListGroup variant="flush">

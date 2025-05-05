@@ -33,7 +33,7 @@ export const FolderEmailEntry: FunctionComponent<IFolderEmailEntryProps> = ({
 }) => {
   return (
     <Row
-      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${email.selected && "bg-light"}
+      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${email.selected ? "bg-light" : ""}
       ${!email.flags.includes("Seen") || email.flags.includes("Recent") ? "font-weight-bold" : ""}`}
     >
       <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
