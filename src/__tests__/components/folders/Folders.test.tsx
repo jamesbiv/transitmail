@@ -236,7 +236,7 @@ describe("Folders Component", () => {
         }
       ]);
 
-      const { getByText, container } = await act(async () => render(<Folders />));
+      const { getByText, queryByText, container } = await act(async () => render(<Folders />));
 
       await waitFor(() => expect(formatListFoldersResponseSpy).toHaveBeenCalled());
 
@@ -246,11 +246,11 @@ describe("Folders Component", () => {
       const moveIcon = container.querySelector(`[data-icon="suitcase"]`)!;
       fireEvent.click(moveIcon);
 
-      // insert a watching a redering change to validate here
+      await waitFor(() => expect(queryByText(/Move folder to/i)).toBeInTheDocument());
 
       fireEvent.click(getByText(/Close/i));
 
-      // insert a watching a redering change to validate here
+      await waitFor(() => expect(queryByText(/Move folder to/i)).not.toBeInTheDocument());
     });
   });
 });

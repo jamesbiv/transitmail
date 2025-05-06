@@ -1,6 +1,6 @@
 import React, { act, StrictMode } from "react";
 
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { contextSpyHelper } from "__tests__/fixtures";
@@ -647,7 +647,7 @@ describe("Folder Component", () => {
         "updateCurrentFolder"
       );
 
-      const { container, getByText } = render(<Folder />);
+      const { container, getByText, queryByText } = render(<Folder />);
 
       await waitFor(() =>
         expect(updateCurrentFolderSpy).toHaveBeenCalledWith([
@@ -669,11 +669,11 @@ describe("Folder Component", () => {
       const moveIcon = container.querySelector(`[data-icon="suitcase"]`)!;
       fireEvent.click(moveIcon);
 
-      // insert a watching a redering change to validate here
+      await waitFor(() => expect(queryByText(/Move email\(s\) to/i)).toBeInTheDocument());
 
       fireEvent.click(getByText(/Close/i));
 
-      // insert a watching a redering change to validate here
+      await waitFor(() => expect(queryByText(/Move email\(s\) to/i)).not.toBeInTheDocument());
     });
 
     it("a successful response", async () => {
@@ -709,7 +709,7 @@ describe("Folder Component", () => {
         "updateCurrentFolder"
       );
 
-      const { container, getByText } = render(<Folder />);
+      const { container, getByText, queryByText } = render(<Folder />);
 
       await waitFor(() =>
         expect(updateCurrentFolderSpy).toHaveBeenCalledWith([
@@ -731,11 +731,11 @@ describe("Folder Component", () => {
       const moveIcon = container.querySelector(`[data-icon="copy"]`)!;
       fireEvent.click(moveIcon);
 
-      // insert a watching a redering change to validate here
+      await waitFor(() => expect(queryByText(/Copy email\(s\) to/i)).toBeInTheDocument());
 
       fireEvent.click(getByText(/Close/i));
 
-      // insert a watching a redering change to validate here
+      await waitFor(() => expect(queryByText(/Copy email\(s\) to/i)).not.toBeInTheDocument());
     });
   });
 
