@@ -95,14 +95,14 @@ export class FolderScrollContainer extends PureComponent<
       folderScrollSpinner,
       callback
     }) => {
-      const displayHeaders: boolean = minIndex === 0;
+      const displayTableHeader: boolean = minIndex === 0;
 
-      this.props.setDisplayCardHeader(displayHeaders);
+      this.props.setDisplayCardHeader(displayTableHeader);
 
       this.setState(
         {
           visibleEmails: this.props.folderEmails?.slice(minIndex, maxIndex),
-          displayTableHeader: displayHeaders,
+          displayTableHeader,
           folderPlaceholder,
           folderScrollSpinner
         },
