@@ -205,7 +205,7 @@ export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionAddProp
 
   return (
     <Fragment>
-      <FormGroup controlId="formDisplayName">
+      <FormGroup controlId="formAddFolderTo">
         <FormLabel>
           Add new folder{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -223,6 +223,7 @@ export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionAddProp
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </FormLabel>
         <FormControl
+          data-testid="selectAddFolderTo"
           as="select"
           onChange={(event: ChangeEvent<HTMLInputElement>) => setSubFolder(event.target.value)}
         >
@@ -304,7 +305,7 @@ export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionCopyPr
 
   return (
     <Fragment>
-      <FormGroup controlId="formDisplayName">
+      <FormGroup controlId="formCopyFolderTo">
         <FormLabel>
           Copy folder as{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -322,6 +323,7 @@ export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionCopyPr
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </FormLabel>
         <FormControl
+          data-testid="selectCopyFolderTo"
           as="select"
           onChange={(event: ChangeEvent<HTMLInputElement>) =>
             setDestinationSubFolder(event.target.value)
@@ -391,11 +393,12 @@ export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionMovePr
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formMoveFolderTo">
       <FormLabel>
         Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
+        data-testid="selectMoveFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -458,7 +461,7 @@ export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionRena
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formRenameFolderTo">
       <FormLabel>
         Rename folder as{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />

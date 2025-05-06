@@ -144,6 +144,53 @@ describe("FoldersEntryActions Component", () => {
       await waitFor(() => expect(hideActionModal).toHaveBeenCalled());
     });
 
+    it("while triggering submit but failed because CREATE failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.ADD;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText, getByTestId } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      await waitFor(() => getByTestId("selectAddFolderTo"));
+      fireEvent.change(getByTestId("selectAddFolderTo"), { target: { value: "Test Folder" } });
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
+    });
+
     it("a successful response", async () => {
       const folderId: string = "1";
       const folders: IFoldersEntry[] = [
@@ -162,7 +209,7 @@ describe("FoldersEntryActions Component", () => {
       const getFolders = async () => undefined;
       const hideActionModal = () => undefined;
 
-      const { getByText } = render(
+      const { getByText, getByTestId, getByPlaceholderText } = render(
         <FoldersEntryActions
           folderId={folderId}
           folders={folders}
@@ -173,6 +220,12 @@ describe("FoldersEntryActions Component", () => {
           hideActionModal={hideActionModal}
         />
       );
+
+      await waitFor(() => getByTestId("selectAddFolderTo"));
+      fireEvent.change(getByTestId("selectAddFolderTo"), { target: { value: "New folder name" } });
+
+      const formRenameFolderTo = getByPlaceholderText("Enter new folder name");
+      fireEvent.change(formRenameFolderTo, { target: { value: "New folder name" } });
 
       expect(getByText(/Add new folder/i)).toBeInTheDocument();
     });
@@ -214,6 +267,152 @@ describe("FoldersEntryActions Component", () => {
       await waitFor(() => expect(hideActionModal).toHaveBeenCalled());
     });
 
+    it("while triggering submit but failed because CREATE failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementationOnce(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.COPY;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
+    });
+
+    it("while triggering submit but failed because SELECT failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.OK };
+        })
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.BAD };
+        });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.COPY;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText, getByTestId } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      await waitFor(() => getByTestId("selectCopyFolderTo"));
+      fireEvent.change(getByTestId("selectCopyFolderTo"), { target: { value: "Test Folder" } });
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
+    });
+
+    it("while triggering submit but failed because UID failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.OK };
+        })
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.OK };
+        })
+        .mockImplementationOnce(async () => {
+          return { data: [[]], status: EImapResponseStatus.BAD };
+        });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.COPY;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
+    });
+
     it("a successful response", async () => {
       const folderId: string = "1";
       const folders: IFoldersEntry[] = [
@@ -232,7 +431,7 @@ describe("FoldersEntryActions Component", () => {
       const getFolders = async () => undefined;
       const hideActionModal = () => undefined;
 
-      const { getByText } = render(
+      const { getByText, getByTestId, getByPlaceholderText } = render(
         <FoldersEntryActions
           folderId={folderId}
           folders={folders}
@@ -243,6 +442,12 @@ describe("FoldersEntryActions Component", () => {
           hideActionModal={hideActionModal}
         />
       );
+
+      await waitFor(() => getByTestId("selectCopyFolderTo"));
+      fireEvent.change(getByTestId("selectCopyFolderTo"), { target: { value: "New folder name" } });
+
+      const formRenameFolderTo = getByPlaceholderText("Enter new folder name");
+      fireEvent.change(formRenameFolderTo, { target: { value: "New folder name" } });
 
       expect(getByText(/Copy folder as/i)).toBeInTheDocument();
     });
@@ -284,6 +489,53 @@ describe("FoldersEntryActions Component", () => {
       await waitFor(() => expect(hideActionModal).toHaveBeenCalled());
     });
 
+    it("while triggering submit but failed because RENAME failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.MOVE;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText, getByTestId } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      await waitFor(() => getByTestId("selectMoveFolderTo"));
+      fireEvent.change(getByTestId("selectMoveFolderTo"), { target: { value: "Test Folder" } });
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
+    });
+
     it("a successful response", async () => {
       const folderId: string = "1";
       const folders: IFoldersEntry[] = [
@@ -302,7 +554,7 @@ describe("FoldersEntryActions Component", () => {
       const getFolders = async () => undefined;
       const hideActionModal = () => undefined;
 
-      const { getByText } = render(
+      const { getByText, getByTestId } = render(
         <FoldersEntryActions
           folderId={folderId}
           folders={folders}
@@ -313,6 +565,9 @@ describe("FoldersEntryActions Component", () => {
           hideActionModal={hideActionModal}
         />
       );
+
+      await waitFor(() => getByTestId("selectMoveFolderTo"));
+      fireEvent.change(getByTestId("selectMoveFolderTo"), { target: { value: "New folder name" } });
 
       expect(getByText(/Move folder to/i)).toBeInTheDocument();
     });
@@ -354,6 +609,50 @@ describe("FoldersEntryActions Component", () => {
       await waitFor(() => expect(hideActionModal).toHaveBeenCalled());
     });
 
+    it("while triggering submit but failed because RENAME failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.RENAME;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
+    });
+
     it("a successful response", async () => {
       const folderId: string = "1";
       const folders: IFoldersEntry[] = [
@@ -372,7 +671,7 @@ describe("FoldersEntryActions Component", () => {
       const getFolders = async () => undefined;
       const hideActionModal = () => undefined;
 
-      const { getByText } = render(
+      const { getByText, getByPlaceholderText } = render(
         <FoldersEntryActions
           folderId={folderId}
           folders={folders}
@@ -383,6 +682,9 @@ describe("FoldersEntryActions Component", () => {
           hideActionModal={hideActionModal}
         />
       );
+
+      const formRenameFolderTo = getByPlaceholderText("Enter new folder name");
+      fireEvent.change(formRenameFolderTo, { target: { value: "New folder name" } });
 
       expect(getByText(/Rename folder as/i)).toBeInTheDocument();
     });
@@ -422,6 +724,50 @@ describe("FoldersEntryActions Component", () => {
       fireEvent.click(getByText(/Ok/i));
 
       await waitFor(() => expect(hideActionModal).toHaveBeenCalled());
+    });
+
+    it("while triggering submit but failed because DELETE failed", async () => {
+      const imapRequestSpy: jest.SpyInstance = jest.spyOn(
+        contextSpyHelper<ImapSocket>("imapSocket"),
+        "imapRequest"
+      );
+
+      imapRequestSpy.mockImplementation(async () => {
+        return { data: [[]], status: EImapResponseStatus.BAD };
+      });
+
+      const folderId: string = "1";
+      const folders: IFoldersEntry[] = [
+        {
+          id: 1,
+          name: "Test Folder",
+          ref: "Test Folder",
+          folders: [{ id: 2, name: "subfolder", ref: "subfolder" }]
+        }
+      ];
+
+      const actionType: EFolderEntryActionType = EFolderEntryActionType.DELETE;
+      const showActionModal: boolean = true;
+      const imapSocket = contextSpyHelper<ImapSocket>("imapSocket");
+
+      const getFolders = async () => undefined;
+      const hideActionModal = jest.fn().mockImplementation(() => undefined);
+
+      const { getByText } = render(
+        <FoldersEntryActions
+          folderId={folderId}
+          folders={folders}
+          actionType={actionType}
+          showActionModal={showActionModal}
+          imapSocket={imapSocket}
+          getFolders={getFolders}
+          hideActionModal={hideActionModal}
+        />
+      );
+
+      fireEvent.click(getByText(/Ok/i));
+
+      await waitFor(() => expect(hideActionModal).not.toHaveBeenCalled());
     });
 
     it("a successful response", async () => {
