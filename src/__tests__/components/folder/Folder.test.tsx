@@ -1,6 +1,6 @@
 import React, { act, StrictMode } from "react";
 
-import { fireEvent, render, waitFor, screen } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 import { contextSpyHelper } from "__tests__/fixtures";
@@ -529,18 +529,19 @@ describe("Folder Component", () => {
         "updateCurrentFolder"
       );
 
-      const { container, getAllByText } = render(<Folder />);
+      const { container, queryByText } = render(<Folder />);
 
       await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
 
       const formSearchFolders = container.querySelector("#formSearchFolders")!;
 
       fireEvent.change(formSearchFolders, { target: { value: "Something not valid" } });
+
+      expect(queryByText(/Folder empty/i)).toBeInTheDocument();
+
       fireEvent.change(formSearchFolders, { target: { value: "" } });
 
-      fireEvent.change(formSearchFolders, { target: { value: "(no subject)" } });
-
-      await waitFor(() => expect(getAllByText(/Test Display Name/i)[0]).toBeInTheDocument());
+      expect(queryByText(/Folder empty/i)).not.toBeInTheDocument();
     });
   });
 
@@ -594,14 +595,14 @@ describe("Folder Component", () => {
           "updateActiveKey"
         );
 
-        const { container, getAllByText } = render(<Folder />);
+        const { container, queryAllByText } = render(<Folder />);
 
         await waitFor(() => expect(updateCurrentFolderSpy).toHaveBeenCalled());
 
         const formSearchFolders = container.querySelector("#formSearchFolders")!;
         fireEvent.change(formSearchFolders, { target: { value: "(no subject)" } });
 
-        expect(getAllByText(/Test Display Name/i)[0]).toBeInTheDocument();
+        expect(queryAllByText(/Test Display Name/i)[0]).toBeInTheDocument();
 
         const actionIcons = container.querySelectorAll(`[data-icon="${icon}"]`);
         actionIcons.forEach((actionIcon) => fireEvent.click(actionIcon));
