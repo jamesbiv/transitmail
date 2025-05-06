@@ -18,7 +18,7 @@ interface IInfiniteScrollSettings {
   placeholderDesktopHeight: number;
   placeholderMobileHeight: number;
   loaderHeight: number;
-  navbarOffset: number;
+  navbarHeight: number;
 }
 
 /**
@@ -108,7 +108,7 @@ export class InfiniteScroll {
       increment: this.defaultPageSize,
       desktopBreakpoint: 576,
       loaderHeight: 65,
-      navbarOffset: 56,
+      navbarHeight: 56,
       placeholderDesktopHeight: 65,
       placeholderMobileHeight: 141,
       ...settings
@@ -159,9 +159,11 @@ export class InfiniteScroll {
 
     this.topObserverElement = document.getElementById(this.topElementId) as HTMLElement;
 
-    if (this.topObserverElement) {
-      this.topObserver.observe(this.topObserverElement);
+    if (!this.topObserverElement) {
+      return;
     }
+
+    this.topObserver.observe(this.topObserverElement);
   }
 
   /**
@@ -175,9 +177,11 @@ export class InfiniteScroll {
 
     this.bottomObserverElement = document.getElementById(this.bottomElementId) as HTMLElement;
 
-    if (this.bottomObserverElement) {
-      this.bottomObserver.observe(this.bottomObserverElement);
+    if (!this.bottomObserverElement) {
+      return;
     }
+
+    this.bottomObserver.observe(this.bottomObserverElement);
   }
 
   /**
@@ -191,9 +195,11 @@ export class InfiniteScroll {
 
     this.scrollElement = document.getElementById(this.scrollElementId) as HTMLElement;
 
-    if (this.scrollElement) {
-      this.scrollElement.addEventListener("scroll", this.handleHeavyDesktopScroll);
+    if (!this.scrollElement) {
+      return;
     }
+
+    this.scrollElement.addEventListener("scroll", this.handleDesktopScroll);
   };
 
   /**
@@ -201,9 +207,11 @@ export class InfiniteScroll {
    * @returns void
    */
   public stopHandleScroll = (): void => {
-    if (this.scrollElement?.removeEventListener) {
-      this.scrollElement.removeEventListener("scroll", this.handleHeavyDesktopScroll);
+    if (!this.scrollElement?.removeEventListener) {
+      return;
     }
+
+    this.scrollElement.removeEventListener("scroll", this.handleDesktopScroll);
   };
 
   /**
@@ -252,7 +260,7 @@ export class InfiniteScroll {
                   const lastEntryPosition =
                     this.settings.increment * this.settings.placeholderMobileHeight +
                     this.settings.loaderHeight +
-                    this.settings.navbarOffset;
+                    this.settings.navbarHeight;
 
                   this.scrollElement?.scrollTo(0, lastEntryPosition);
                 }
@@ -295,11 +303,11 @@ export class InfiniteScroll {
   };
 
   /**
-   * @method handleHeavyDesktopScroll
+   * @method handleDesktopScroll
    * @param {Event} event
    * @returns void
    */
-  private readonly handleHeavyDesktopScroll = (event: Event): void => {
+  private readonly handleDesktopScroll = (event: Event): void => {
     if (window.innerWidth <= this.settings.desktopBreakpoint) {
       return;
     }
@@ -335,41 +343,65 @@ export class InfiniteScroll {
     this.slice.minIndex = minIndex > 0 ? minIndex : 0;
     this.slice.maxIndex = maxIndex < this.totalEntries ? maxIndex : this.totalEntries;
 
-    let folderPlaceholder: IFolderPlaceholder | undefined;
-    let folderScrollSpinner: IFolderScrollSpinner | undefined;
+    desktopMode
+      ? this.triggerScrollHandlerAsDestop(callback)
+      : this.triggerScrollHandlerAsMobile(callback);
+  }
 
-    if (desktopMode) {
-      folderPlaceholder = {
-        top: this.slice.minIndex * this.settings.placeholderDesktopHeight,
-        bottom: (this.totalEntries - this.slice.maxIndex) * this.settings.placeholderDesktopHeight
-      };
-
-      folderScrollSpinner = {
-        top: false,
-        bottom: false
-      };
-    } else {
-      const placeHolderSize = 4 * this.settings.placeholderMobileHeight;
-
-      const topPlaceholderSize = this.slice.minIndex - 10 > 0 ? placeHolderSize : 0;
-
-      const bottomPlaceholderSize =
-        this.totalEntries - 10 > this.slice.maxIndex ? placeHolderSize : 0;
-
-      folderPlaceholder = {
-        top: topPlaceholderSize,
-        bottom: bottomPlaceholderSize
-      };
-
-      folderScrollSpinner = {
-        top: topPlaceholderSize > 0,
-        bottom: bottomPlaceholderSize > 0
-      };
-    }
-
+  /**
+   * triggerScrollHandlerAsDestop
+   * @param {() => void} callback
+   * @returns void
+   */
+  private triggerScrollHandlerAsDestop(callback?: () => void) {
     if (!this.scrollHandler) {
       return;
     }
+
+    const folderPlaceholder: IFolderPlaceholder = {
+      top: this.slice.minIndex * this.settings.placeholderDesktopHeight,
+      bottom: (this.totalEntries - this.slice.maxIndex) * this.settings.placeholderDesktopHeight
+    };
+
+    const folderScrollSpinner: IFolderScrollSpinner = {
+      top: false,
+      bottom: false
+    };
+
+    this.scrollHandler({
+      minIndex: this.slice.minIndex,
+      maxIndex: this.slice.maxIndex,
+      folderScrollSpinner,
+      folderPlaceholder,
+      callback
+    });
+  }
+
+  /**
+   * triggerScrollHandlerAsMobile
+   * @param {() => void} callback
+   * @returns void
+   */
+  private triggerScrollHandlerAsMobile(callback?: () => void) {
+    if (!this.scrollHandler) {
+      return;
+    }
+
+    const placeHolderSize: number = 4 * this.settings.placeholderMobileHeight;
+
+    const topPlaceholderSize: number = this.slice.minIndex - 4 > 0 ? placeHolderSize : 0;
+    const bottomPlaceholderSize: number =
+      this.totalEntries - 4 > this.slice.maxIndex ? placeHolderSize : 0;
+
+    const folderPlaceholder: IFolderPlaceholder = {
+      top: topPlaceholderSize,
+      bottom: bottomPlaceholderSize
+    };
+
+    const folderScrollSpinner: IFolderScrollSpinner = {
+      top: topPlaceholderSize > 0,
+      bottom: bottomPlaceholderSize > 0
+    };
 
     this.scrollHandler({
       minIndex: this.slice.minIndex,

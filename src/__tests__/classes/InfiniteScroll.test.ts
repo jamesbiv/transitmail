@@ -213,17 +213,18 @@ describe("Testing the InfiniteScroll class", () => {
           callback
         }: IInfinateScrollHandler) => {}
       );
+      infiniteScroll.startTopObservation();
 
       infiniteScroll.startHandleScroll();
 
       fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 0 }
+        target: { scrollTop: 1000 }
       });
 
       await sleep(400);
 
       fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 100 }
+        target: { scrollTop: 500 }
       });
 
       await sleep(400);
@@ -268,7 +269,7 @@ describe("Testing the InfiniteScroll class", () => {
       infiniteScroll.startHandleScroll();
 
       fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 0 }
+        target: { scrollTop: 10000 }
       });
 
       await sleep(400);
