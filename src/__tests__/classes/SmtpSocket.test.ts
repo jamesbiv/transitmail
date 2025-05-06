@@ -103,7 +103,7 @@ describe("Testing the SmtpSocket class", () => {
       expect(smtpConnectResponse).toBeFalsy();
     });
 
-    it("with unsuccessful connection with  retry", async () => {
+    it("with unsuccessful connection with retry", async () => {
       const settings: ISmtpSettings = {
         host: "localhost",
         port: 1111,

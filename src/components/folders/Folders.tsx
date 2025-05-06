@@ -30,12 +30,10 @@ export const Folders: FunctionComponent = () => {
     if (!initalizeFolderRun) {
       initalizeFolderRun = true;
 
-      if (imapSocket.getReadyState() !== 1) {
-        try {
-          imapSocket.imapConnect();
-        } catch (error: unknown) {
-          throw new Error(`Websockets: ${(error as Error).message}`);
-        }
+      try {
+        imapSocket.imapCheckOrConnect();
+      } catch (error: unknown) {
+        throw new Error(`Websockets: ${(error as Error).message}`);
       }
 
       updateFolders();
@@ -57,7 +55,8 @@ export const Folders: FunctionComponent = () => {
 
   const toggleActionModal = (actionType: EFolderEntryActionType, actionFolderId?: string): void => {
     setActionFolderId(actionFolderId);
-    setActionType(actionType), setShowActionModal(true);
+    setActionType(actionType);
+    setShowActionModal(true);
   };
 
   return (
@@ -97,9 +96,7 @@ export const Folders: FunctionComponent = () => {
           variant="dark"
         />
         <Accordion
-          onSelect={(id: AccordionEventKey) =>
-            setActiveFolderId((id ?? undefined) as string | undefined)
-          }
+          onSelect={(id: AccordionEventKey) => setActiveFolderId(id as string)}
           className={!folders?.length ? "d-none" : ""}
         >
           <ListGroup variant="flush">
@@ -122,7 +119,7 @@ export const Folders: FunctionComponent = () => {
         showActionModal={showActionModal}
         imapSocket={imapSocket}
         getFolders={updateFolders}
-        onHide={() => setShowActionModal(false)}
+        hideActionModal={() => setShowActionModal(false)}
       />
     </Fragment>
   );

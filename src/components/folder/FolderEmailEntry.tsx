@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, ButtonGroup, Row, Col, Form } from "react-bootstrap";
+import React, { FunctionComponent } from "react";
+import { Button, ButtonGroup, Row, Col, FormCheck } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEnvelopeOpen,
@@ -10,6 +10,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { IFolderEmail, IFolderEmailActions, IFolderLongPress } from "interfaces";
 
+/**
+ * @interface IFolderEmailEntryProps
+ */
 interface IFolderEmailEntryProps {
   email: IFolderEmail;
   toggleSelection: (uid: number) => void;
@@ -17,7 +20,12 @@ interface IFolderEmailEntryProps {
   folderLongPress: IFolderLongPress;
 }
 
-export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
+/**
+ * FolderEmailEntry
+ * @param {IFolderEmailEntryProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailEntry: FunctionComponent<IFolderEmailEntryProps> = ({
   email,
   toggleSelection,
   folderEmailActions,
@@ -25,11 +33,11 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
 }) => {
   return (
     <Row
-      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${email.selected && "bg-light"}
+      className={`border-bottom g-0 p-2 pt-sm-2 pointer ${email.selected ? "bg-light" : ""}
       ${!email.flags.includes("Seen") || email.flags.includes("Recent") ? "font-weight-bold" : ""}`}
     >
       <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
-        <Form.Check
+        <FormCheck
           type="checkbox"
           id=""
           label=""
@@ -73,10 +81,10 @@ export const FolderEmailEntry: React.FC<IFolderEmailEntryProps> = ({
           }
         }}
       >
-        {email.from.match(/(.*) <(.*)>/)?.[1] ?? undefined}
+        {/(.*) <(.*)>/.exec(email.from)?.[1] ?? undefined}
         <br />
         <small>
-          <em>{email.from.match(/<(.*)>/)?.[1] ?? undefined}</em>
+          <em>{/(.*) <(.*)>/.exec(email.from)?.[1] ?? undefined}</em>
         </small>
       </Col>
       <Col className="text-truncate">

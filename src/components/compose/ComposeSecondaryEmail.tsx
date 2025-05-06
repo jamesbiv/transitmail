@@ -32,7 +32,7 @@ export const ComposeSecondaryEmail: FunctionComponent<IComposeSecondaryEmailProp
             size="sm"
             as="select"
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              updateSenderDetails(Number(event.target.value) ?? undefined)
+              updateSenderDetails(Number(event.target.value))
             }
           >
             <option value={undefined}>

@@ -73,8 +73,7 @@ export const FoldersEntry: FunctionComponent<IFoldersEntryProps> = ({
     >
       <Row>
         <Col xs={6} className="text-truncate">
-          <FontAwesomeIcon icon={folderEntry.icon ? folderEntry.icon : faFolder} />{" "}
-          {folderEntry.name}
+          <FontAwesomeIcon icon={folderEntry?.icon ?? faFolder} /> {folderEntry.name}
         </Col>
         <Col xs={6} className="text-end text-nowrap pe-1">
           <FoldersEntryOptions folderId={folderEntry.ref} toggleActionModal={toggleActionModal} />
@@ -132,8 +131,7 @@ export const FoldersEntry: FunctionComponent<IFoldersEntryProps> = ({
             >
               <Row>
                 <Col xs={6} className="text-truncate">
-                  <FontAwesomeIcon icon={folderSubEntry.icon ? folderSubEntry.icon : faFolder} />{" "}
-                  {folderSubEntry.name}
+                  <FontAwesomeIcon icon={folderSubEntry?.icon ?? faFolder} /> {folderSubEntry.name}
                 </Col>
                 <Col xs={6} className="text-end text-nowrap pe-1">
                   <FoldersEntryOptions

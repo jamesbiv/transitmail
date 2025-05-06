@@ -8,7 +8,7 @@ import { MimeTools } from "lib";
  */
 export class ImapHelper extends EmailParser {
   /**
-   * @name formatFetchEmailFlagsResponse
+   * @method formatFetchEmailFlagsResponse
    * @param {string[][]} fetchData
    * @returns {flagData}
    */
@@ -30,7 +30,7 @@ export class ImapHelper extends EmailParser {
   }
 
   /**
-   * @name formatFetchEmailResponse
+   * @method formatFetchEmailResponse
    * @param {string[][]} fetchData
    * @returns {IEmail}
    */
@@ -45,7 +45,7 @@ export class ImapHelper extends EmailParser {
   }
 
   /**
-   * @name formatFetchAllResponse
+   * @method formatFetchAllResponse
    * @param {string[][]} folderData
    * @returns IFolderEmail[]
    */
@@ -98,7 +98,7 @@ export class ImapHelper extends EmailParser {
   }
 
   /**
-   * @name formatListFoldersResponse
+   * @method formatListFoldersResponse
    * @param {string[][]} folderData
    * @returns IFoldersEntry[]
    */

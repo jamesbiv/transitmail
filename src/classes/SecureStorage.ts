@@ -62,13 +62,13 @@ export class SecureStorage {
    * @constructor
    */
   constructor() {
-    this.data = this.getSecureStorage("data");
+    this.data = this.getSecureStorage("data") ?? ({} as Pick<IData, TDataKeys>);
 
-    this.settings = this.getSecureStorage("settings");
+    this.settings = this.getSecureStorage("settings") ?? ({} as Pick<ISettings, TSettingsKeys>);
   }
 
   /**
-   * @name setData
+   * @method setData
    * @param {TDataKeys} name
    * @param {T} value
    * @returns void
@@ -80,7 +80,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name getData
+   * @method getData
    * @param {TDataKeys} name
    * @returns T
    */
@@ -89,7 +89,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name setSetting
+   * @method setSetting
    * @param {TDataKeys} name
    * @returns void
    */
@@ -100,7 +100,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name getSetting
+   * @method getSetting
    * @param {TDataKeys} name
    * @returns T
    */
@@ -109,7 +109,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name setSettings
+   * @method setSettings
    * @param {Pick<ISettings, TSettingsKeys>} name
    * @returns void
    */
@@ -120,7 +120,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name getSettings
+   * @method getSettings
    * @returns Pick<ISettings, TSettingsKeys>
    */
   public getSettings(): Pick<ISettings, TSettingsKeys> {
@@ -128,7 +128,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name getImapSettings
+   * @method getImapSettings
    * @returns IImapSettings
    */
   public getImapSettings(): IImapSettings {
@@ -141,7 +141,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name getSmtpSettings
+   * @method getSmtpSettings
    * @returns ISmtpSettings
    */
   public getSmtpSettings(): ISmtpSettings {
@@ -154,7 +154,7 @@ export class SecureStorage {
   }
 
   /**
-   * @name setSecureStorage
+   * @method setSecureStorage
    * @param {string} name
    * @param {T} data
    * @returns void
@@ -169,21 +169,29 @@ export class SecureStorage {
   }
 
   /**
-   * @name getSecureStorage
+   * @method getSecureStorage
    * @param {string} name
-   * @returns T
+   * @returns T | undefined
    */
-  private getSecureStorage<T>(name: string): T {
-    const data: string = localStorage.getItem(name) ?? "";
+  private getSecureStorage<T>(name: string): T | undefined {
+    const data: string | undefined = localStorage.getItem(name) ?? undefined;
+
+    if (!data) {
+      return;
+    }
 
     const decryptedData: string = CryptoES.AES.decrypt(data, this.passPhrase).toString(
       CryptoES.enc.Utf8
     );
 
+    let parsedDecryptedData: { json?: T; error?: Error };
+
     try {
-      return JSON.parse(decryptedData);
-    } catch (error) {
-      return {} as T;
+      parsedDecryptedData = { json: JSON.parse(decryptedData) };
+    } catch (error: unknown) {
+      parsedDecryptedData = { json: undefined, error: error as Error };
     }
+
+    return parsedDecryptedData.json;
   }
 }

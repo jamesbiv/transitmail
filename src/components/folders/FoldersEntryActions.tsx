@@ -43,7 +43,7 @@ interface IFoldersEntryActionsProps {
   showActionModal: boolean;
   imapSocket: ImapSocket;
   getFolders: () => Promise<void>;
-  onHide: () => void;
+  hideActionModal: () => void;
 }
 
 /**
@@ -70,7 +70,7 @@ interface IFolderEntryActionComponents {
 interface IFolderEntryActionComponent {
   label: string;
   icon: IconDefinition;
-  element: FunctionComponent<IFoldersEntryActionProps>;
+  element: FunctionComponent<TFoldersEntryActionProps>;
 }
 
 /**
@@ -85,9 +85,9 @@ export const FoldersEntryActions: FunctionComponent<IFoldersEntryActionsProps> =
   showActionModal,
   imapSocket,
   getFolders,
-  onHide
+  hideActionModal
 }) => {
-  const [submit, changeSubmit] = useState<boolean>(false);
+  const [triggerSubmit, setTriggerSubmit] = useState<boolean>(false);
 
   const folderEntryAction: IFolderEntryActionComponents = {
     [EFolderEntryActionType.ADD]: {
@@ -119,12 +119,12 @@ export const FoldersEntryActions: FunctionComponent<IFoldersEntryActionsProps> =
 
   const successfulSubmit: () => void = (): void => {
     getFolders();
-    onHide();
+    hideActionModal();
   };
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <ModalHeader closeButton onClick={() => onHide()}>
+      <ModalHeader closeButton onClick={() => hideActionModal()}>
         <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={folderEntryAction[actionType].icon} />{" "}
           {folderEntryAction[actionType].label}
@@ -134,29 +134,37 @@ export const FoldersEntryActions: FunctionComponent<IFoldersEntryActionsProps> =
         {createElement(folderEntryAction[actionType].element, {
           folderId,
           folders,
-          submit,
           imapSocket,
-          changeSubmit,
+          triggerSubmit,
+          setTriggerSubmit,
           successfulSubmit
         })}
       </ModalBody>
       <ModalFooter>
-        <Button onClick={() => changeSubmit(true)}>Ok</Button>
-        <Button onClick={() => onHide()}>Close</Button>
+        <Button onClick={() => setTriggerSubmit(true)}>Ok</Button>
+        <Button onClick={() => hideActionModal()}>Close</Button>
       </ModalFooter>
     </Modal>
   );
 };
 
 /**
- * @interface IFoldersEntryActionProps
+ * @type TFoldersEntryActionProps
  */
-interface IFoldersEntryActionProps {
-  folderId?: string;
+type TFoldersEntryActionProps = IFoldersEntryActionAddProps &
+  IFoldersEntryActionCopyProps &
+  IFoldersEntryActionMoveProps &
+  IFoldersEntryActionRenameProps &
+  IFoldersEntryActionDeleteProps;
+
+/**
+ * @interface IFoldersEntryActionAddProps
+ */
+interface IFoldersEntryActionAddProps {
   folders?: IFoldersEntry[];
-  submit: boolean;
   imapSocket: ImapSocket;
-  changeSubmit: Dispatch<boolean>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
@@ -165,20 +173,21 @@ interface IFoldersEntryActionProps {
  * @param {IFoldersEntryActionProps} properties
  * @returns FunctionComponent
  */
-export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionProps> = ({
+export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionAddProps> = ({
   folders,
-  submit,
   imapSocket,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [folderName, setFolderName] = useState<string | undefined>();
   const [subFolder, setSubFolder] = useState<string | undefined>();
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -196,7 +205,7 @@ export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionProps> 
 
   return (
     <Fragment>
-      <FormGroup controlId="formDisplayName">
+      <FormGroup controlId="formAddFolderTo">
         <FormLabel>
           Add new folder{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -214,6 +223,7 @@ export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionProps> 
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </FormLabel>
         <FormControl
+          data-testid="selectAddFolderTo"
           as="select"
           onChange={(event: ChangeEvent<HTMLInputElement>) => setSubFolder(event.target.value)}
         >
@@ -230,25 +240,38 @@ export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionProps> 
 };
 
 /**
+ * @interface IFoldersEntryActionCopyProps
+ */
+interface IFoldersEntryActionCopyProps {
+  folderId?: string;
+  folders?: IFoldersEntry[];
+  imapSocket: ImapSocket;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * FoldersEntryActionCopy
  * @param {IFoldersEntryActionProps} properties
  * @returns FunctionComponent
  */
-export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionProps> = ({
+export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionCopyProps> = ({
   folderId,
   folders,
-  submit,
   imapSocket,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
   const [destinationSubFolder, setDestinationSubFolder] = useState<string | undefined>();
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -282,7 +305,7 @@ export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionProps>
 
   return (
     <Fragment>
-      <FormGroup controlId="formDisplayName">
+      <FormGroup controlId="formCopyFolderTo">
         <FormLabel>
           Copy folder as{" "}
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -300,6 +323,7 @@ export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionProps>
           <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
         </FormLabel>
         <FormControl
+          data-testid="selectCopyFolderTo"
           as="select"
           onChange={(event: ChangeEvent<HTMLInputElement>) =>
             setDestinationSubFolder(event.target.value)
@@ -318,24 +342,37 @@ export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionProps>
 };
 
 /**
+ * @interface IFoldersEntryActionMoveProps
+ */
+interface IFoldersEntryActionMoveProps {
+  folderId?: string;
+  folders?: IFoldersEntry[];
+  imapSocket: ImapSocket;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * FoldersEntryActionMove
  * @param {IFoldersEntryActionProps} properties
  * @returns FunctionComponent
  */
-export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionProps> = ({
+export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionMoveProps> = ({
   folderId,
   folders,
-  submit,
   imapSocket,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>();
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -356,11 +393,12 @@ export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionProps>
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formMoveFolderTo">
       <FormLabel>
         Move folder to <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
       </FormLabel>
       <FormControl
+        data-testid="selectMoveFolderTo"
         as="select"
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
@@ -378,23 +416,35 @@ export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionProps>
 };
 
 /**
+ * @interface IFoldersEntryActionRenameProps
+ */
+interface IFoldersEntryActionRenameProps {
+  folderId?: string;
+  imapSocket: ImapSocket;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * FoldersEntryActionRename
  * @param {IFoldersEntryActionProps} properties
  * @returns FunctionComponent
  */
-export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionProps> = ({
+export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionRenameProps> = ({
   folderId,
-  submit,
   imapSocket,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [newFolderName, setNewFolderName] = useState<string | undefined>();
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -411,7 +461,7 @@ export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionProp
   };
 
   return (
-    <FormGroup controlId="formDisplayName">
+    <FormGroup controlId="formRenameFolderTo">
       <FormLabel>
         Rename folder as{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
@@ -427,21 +477,33 @@ export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionProp
 };
 
 /**
+ * @interface IFoldersEntryActionDeleteProps
+ */
+interface IFoldersEntryActionDeleteProps {
+  folderId?: string;
+  imapSocket: ImapSocket;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
+  successfulSubmit: () => void;
+}
+
+/**
  * FoldersEntryActionDelete
  * @param {IFoldersEntryActionProps} properties
  * @returns FunctionComponent
  */
-export const FoldersEntryActionDelete: FunctionComponent<IFoldersEntryActionProps> = ({
+export const FoldersEntryActionDelete: FunctionComponent<IFoldersEntryActionDeleteProps> = ({
   folderId,
-  submit,
   imapSocket,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 

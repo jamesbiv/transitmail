@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { Fragment, FunctionComponent, useContext, useEffect, useState } from "react";
 import { DependenciesContext } from "contexts";
 import { EComposePresetType, EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
 import { Card, CardBody, Spinner } from "react-bootstrap";
@@ -7,13 +7,20 @@ import { faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { FolderEmailActions, EFolderEmailActionType, FolderCardHeader } from ".";
 import { FolderScrollContainer } from "./FolderScrollContainer";
 
+/**
+ * @interface IFolderEmailActionState
+ */
 interface IFolderEmailActionState {
   actionUids?: number[];
   actionType: EFolderEmailActionType;
   showActionModal: boolean;
 }
 
-export const Folder: React.FC = () => {
+/**
+ * Folder
+ * @returns FunctionComponent
+ */
+export const Folder: FunctionComponent = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);
 
   const [folderEmails, setFolderEmails] = useState<IFolderEmail[] | undefined>(undefined);
@@ -33,19 +40,17 @@ export const Folder: React.FC = () => {
     if (!initalizeFoldersRun) {
       initalizeFoldersRun = true;
 
-      if (imapSocket.getReadyState() !== 1) {
-        try {
-          imapSocket.imapConnect();
-        } catch (error: unknown) {
-          throw new Error(`Websockets: ${(error as Error).message}`);
-        }
+      try {
+        imapSocket.imapCheckOrConnect();
+      } catch (error: unknown) {
+        throw new Error(`Websockets: ${(error as Error).message}`);
       }
 
-      updateFolder();
+      getFolderEmails();
     }
   }, []);
 
-  const updateFolder = async (): Promise<void> => {
+  const getFolderEmails = async (): Promise<void> => {
     setFolderSpinner(true);
 
     const currentFolder: IFolderEmail[] | undefined =
@@ -60,13 +65,16 @@ export const Folder: React.FC = () => {
   const checkEmail = async (): Promise<void> => {
     setFolderSpinner(true);
 
-    const latestEmails: IFolderEmail[] | undefined = await getLatestEmails(
-      folderEmails && folderEmails[0]?.uid
-    );
+    const heighestUid: number =
+      folderEmails?.reduce((currentHighestUid, folderEmail) => {
+        if (folderEmail.uid > currentHighestUid) {
+          currentHighestUid = folderEmail.uid;
+        }
 
-    if (latestEmails && latestEmails[0]?.uid === folderEmails?.[0]?.uid) {
-      latestEmails.shift();
-    }
+        return currentHighestUid;
+      }, 0) ?? 0;
+
+    const latestEmails: IFolderEmail[] | undefined = await getLatestEmails(heighestUid);
 
     const currentEmails: IFolderEmail[] = stateManager.getCurrentFolder()?.emails ?? [];
 
@@ -74,10 +82,17 @@ export const Folder: React.FC = () => {
       ? [...latestEmails, ...currentEmails]
       : currentEmails;
 
-    setFolderSpinner(false);
+    const allCurrentEmailsUnqiue: IFolderEmail[] = allCurrentEmails.filter(
+      (currentEmail, currentEmailIndex) =>
+        allCurrentEmails.findIndex(
+          (currentEmailComparison) => currentEmailComparison.uid === currentEmail.uid
+        ) === currentEmailIndex
+    );
 
-    setFolderEmails(allCurrentEmails);
-    stateManager.updateCurrentFolder(allCurrentEmails);
+    setFolderSpinner(false);
+    setFolderEmails(allCurrentEmailsUnqiue);
+
+    stateManager.updateCurrentFolder(allCurrentEmailsUnqiue);
   };
 
   const getLatestEmails = async (lastUid?: number): Promise<IFolderEmail[] | undefined> => {
@@ -86,7 +101,7 @@ export const Folder: React.FC = () => {
     const selectResponse: IImapResponse = await imapSocket.imapRequest(`SELECT "${folderId}"`);
 
     if (selectResponse.status !== EImapResponseStatus.OK) {
-      return undefined;
+      return;
     }
 
     const fetchUid: number = (lastUid ?? 0) + 1;
@@ -96,14 +111,16 @@ export const Folder: React.FC = () => {
     );
 
     if (fetchResponse.status !== EImapResponseStatus.OK) {
-      return undefined;
+      return;
     }
 
     const latestEmails: IFolderEmail[] = imapHelper.formatFetchFolderEmailsResponse(
       fetchResponse.data
     );
 
-    latestEmails.sort((a, b) => [1, -1][Number(a.epoch > b.epoch)]);
+    latestEmails.sort(
+      (first: IFolderEmail, second: IFolderEmail) => [1, -1][Number(first.epoch > second.epoch)]
+    );
 
     return latestEmails;
   };
@@ -144,7 +161,7 @@ export const Folder: React.FC = () => {
       showActionModal: true
     });
 
-  const replyToEmail = async (emailUid: number): Promise<void> => {
+  const replyToEmail = (emailUid: number): void => {
     stateManager.setComposePresets({
       type: EComposePresetType.Reply,
       uid: emailUid
@@ -153,7 +170,7 @@ export const Folder: React.FC = () => {
     stateManager.updateActiveKey("compose");
   };
 
-  const forwardEmail = async (emailUid: number): Promise<void> => {
+  const forwardEmail = (emailUid: number): void => {
     stateManager.setComposePresets({
       type: EComposePresetType.Forward,
       uid: emailUid
@@ -194,7 +211,7 @@ export const Folder: React.FC = () => {
   };
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Card className={`${displayCardHeader ? "p-0 mt-0 mt-sm-3" : ""} mb-3`}>
         {displayCardHeader && (
           <FolderCardHeader
@@ -204,15 +221,17 @@ export const Folder: React.FC = () => {
             searchEmails={searchEmails}
           />
         )}
-        {!folderEmails ? (
+        {!folderEmails && (
           <Spinner className="mt-3 mb-3 ms-auto me-auto" animation="grow" variant="dark" />
-        ) : !folderEmails.length ? (
+        )}
+        {folderEmails && !folderEmails.length && (
           <CardBody className="text-center text-secondary">
             <FontAwesomeIcon icon={faFolderOpen} size="lg" />
             <br />
             <em>Folder empty</em>
           </CardBody>
-        ) : (
+        )}
+        {folderEmails && folderEmails.length > 0 && (
           <FolderScrollContainer
             folderEmails={folderEmails}
             setDisplayCardHeader={setDisplayCardHeader}
@@ -228,8 +247,8 @@ export const Folder: React.FC = () => {
       </Card>
       <FolderEmailActions
         folderEmailActionState={folderEmailActionState}
-        onHide={updateFolderActionState}
+        hideActionModal={updateFolderActionState}
       />
-    </React.Fragment>
+    </Fragment>
   );
 };

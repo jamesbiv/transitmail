@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Dispatch, PureComponent } from "react";
 import { InfiniteScroll } from "classes";
 import {
   IFolderEmail,
@@ -8,17 +8,28 @@ import {
   IFolderScrollSpinner,
   IInfinateScrollHandler
 } from "interfaces";
-import { Card, Spinner } from "react-bootstrap";
-import { FolderEmailEntry, FolderPlaceholder, FolderTableHeader, FolderTableOptions } from ".";
-import { EFolderEmailActionType } from ".";
+import { CardBody, Spinner } from "react-bootstrap";
+import {
+  FolderEmailEntry,
+  FolderPlaceholder,
+  FolderTableHeader,
+  FolderTableOptions,
+  EFolderEmailActionType
+} from ".";
 
+/**
+ * @interface IFolderScrollContainerProps
+ */
 interface IFolderScrollContainerProps {
   folderEmails?: IFolderEmail[];
   folderEmailActions: IFolderEmailActions;
-  setDisplayCardHeader: React.Dispatch<boolean>;
+  setDisplayCardHeader: Dispatch<boolean>;
   toggleActionModal: (actionType: EFolderEmailActionType) => void;
 }
 
+/**
+ * @interface IFolderScrollContainerState
+ */
 interface IFolderScrollContainerState {
   visibleEmails?: IFolderEmail[];
   displayTableOptions: boolean;
@@ -27,29 +38,33 @@ interface IFolderScrollContainerState {
   folderScrollSpinner?: IFolderScrollSpinner;
 }
 
-export class FolderScrollContainer extends React.PureComponent<
+/**
+ * @class FolderScrollContainer
+ * @extends PureComponent
+ */
+export class FolderScrollContainer extends PureComponent<
   IFolderScrollContainerProps,
   IFolderScrollContainerState
 > {
   /**
-   * @var {InfiniteScroll} infiniteScroll
+   * @protected {InfiniteScroll} infiniteScroll
    */
   protected infiniteScroll: InfiniteScroll;
 
   /**
-   * @var {args: IInfinateScrollHandler) => void} scrollHandler
+   * @protected {args: IInfinateScrollHandler) => void} scrollHandler
    */
   protected scrollHandler: (args: IInfinateScrollHandler) => void;
 
   /**
-   * @var {boolean} toggleSelectionAll
+   * @protected {boolean} toggleSelectionAll
    */
   protected toggleSelectionAll: boolean;
 
   /**
-   * @var {IFolderLongPress} folderLongPress
+   * @private {IFolderLongPress} folderLongPress
    */
-  private folderLongPress: IFolderLongPress;
+  private readonly folderLongPress: IFolderLongPress;
 
   /**
    * @constructor
@@ -80,14 +95,14 @@ export class FolderScrollContainer extends React.PureComponent<
       folderScrollSpinner,
       callback
     }) => {
-      const displayHeaders: boolean = minIndex === 0;
+      const displayTableHeader: boolean = minIndex === 0;
 
-      this.props.setDisplayCardHeader(displayHeaders);
+      this.props.setDisplayCardHeader(displayTableHeader);
 
       this.setState(
         {
           visibleEmails: this.props.folderEmails?.slice(minIndex, maxIndex),
-          displayTableHeader: displayHeaders,
+          displayTableHeader,
           folderPlaceholder,
           folderScrollSpinner
         },
@@ -96,7 +111,7 @@ export class FolderScrollContainer extends React.PureComponent<
     };
   }
 
-  public componentDidMount = async () => {
+  public componentDidMount = () => {
     this.infiniteScroll.initiateHandlers(
       "container-main",
       "topObserver",
@@ -116,9 +131,11 @@ export class FolderScrollContainer extends React.PureComponent<
   public componentWillUnmount = () => {
     this.infiniteScroll.stopHandleScroll();
     this.infiniteScroll.stopObservertions();
+
+    this.clearAllSelections();
   };
 
-  public componentDidUpdate = async (prevProps: IFolderScrollContainerProps) => {
+  public componentDidUpdate = (prevProps: IFolderScrollContainerProps) => {
     if (this.props.folderEmails !== prevProps.folderEmails) {
       this.infiniteScroll.setTotalEntries(this.props.folderEmails?.length ?? 0);
 
@@ -145,22 +162,18 @@ export class FolderScrollContainer extends React.PureComponent<
 
   public toggleSelection = (emailUid: number, forceToogle?: boolean): void => {
     if (emailUid === -1) {
-      this.toggleSelectionAll = forceToogle !== undefined ? forceToogle : !this.toggleSelectionAll;
+      this.toggleSelectionAll = forceToogle ?? !this.toggleSelectionAll;
     }
 
     this.props.folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
-      if (!this.props.folderEmails?.[emailKey]) {
+      if (emailUid === -1) {
+        this.props.folderEmails![emailKey].selected = this.toggleSelectionAll;
+
         return;
       }
 
-      if (emailUid === -1) {
-        this.props.folderEmails[emailKey].selected = this.toggleSelectionAll;
-      } else if (folderEmail.uid === emailUid) {
-        if (forceToogle !== undefined) {
-          this.props.folderEmails[emailKey].selected = forceToogle;
-        } else {
-          this.props.folderEmails[emailKey].selected = !this.props.folderEmails[emailKey].selected;
-        }
+      if (folderEmail.uid === emailUid) {
+        this.props.folderEmails![emailKey].selected = forceToogle ?? !folderEmail.selected;
       }
     });
 
@@ -169,12 +182,11 @@ export class FolderScrollContainer extends React.PureComponent<
     this.toggleTableOptionsDisplay();
   };
 
-  public clearAllSelections = (): void =>
+  public clearAllSelections = (): void => {
     this.props.folderEmails?.forEach((folderEmail: IFolderEmail, emailKey: number) => {
-      if (this.props.folderEmails?.[emailKey]) {
-        this.props.folderEmails[emailKey].selected = false;
-      }
+      this.props.folderEmails![emailKey].selected = false;
     });
+  };
 
   public handleLongPress: (emailUid: number, delay?: number) => void = (emailUid, delay = 1000) => {
     this.folderLongPress.isReturned = false;
@@ -194,7 +206,7 @@ export class FolderScrollContainer extends React.PureComponent<
 
   render() {
     return (
-      <Card.Body className="p-0">
+      <CardBody className="p-0">
         <FolderTableOptions
           displayTableOptions={this.state.displayTableOptions}
           toggleSelection={this.toggleSelection}
@@ -231,7 +243,7 @@ export class FolderScrollContainer extends React.PureComponent<
           </div>
         )}
         <FolderPlaceholder height={this.state.folderPlaceholder?.bottom} />
-      </Card.Body>
+      </CardBody>
     );
   }
 }

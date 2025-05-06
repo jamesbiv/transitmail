@@ -1,9 +1,12 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Row, Col, Form } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLongArrowAltUp, faLongArrowAltDown } from "@fortawesome/free-solid-svg-icons";
 import { IFolderEmail } from "interfaces";
 
+/**
+ * @interface IFolderTableHeaderProps
+ */
 interface IFolderTableHeaderProps {
   folderEmails: IFolderEmail[];
   toggleSelectionAll: boolean;
@@ -11,18 +14,24 @@ interface IFolderTableHeaderProps {
   updateVisibleEmails: (definedLength?: number) => void;
 }
 
-export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
+/**
+ * FolderTableHeader
+ * @param {IFolderTableHeaderProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderTableHeader: FunctionComponent<IFolderTableHeaderProps> = ({
   folderEmails,
   toggleSelectionAll,
   toggleSelection,
   updateVisibleEmails
 }) => {
-  const sortFolder: (field: string, direction?: string) => void = (field, direction = "asc") => {
-    if (direction === "asc") {
-      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] > b[field] ? 1 : -1));
-    } else {
-      folderEmails.sort((a: IFolderEmail, b: IFolderEmail) => (a[field] < b[field] ? 1 : -1));
-    }
+  const sortFolder: (field: string, direction?: string) => void = (field, direction) => {
+    const sortDirection =
+      direction === "asc"
+        ? (first: IFolderEmail, second: IFolderEmail) => (first[field] > second[field] ? 1 : -1)
+        : (first: IFolderEmail, second: IFolderEmail) => (first[field] < second[field] ? 1 : -1);
+
+    folderEmails.sort(sortDirection);
 
     updateVisibleEmails();
   };
@@ -32,7 +41,7 @@ export const FolderTableHeader: React.FC<IFolderTableHeaderProps> = ({
       <Col xs={0} sm={0} md={1} lg={1} className="d-none d-sm-block me-3 folder-checkbox">
         <Form.Check
           type="checkbox"
-          id=""
+          id="formFolderSelectAll"
           label=""
           checked={toggleSelectionAll}
           onChange={(event: React.SyntheticEvent) => {

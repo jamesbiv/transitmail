@@ -1,16 +1,24 @@
-import React from "react";
+import React, { FunctionComponent } from "react";
 import { Row, Collapse, Col, Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCopy, faFlag, faSuitcase, faTimes, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { EFolderEmailActionType } from ".";
 
+/**
+ * @interface FolderTableOptionsProps
+ */
 interface FolderTableOptionsProps {
   displayTableOptions: boolean;
   toggleSelection: (uid: number, forceToogle?: boolean) => void;
   toggleActionModal: (actionType: EFolderEmailActionType) => void;
 }
 
-export const FolderTableOptions: React.FC<FolderTableOptionsProps> = ({
+/**
+ * FolderTableOptions
+ * @param {FolderTableOptionsProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderTableOptions: FunctionComponent<FolderTableOptionsProps> = ({
   displayTableOptions,
   toggleSelection,
   toggleActionModal

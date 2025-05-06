@@ -1,10 +1,16 @@
 import { IFolderPlaceholder, IFolderScrollSpinner, IInfinateScrollHandler } from "interfaces";
 
+/**
+ * @interface IInfiniteScrollSlice
+ */
 interface IInfiniteScrollSlice {
   minIndex: number;
   maxIndex: number;
 }
 
+/**
+ * @interface IInfiniteScrollSettings
+ */
 interface IInfiniteScrollSettings {
   pageSize: number;
   increment: number;
@@ -15,19 +21,22 @@ interface IInfiniteScrollSettings {
   navbarOffset: number;
 }
 
+/**
+ * @class InfiniteScroll
+ */
 export class InfiniteScroll {
   /**
-   * @var {number} defaultPageSize
+   * @protected {number} defaultPageSize
    */
   protected defaultPageSize: number = 15;
 
   /**
-   * @var {number} totalEntries
+   * @protected {number} totalEntries
    */
   protected totalEntries: number = 0;
 
   /**
-   * @var {IntersectionObserverInit} observerDefaults
+   * @protected {IntersectionObserverInit} observerDefaults
    */
   protected observerDefaults: IntersectionObserverInit = {
     rootMargin: "0px",
@@ -35,57 +44,57 @@ export class InfiniteScroll {
   };
 
   /**
-   * @var {string} topElementId
+   * @protected {string} topElementId
    */
   protected topElementId: string | undefined;
 
   /**
-   * @var {HTMLElement} topObserverElement
+   * @protected {HTMLElement} topObserverElement
    */
   protected topObserverElement: HTMLElement | undefined;
 
   /**
-   * @var {IntersectionObserver} topObserver
+   * @protected {IntersectionObserver} topObserver
    */
   protected topObserver: IntersectionObserver;
 
   /**
-   * @var {string} bottomElementId
+   * @protected {string} bottomElementId
    */
   protected bottomElementId: string | undefined;
 
   /**
-   * @var {HTMLElement} bottomObserverElement
+   * @protected {HTMLElement} bottomObserverElement
    */
   protected bottomObserverElement: HTMLElement | undefined;
 
   /**
-   * @var {IntersectionObserver} bottomObserver
+   * @protected {IntersectionObserver} bottomObserver
    */
   protected bottomObserver: IntersectionObserver;
 
   /**
-   * @var {string} scrollElementId
+   * @protected {string} scrollElementId
    */
   protected scrollElementId: string | undefined;
 
   /**
-   * @var {HTMLElement} scrollElement
+   * @protected {HTMLElement} scrollElement
    */
   protected scrollElement: HTMLElement | undefined;
 
   /**
-   * @var {IInfiniteScrollSettings} settings
+   * @protected {IInfiniteScrollSettings} settings
    */
   protected settings: IInfiniteScrollSettings;
 
   /**
-   * @var {IInfiniteScrollSlice} slice
+   * @protected {IInfiniteScrollSlice} slice
    */
   protected slice: IInfiniteScrollSlice;
 
   /**
-   * @var {(args: IInfinateScrollHandler) => void} stateHander
+   * @protected {((args: IInfinateScrollHandler) => void) | undefined} scrollHandler
    */
   protected scrollHandler: ((args: IInfinateScrollHandler) => void) | undefined;
 
@@ -119,7 +128,12 @@ export class InfiniteScroll {
   }
 
   /**
-   * @param {IInfiniteScrollInitiateHandlers} args
+   * @method initiateHandlers
+   * @param {string} scrollElementId
+   * @param {string} topElementId
+   * @param {string} bottomElementId
+   * @param {(args: IInfinateScrollHandler) => void} scrollHandler
+   * @returns void
    */
   public initiateHandlers(
     scrollElementId: string,
@@ -135,7 +149,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name startTopObservation
+   * @method startTopObservation
    * @returns void
    */
   public startTopObservation(): void {
@@ -151,7 +165,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name startBottomObservation
+   * @method startBottomObservation
    * @returns void
    */
   public startBottomObservation(): void {
@@ -167,7 +181,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name startHandleScroll
+   * @method startHandleScroll
    * @returns void
    */
   public startHandleScroll = (): void => {
@@ -178,22 +192,22 @@ export class InfiniteScroll {
     this.scrollElement = document.getElementById(this.scrollElementId) as HTMLElement;
 
     if (this.scrollElement) {
-      this.scrollElement.addEventListener("scroll", this.handleDesktopScroll);
+      this.scrollElement.addEventListener("scroll", this.handleHeavyDesktopScroll);
     }
   };
 
   /**
-   * @name stopHandleScroll
+   * @method stopHandleScroll
    * @returns void
    */
   public stopHandleScroll = (): void => {
     if (this.scrollElement?.removeEventListener) {
-      this.scrollElement.removeEventListener("scroll", this.handleDesktopScroll);
+      this.scrollElement.removeEventListener("scroll", this.handleHeavyDesktopScroll);
     }
   };
 
   /**
-   * @name stopObservertions
+   * @method stopObservertions
    * @returns void
    */
   public stopObservertions(): void {
@@ -202,7 +216,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name setTotalEntries
+   * @method setTotalEntries
    * @params {number} totalEntries
    * @returns void
    */
@@ -211,7 +225,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name getCurrentSlice
+   * @method getCurrentSlice
    * @returns IInfiniteScrollSlice
    */
   public getCurrentSlice(): IInfiniteScrollSlice {
@@ -219,52 +233,19 @@ export class InfiniteScroll {
   }
 
   /**
-   * @name topObservationCallback
+   * @method topObservationCallback
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
    */
-  private topObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
+  private readonly topObservationCallback = (
+    intersectionEntries: IntersectionObserverEntry[]
+  ): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
         const minIndex: number = this.slice.minIndex - this.settings.increment;
         const maxIndex: number = minIndex + this.settings.increment * 2;
 
-        if (window.innerWidth >= this.settings.desktopBreakpoint) {
-          this.triggerStateHandler(minIndex, maxIndex, true);
-        } else {
-          const callback: (() => void) | undefined =
-            this.slice.minIndex > 0
-              ? () => {
-                  const lastEntryPosition =
-                    this.settings.increment * this.settings.placeholderMobileHeight +
-                    this.settings.loaderHeight +
-                    this.settings.navbarOffset;
-
-                  this.scrollElement?.scrollTo(0, lastEntryPosition);
-                }
-              : undefined;
-
-          this.triggerStateHandler(minIndex, maxIndex, false, callback);
-        }
-      }
-    });
-  };
-
-  /**
-   * @name bottomObservationCallback
-   * @params {IntersectionObserverEntry[]} intersectionEntries
-   * @returns void
-   */
-  private bottomObservationCallback = (intersectionEntries: IntersectionObserverEntry[]): void => {
-    intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
-      if (intersectionEntry.intersectionRatio > 0) {
-        const maxIndex: number = this.slice.maxIndex + this.settings.increment;
-        const minIndex: number = maxIndex - this.settings.increment * 2;
-
-        this.slice.minIndex = minIndex > 0 ? minIndex : 0;
-        this.slice.maxIndex = maxIndex < this.totalEntries ? maxIndex : this.totalEntries;
-
-        this.triggerStateHandler(
+        this.triggerScrollHandler(
           minIndex,
           maxIndex,
           window.innerWidth >= this.settings.desktopBreakpoint
@@ -274,11 +255,33 @@ export class InfiniteScroll {
   };
 
   /**
-   * @name handleDesktopScroll
+   * @method bottomObservationCallback
+   * @params {IntersectionObserverEntry[]} intersectionEntries
+   * @returns void
+   */
+  private readonly bottomObservationCallback = (
+    intersectionEntries: IntersectionObserverEntry[]
+  ): void => {
+    intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
+      if (intersectionEntry.intersectionRatio > 0) {
+        const maxIndex: number = this.slice.maxIndex + this.settings.increment;
+        const minIndex: number = maxIndex - this.settings.increment * 2;
+
+        this.triggerScrollHandler(
+          minIndex,
+          maxIndex,
+          window.innerWidth >= this.settings.desktopBreakpoint
+        );
+      }
+    });
+  };
+
+  /**
+   * @method handleHeavyDesktopScroll
    * @param {Event} event
    * @returns void
    */
-  private handleDesktopScroll = (event: Event): void => {
+  private readonly handleHeavyDesktopScroll = (event: Event): void => {
     if (window.innerWidth <= this.settings.desktopBreakpoint) {
       return;
     }
@@ -294,18 +297,18 @@ export class InfiniteScroll {
       const minIndex: number = currentIndex;
       const maxIndex: number = minIndex + this.settings.increment * 2;
 
-      this.triggerStateHandler(minIndex, maxIndex, true);
+      this.triggerScrollHandler(minIndex, maxIndex, true);
     }
   };
 
   /**
-   * @name triggerStateHandler
+   * @method triggerScrollHandler
    * @param {number} minIndex
    * @param {number } maxIndex
    * @param {() => void} callback
    * @returns void
    */
-  private triggerStateHandler(
+  private triggerScrollHandler(
     minIndex: number,
     maxIndex: number,
     desktopMode: boolean = false,
@@ -322,10 +325,23 @@ export class InfiniteScroll {
         top: this.slice.minIndex * this.settings.placeholderDesktopHeight,
         bottom: (this.totalEntries - this.slice.maxIndex) * this.settings.placeholderDesktopHeight
       };
+
+      folderScrollSpinner = {
+        top: false,
+        bottom: false
+      };
     } else {
+      const placeHolderSize = 4 * this.settings.placeholderMobileHeight;
+
+      folderPlaceholder = {
+        top: this.slice.minIndex > 0 ? placeHolderSize : 0,
+        bottom:
+          this.totalEntries - this.defaultPageSize >= this.slice.maxIndex ? 0 : placeHolderSize
+      };
+
       folderScrollSpinner = {
         top: this.slice.minIndex > 0,
-        bottom: true
+        bottom: this.totalEntries - this.defaultPageSize >= this.slice.maxIndex
       };
     }
 

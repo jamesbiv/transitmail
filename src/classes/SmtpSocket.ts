@@ -76,7 +76,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpConnect
+   * @method smtpConnect
    * @param {boolean} authorise
    * @returns boolean
    */
@@ -158,7 +158,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpClose
+   * @method smtpClose
    * @returns boolean
    */
   public smtpClose(): boolean {
@@ -168,7 +168,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpRequest
+   * @method smtpRequest
    * @param {string} request
    * @param {number} code
    * @returns Promise<ISmtpResponse>
@@ -198,7 +198,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpProcessRequest
+   * @method smtpProcessRequest
    * @param {string} request
    * @param {number} code
    * @param {TSmtpCallback} success
@@ -237,7 +237,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpResponseHandler
+   * @method smtpResponseHandler
    * @param {string} response
    * @returns void
    */
@@ -278,7 +278,7 @@ export class SmtpSocket {
   }
 
   /**
-   * @name smtpAuthorise
+   * @method smtpAuthorise
    * @returns Promise<ISmtpResponse>
    */
   public async smtpAuthorise(): Promise<ISmtpResponse> {
@@ -306,15 +306,15 @@ export class SmtpSocket {
   }
 
   /**
-   * @name getReadyState
-   * @returns number | false
+   * @method getReadyState
+   * @returns number | undefined
    */
   public getReadyState(): number | undefined {
     return this.session.socket?.readyState;
   }
 
   /**
-   * @name getBufferedAmount
+   * @method getBufferedAmount
    * @returns number
    */
   public getBufferedAmount = (): number => {

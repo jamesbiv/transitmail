@@ -25,7 +25,7 @@ describe("Testing ProgressBar", () => {
   it("test initiateProgressBar() function when current bytes exceed total", async () => {
     const setProgressBarNow = () => 100;
 
-    const currentBytesFn = () => 1000
+    const currentBytesFn = () => 1000;
 
     const finalCallbackFn = jest.fn().mockImplementation(() => true);
 

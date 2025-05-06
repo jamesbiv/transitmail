@@ -1,5 +1,8 @@
 import { Dispatch } from "react";
 
+/**
+ * @interface IProgressBar
+ */
 interface IProgressBar {
   currentBytes: number;
   maxBytes: number;
@@ -7,6 +10,9 @@ interface IProgressBar {
   callbackFn?: () => void;
 }
 
+/**
+ * @constant {IProgressBar} progressBar
+ */
 const progressBar: IProgressBar = { currentBytes: 0, maxBytes: 0, now: 0 };
 
 /**

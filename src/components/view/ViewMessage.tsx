@@ -21,9 +21,7 @@ interface IViewMessageProps {
  * @param {IViewMessageProps} properties
  * @returns FunctionComponent
  */
-export const ViewMessage: FunctionComponent<IViewMessageProps> = ({
-  viewMessage
-}) => {
+export const ViewMessage: FunctionComponent<IViewMessageProps> = ({ viewMessage }) => {
   let alertVariant: string;
   let alertIcon: IconDefinition;
 

@@ -1,5 +1,26 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Alert, Form, Modal, Button } from "react-bootstrap";
+import React, {
+  ChangeEvent,
+  createElement,
+  Dispatch,
+  Fragment,
+  FunctionComponent,
+  useContext,
+  useEffect,
+  useState
+} from "react";
+import {
+  Alert,
+  Modal,
+  Button,
+  FormLabel,
+  FormControl,
+  FormGroup,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter,
+  FormCheck
+} from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ImapSocket } from "classes";
 import {
@@ -20,15 +41,21 @@ import {
   updateFlags
 } from "lib";
 
+/**
+ * @interface IFolderEmailActionsProps
+ */
 interface IFolderEmailActionsProps {
   folderEmailActionState: {
     actionUids?: number[];
     actionType: EFolderEmailActionType;
     showActionModal: boolean;
   };
-  onHide: () => void;
+  hideActionModal: () => void;
 }
 
+/**
+ * @enum EFolderEmailActionType
+ */
 export enum EFolderEmailActionType {
   MOVE = 0,
   COPY = 1,
@@ -36,40 +63,51 @@ export enum EFolderEmailActionType {
   DELETE = 4
 }
 
+/**
+ * @interface IFolderEmailActionComponents
+ */
 interface IFolderEmailActionComponents {
   [key: number]: IFolderEmailActionComponent;
 }
 
+/**
+ * @interface IFolderEmailActionComponent
+ */
 interface IFolderEmailActionComponent {
   label: string;
   icon: IconDefinition;
-  element: React.FC<TFolderEmailActionProps>;
+  element: FunctionComponent<TFolderEmailActionProps>;
 }
 
-export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
+/**
+ * FolderEmailActions
+ * @param {IFolderEmailActionsProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = ({
   folderEmailActionState,
-  onHide
+  hideActionModal
 }) => {
   const { imapHelper, imapSocket } = useContext(DependenciesContext);
 
   const { actionUids, actionType, showActionModal } = folderEmailActionState;
 
-  const [submit, changeSubmit] = useState<boolean>(false);
-  const [folders, updateFolders] = useState<IFoldersEntry[]>([]);
+  const [triggerSubmit, setTriggerSubmit] = useState<boolean>(false);
+  const [folders, setFolders] = useState<IFoldersEntry[]>([]);
 
   useEffect(() => {
-    if (showActionModal && folders.length == 0) {
+    if (showActionModal && !folders.length) {
       (async () => {
         const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 
         const folders: IFoldersEntry[] = imapHelper.formatListFoldersResponse(listResponse.data);
 
-        updateFolders(folders);
+        setFolders(folders);
       })();
     }
   }, [showActionModal]);
 
-  const successfulSubmit = onHide;
+  const successfulSubmit = hideActionModal;
 
   const FolderEmailAction: IFolderEmailActionComponents = {
     [EFolderEmailActionType.MOVE]: {
@@ -96,26 +134,26 @@ export const FolderEmailActions: React.FC<IFolderEmailActionsProps> = ({
 
   return (
     <Modal show={showActionModal} centered={true} aria-labelledby="contained-modal-title-vcenter">
-      <Modal.Header closeButton onClick={() => onHide()}>
-        <Modal.Title id="contained-modal-title-vcenter">
+      <ModalHeader closeButton onClick={() => hideActionModal()}>
+        <ModalTitle id="contained-modal-title-vcenter">
           <FontAwesomeIcon icon={FolderEmailAction[actionType].icon} />{" "}
           {FolderEmailAction[actionType].label}
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {React.createElement(FolderEmailAction[actionType].element, {
+        </ModalTitle>
+      </ModalHeader>
+      <ModalBody>
+        {createElement(FolderEmailAction[actionType].element, {
           actionUids,
           folders,
           imapSocket,
-          submit,
-          changeSubmit,
+          triggerSubmit,
+          setTriggerSubmit,
           successfulSubmit
         })}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={() => changeSubmit(true)}>Ok</Button>
-        <Button onClick={() => onHide()}>Close</Button>
-      </Modal.Footer>
+      </ModalBody>
+      <ModalFooter>
+        <Button onClick={() => setTriggerSubmit(true)}>Ok</Button>
+        <Button onClick={() => hideActionModal()}>Close</Button>
+      </ModalFooter>
     </Modal>
   );
 };
@@ -134,24 +172,30 @@ type TFolderEmailActionProps = IFolderEmailActionMoveProps &
 interface IFolderEmailActionMoveProps {
   actionUids?: number[];
   folders: IFoldersEntry[];
-  submit: boolean;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
-export const FolderEmailActionMove: React.FC<IFolderEmailActionMoveProps> = ({
+/**
+ * FolderEmailActionMove
+ * @param {IFolderEmailActionMoveProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailActionMove: FunctionComponent<IFolderEmailActionMoveProps> = ({
   actionUids,
   folders,
-  submit,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -166,29 +210,30 @@ export const FolderEmailActionMove: React.FC<IFolderEmailActionMoveProps> = ({
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
         Move email(s) to{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
+        data-testid="selectMoveFolderTo"
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
         }
       >
         {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
+          <Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
               <option key={subFolder.id} value={`${folder.name}/${subFolder.name}`}>
                 &nbsp;{subFolder.name}
               </option>
             ))}
-          </React.Fragment>
+          </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
@@ -199,25 +244,31 @@ interface IFolderEmailActionCopyProps {
   actionUids?: number[];
   folders: IFoldersEntry[];
   imapSocket: ImapSocket;
-  submit: boolean;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
-export const FolderEmailActionCopy: React.FC<IFolderEmailActionCopyProps> = ({
+/**
+ * FolderEmailActionCopy
+ * @param {IFolderEmailActionCopyProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailActionCopy: FunctionComponent<IFolderEmailActionCopyProps> = ({
   actionUids,
   folders,
-  submit,
+  triggerSubmit,
   imapSocket,
-  changeSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [destinationFolder, setDestinationFolder] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -236,29 +287,30 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionCopyProps> = ({
   };
 
   return (
-    <Form.Group controlId="formDisplayName">
-      <Form.Label>
-        Move email(s) to{" "}
+    <FormGroup controlId="formDisplayName">
+      <FormLabel>
+        Copy email(s) to{" "}
         <FontAwesomeIcon icon={faAsterisk} size="xs" className="text-danger mb-1" />
-      </Form.Label>
-      <Form.Control
+      </FormLabel>
+      <FormControl
+        data-testid="selectCopyFolderTo"
         as="select"
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setDestinationFolder(event.target.value)
         }
       >
         {folders?.map((folder: IFoldersEntry) => (
-          <React.Fragment key={folder.id}>
+          <Fragment key={folder.id}>
             <option key={folder.id}>{folder.name}</option>
             {folder.folders?.map((subFolder: IFoldersSubEntry) => (
               <option key={subFolder.id} value={`${folder.name}/${subFolder.name}`}>
                 &nbsp;{subFolder.name}
               </option>
             ))}
-          </React.Fragment>
+          </Fragment>
         ))}
-      </Form.Control>
-    </Form.Group>
+      </FormControl>
+    </FormGroup>
   );
 };
 
@@ -267,23 +319,29 @@ export const FolderEmailActionCopy: React.FC<IFolderEmailActionCopyProps> = ({
  */
 interface IFolderEmailActionFlagProps {
   actionUids?: number[];
-  submit: boolean;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
-export const FolderEmailActionFlag: React.FC<IFolderEmailActionFlagProps> = ({
+/**
+ * FolderEmailActionFlag
+ * @param {IFolderEmailActionFlagProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailActionFlag: FunctionComponent<IFolderEmailActionFlagProps> = ({
   actionUids,
-  submit,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   const [flags, setFlags] = useState<IEmailFlagType[]>(setFlagDefaults(""));
 
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
@@ -298,26 +356,20 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionFlagProps> = ({
   };
 
   return (
-    <Form.Group controlId="formEmailAutoLogin">
+    <FormGroup controlId="formEmailAutoLogin">
       <ul>
         {flags.map((flag: IEmailFlagType, flagIndex: number) => (
-          <li key={flagIndex}>
-            <Form.Check
+          <li key={flag.name}>
+            <FormCheck
               type="switch"
               id={flags[flagIndex].name}
               label={flags[flagIndex].name}
               defaultChecked={flags[flagIndex].enabled}
-              onChange={() => {
-                flags[flagIndex].enabled = !flags[flagIndex].enabled;
-                flags[flagIndex].flagChanged = true;
-
-                setFlags(flags);
-              }}
             />
           </li>
         ))}
       </ul>
-    </Form.Group>
+    </FormGroup>
   );
 };
 
@@ -326,21 +378,27 @@ export const FolderEmailActionFlag: React.FC<IFolderEmailActionFlagProps> = ({
  */
 interface IFolderEmailActionDeleteProps {
   actionUids?: number[];
-  submit: boolean;
-  changeSubmit: React.Dispatch<React.SetStateAction<boolean>>;
+  triggerSubmit: boolean;
+  setTriggerSubmit: Dispatch<boolean>;
   successfulSubmit: () => void;
 }
 
-export const FolderEmailActionDelete: React.FC<IFolderEmailActionDeleteProps> = ({
+/**
+ * FolderEmailActionDelete
+ * @param {IFolderEmailActionDeleteProps} properties
+ * @returns FunctionComponent
+ */
+export const FolderEmailActionDelete: FunctionComponent<IFolderEmailActionDeleteProps> = ({
   actionUids,
-  submit,
-  changeSubmit,
+  triggerSubmit,
+  setTriggerSubmit,
   successfulSubmit
 }) => {
   useEffect(() => {
-    if (submit) {
+    if (triggerSubmit) {
+      setTriggerSubmit(false);
+
       submitAction();
-      changeSubmit(false);
     }
   });
 
