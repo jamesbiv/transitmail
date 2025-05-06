@@ -245,6 +245,24 @@ export class InfiniteScroll {
         const minIndex: number = this.slice.minIndex - this.settings.increment;
         const maxIndex: number = minIndex + this.settings.increment * 2;
 
+        if (window.innerWidth < this.settings.desktopBreakpoint) {
+          const callback: (() => void) | undefined =
+            this.slice.minIndex > 0
+              ? () => {
+                  const lastEntryPosition =
+                    this.settings.increment * this.settings.placeholderMobileHeight +
+                    this.settings.loaderHeight +
+                    this.settings.navbarOffset;
+
+                  this.scrollElement?.scrollTo(0, lastEntryPosition);
+                }
+              : undefined;
+
+          this.triggerScrollHandler(minIndex, maxIndex, false, callback);
+
+          return;
+        }
+
         this.triggerScrollHandler(
           minIndex,
           maxIndex,
@@ -333,26 +351,32 @@ export class InfiniteScroll {
     } else {
       const placeHolderSize = 4 * this.settings.placeholderMobileHeight;
 
+      const topPlaceholderSize = this.slice.minIndex - 10 > 0 ? placeHolderSize : 0;
+
+      const bottomPlaceholderSize =
+        this.totalEntries - 10 > this.slice.maxIndex ? placeHolderSize : 0;
+
       folderPlaceholder = {
-        top: this.slice.minIndex > 0 ? placeHolderSize : 0,
-        bottom:
-          this.totalEntries - this.defaultPageSize >= this.slice.maxIndex ? 0 : placeHolderSize
+        top: topPlaceholderSize,
+        bottom: bottomPlaceholderSize
       };
 
       folderScrollSpinner = {
-        top: this.slice.minIndex > 0,
-        bottom: this.totalEntries - this.defaultPageSize >= this.slice.maxIndex
+        top: topPlaceholderSize > 0,
+        bottom: bottomPlaceholderSize > 0
       };
     }
 
-    if (this.scrollHandler) {
-      this.scrollHandler({
-        minIndex: this.slice.minIndex,
-        maxIndex: this.slice.maxIndex,
-        folderScrollSpinner,
-        folderPlaceholder,
-        callback
-      });
+    if (!this.scrollHandler) {
+      return;
     }
+
+    this.scrollHandler({
+      minIndex: this.slice.minIndex,
+      maxIndex: this.slice.maxIndex,
+      folderScrollSpinner,
+      folderPlaceholder,
+      callback
+    });
   }
 }
