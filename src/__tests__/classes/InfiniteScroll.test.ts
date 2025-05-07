@@ -25,7 +25,11 @@ describe("Testing the InfiniteScroll class", () => {
     document.body.appendChild(bottomObserver);
 
     global.IntersectionObserver = class {
+      private readonly callback: IntersectionObserverCallback;
+
       constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+
         callback(
           [{ intersectionRatio: 1 }, { intersectionRatio: 0 }] as IntersectionObserverEntry[],
           undefined!
@@ -40,6 +44,11 @@ describe("Testing the InfiniteScroll class", () => {
         return undefined;
       }
       observe(target: Element) {
+        this.callback(
+          [{ intersectionRatio: 1 }, { intersectionRatio: 0 }] as IntersectionObserverEntry[],
+          undefined!
+        );
+
         return undefined;
       }
       takeRecords() {
@@ -213,18 +222,71 @@ describe("Testing the InfiniteScroll class", () => {
           callback
         }: IInfinateScrollHandler) => {}
       );
-      infiniteScroll.startTopObservation();
 
       infiniteScroll.startHandleScroll();
 
       fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollTop: 1000 }
+        target: { scrollBottom: 0 }
       });
 
       await sleep(400);
 
       fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollTop: 500 }
+        target: { scrollBottom: 100 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 1000 }
+      });
+
+      await sleep(400);
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 10000 }
+      });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("", async () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      jest
+        .spyOn(document.getElementById("container-main")!, "scrollTop", "get")
+        .mockImplementationOnce(() => 200);
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        ({
+          minIndex,
+          maxIndex,
+          folderPlaceholder,
+          folderScrollSpinner,
+          callback
+        }: IInfinateScrollHandler) => {}
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollTop: 10000 }
+      });
+
+      await sleep(400);
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
+
+      fireEvent.scroll(document.getElementById("container-main")!, {
+        target: { scrollBottom: 100 }
       });
 
       await sleep(400);
@@ -273,6 +335,9 @@ describe("Testing the InfiniteScroll class", () => {
       });
 
       await sleep(400);
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
 
       fireEvent.scroll(document.getElementById("container-main")!, {
         target: { scrollBottom: 100 }
@@ -411,7 +476,7 @@ describe("Testing the InfiniteScroll class", () => {
     test("", () => {
       const infiniteScroll = new InfiniteScroll();
 
-      const getCurrentSliceResponse = infiniteScroll.getCurrentSlice();
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
 
       infiniteScroll.initiateHandlers(
         "container-main",
@@ -426,7 +491,7 @@ describe("Testing the InfiniteScroll class", () => {
         }: IInfinateScrollHandler) => {}
       );
 
-      expect(getCurrentSliceResponse).toEqual({
+      expect(getVisibleSliceResponse).toEqual({
         maxIndex: 0,
         minIndex: 0
       });

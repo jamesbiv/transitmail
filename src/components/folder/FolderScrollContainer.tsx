@@ -1,4 +1,4 @@
-import React, { Dispatch, PureComponent } from "react";
+import React, { Component, Dispatch, PureComponent } from "react";
 import { InfiniteScroll } from "classes";
 import {
   IFolderEmail,
@@ -144,7 +144,7 @@ export class FolderScrollContainer extends PureComponent<
   };
 
   public updateVisibleEmails = (definedLength?: number): void => {
-    const currentSlice = this.infiniteScroll.getCurrentSlice();
+    const currentSlice = this.infiniteScroll.getVisibleSlice();
 
     if (currentSlice) {
       this.setState({

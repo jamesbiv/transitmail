@@ -65,9 +65,7 @@ export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmails
   };
 
   const updateSecondaryEmail: () => void = () => {
-    if (!secondaryEmails) {
-      secondaryEmails = [];
-    }
+    secondaryEmails ??= [];
 
     const secondaryEmailIndex: number = secondaryEmails.findIndex(
       (secondaryEmailElement) => secondaryEmailElement.key === secondaryEmail.key

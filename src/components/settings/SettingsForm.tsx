@@ -158,6 +158,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="text"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Incoming mail host"
                     isInvalid={!!errorMessage?.imapHost}
                     defaultValue={settings.imapHost}
@@ -176,6 +178,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="text"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Incoming mail port"
                     isInvalid={!!errorMessage?.imapPort}
                     defaultValue={settings.imapPort}
@@ -194,6 +198,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="text"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Incoming mail username"
                     isInvalid={!!errorMessage?.imapUsername}
                     defaultValue={settings.imapUsername}
@@ -212,6 +218,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="password"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Incoming mail password"
                     isInvalid={!!errorMessage?.imapPassword}
                     defaultValue={settings.imapPassword}
@@ -237,6 +245,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="text"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Outgoing mail host"
                     isInvalid={!!errorMessage?.smtpHost}
                     defaultValue={settings.smtpHost}
@@ -255,6 +265,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="text"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Outgoing mail port"
                     isInvalid={!!errorMessage?.smtpPort}
                     defaultValue={settings.smtpPort}
@@ -273,6 +285,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="text"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Outgoing mail username"
                     isInvalid={!!errorMessage?.smtpUsername}
                     defaultValue={settings.smtpUsername}
@@ -291,6 +305,8 @@ export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
                   </FormLabel>
                   <FormControl
                     type="password"
+                    autoCorrect="off"
+                    autoCapitalize="none"
                     placeholder="Outgoing mail password"
                     isInvalid={!!errorMessage?.smtpPassword}
                     defaultValue={settings.smtpPassword}
