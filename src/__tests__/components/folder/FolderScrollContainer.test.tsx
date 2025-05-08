@@ -41,12 +41,12 @@ describe("FolderScrollContainer Component", () => {
 
   describe("testing componentDidUpdate and updateVisibleEmails", () => {
     it("with a successful response", async () => {
-      const getCurrentSliceSpy: jest.SpyInstance = jest.spyOn(
+      const getVisibleSliceSpy: jest.SpyInstance = jest.spyOn(
         InfiniteScroll.prototype,
-        "getCurrentSlice"
+        "getVisibleSlice"
       );
 
-      getCurrentSliceSpy.mockImplementationOnce(() => {
+      getVisibleSliceSpy.mockImplementationOnce(() => {
         return { minIndex: 0, maxIndex: 1 };
       });
 
@@ -117,13 +117,13 @@ describe("FolderScrollContainer Component", () => {
       expect(rerenderEmailEntries.length).toEqual(0);
     });
 
-    it("with a successful response with getCurrentSlice as undefined", async () => {
-      const getCurrentSliceSpy: jest.SpyInstance = jest.spyOn(
+    it("with a successful response with getVisibleSliceSpy as undefined", async () => {
+      const getVisibleSliceSpy: jest.SpyInstance = jest.spyOn(
         InfiniteScroll.prototype,
-        "getCurrentSlice"
+        "getVisibleSlice"
       );
 
-      getCurrentSliceSpy.mockImplementationOnce(() => undefined);
+      getVisibleSliceSpy.mockImplementationOnce(() => undefined);
 
       const initiateHandlersSpy: jest.SpyInstance = jest.spyOn(
         InfiniteScroll.prototype,

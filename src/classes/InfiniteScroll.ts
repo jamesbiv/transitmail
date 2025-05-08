@@ -1,9 +1,9 @@
 import { IFolderPlaceholder, IFolderScrollSpinner, IInfinateScrollHandler } from "interfaces";
 
 /**
- * @interface IInfiniteScrollSlice
+ * @interface IInfiniteScrollvisibleSlice
  */
-interface IInfiniteScrollSlice {
+interface IInfiniteScrollvisibleSlice {
   minIndex: number;
   maxIndex: number;
 }
@@ -18,7 +18,7 @@ interface IInfiniteScrollSettings {
   placeholderDesktopHeight: number;
   placeholderMobileHeight: number;
   loaderHeight: number;
-  navbarOffset: number;
+  navbarHeight: number;
 }
 
 /**
@@ -89,9 +89,9 @@ export class InfiniteScroll {
   protected settings: IInfiniteScrollSettings;
 
   /**
-   * @protected {IInfiniteScrollSlice} slice
+   * @protected {IInfiniteScrollvisibleSlice} visibleSlice
    */
-  protected slice: IInfiniteScrollSlice;
+  protected visibleSlice: IInfiniteScrollvisibleSlice;
 
   /**
    * @protected {((args: IInfinateScrollHandler) => void) | undefined} scrollHandler
@@ -107,14 +107,24 @@ export class InfiniteScroll {
       pageSize: this.defaultPageSize,
       increment: this.defaultPageSize,
       desktopBreakpoint: 576,
-      loaderHeight: 65,
-      navbarOffset: 56,
+      loaderHeight: 50,
+      navbarHeight: 56,
       placeholderDesktopHeight: 65,
       placeholderMobileHeight: 141,
       ...settings
     };
 
-    this.slice = {
+    if (window.innerWidth < this.settings.desktopBreakpoint) {
+      const placeholderSize: number = window.innerHeight - this.settings.navbarHeight;
+      const placeholderMaxElements: number = Math.ceil(
+        placeholderSize / this.settings.placeholderMobileHeight
+      );
+
+      this.settings.pageSize = placeholderMaxElements * 5;
+      this.settings.increment = placeholderMaxElements * 5;
+    }
+
+    this.visibleSlice = {
       minIndex: 0,
       maxIndex: this.settings.pageSize
     };
@@ -159,9 +169,11 @@ export class InfiniteScroll {
 
     this.topObserverElement = document.getElementById(this.topElementId) as HTMLElement;
 
-    if (this.topObserverElement) {
-      this.topObserver.observe(this.topObserverElement);
+    if (!this.topObserverElement) {
+      return;
     }
+
+    this.topObserver.observe(this.topObserverElement);
   }
 
   /**
@@ -175,9 +187,11 @@ export class InfiniteScroll {
 
     this.bottomObserverElement = document.getElementById(this.bottomElementId) as HTMLElement;
 
-    if (this.bottomObserverElement) {
-      this.bottomObserver.observe(this.bottomObserverElement);
+    if (!this.bottomObserverElement) {
+      return;
     }
+
+    this.bottomObserver.observe(this.bottomObserverElement);
   }
 
   /**
@@ -191,9 +205,11 @@ export class InfiniteScroll {
 
     this.scrollElement = document.getElementById(this.scrollElementId) as HTMLElement;
 
-    if (this.scrollElement) {
-      this.scrollElement.addEventListener("scroll", this.handleHeavyDesktopScroll);
+    if (!this.scrollElement) {
+      return;
     }
+
+    this.scrollElement.addEventListener("scroll", this.handleDesktopScroll);
   };
 
   /**
@@ -201,9 +217,11 @@ export class InfiniteScroll {
    * @returns void
    */
   public stopHandleScroll = (): void => {
-    if (this.scrollElement?.removeEventListener) {
-      this.scrollElement.removeEventListener("scroll", this.handleHeavyDesktopScroll);
+    if (!this.scrollElement?.removeEventListener) {
+      return;
     }
+
+    this.scrollElement.removeEventListener("scroll", this.handleDesktopScroll);
   };
 
   /**
@@ -225,11 +243,19 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method getCurrentSlice
-   * @returns IInfiniteScrollSlice
+   * @method setVisibleSlice
+   * @returns IInfiniteScrollvisibleSlice
    */
-  public getCurrentSlice(): IInfiniteScrollSlice {
-    return this.slice;
+  public setVisibleSlice(visibleSlice: IInfiniteScrollvisibleSlice): void {
+    this.visibleSlice = visibleSlice;
+  }
+
+  /**
+   * @method getVisibleSlice
+   * @returns IInfiniteScrollvisibleSlice
+   */
+  public getVisibleSlice(): IInfiniteScrollvisibleSlice {
+    return this.visibleSlice;
   }
 
   /**
@@ -242,32 +268,40 @@ export class InfiniteScroll {
   ): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
-        const minIndex: number = this.slice.minIndex - this.settings.increment;
-        const maxIndex: number = minIndex + this.settings.increment * 2;
+        const previousMinIndex: number = this.visibleSlice.minIndex;
+
+        const boundlessMinIndex: number = previousMinIndex - this.settings.increment;
+        const minIndex = boundlessMinIndex > 0 ? boundlessMinIndex : 0;
+
+        const boundlessMaxIndex: number = minIndex + this.settings.increment * 2;
+        const maxIndex =
+          boundlessMaxIndex < this.totalEntries ? boundlessMaxIndex : this.totalEntries;
+
+        this.setVisibleSlice({ minIndex, maxIndex });
 
         if (window.innerWidth < this.settings.desktopBreakpoint) {
           const callback: (() => void) | undefined =
-            this.slice.minIndex > 0
+            this.visibleSlice.minIndex > 0
               ? () => {
-                  const lastEntryPosition =
-                    this.settings.increment * this.settings.placeholderMobileHeight +
-                    this.settings.loaderHeight +
-                    this.settings.navbarOffset;
+                  if (!this.scrollElement) {
+                    return;
+                  }
 
-                  this.scrollElement?.scrollTo(0, lastEntryPosition);
+                  const lastEntryPosition: number =
+                    this.settings.increment * this.settings.placeholderMobileHeight +
+                    this.settings.loaderHeight -
+                    this.scrollElement.scrollTop;
+
+                  this.scrollElement.scrollTo({ top: lastEntryPosition });
                 }
               : undefined;
 
-          this.triggerScrollHandler(minIndex, maxIndex, false, callback);
+          this.triggerScrollHandlerAsMobile(callback);
 
           return;
         }
 
-        this.triggerScrollHandler(
-          minIndex,
-          maxIndex,
-          window.innerWidth >= this.settings.desktopBreakpoint
-        );
+        this.triggerScrollHandlerAsDestop();
       }
     });
   };
@@ -282,24 +316,41 @@ export class InfiniteScroll {
   ): void => {
     intersectionEntries.forEach((intersectionEntry: IntersectionObserverEntry) => {
       if (intersectionEntry.intersectionRatio > 0) {
-        const maxIndex: number = this.slice.maxIndex + this.settings.increment;
-        const minIndex: number = maxIndex - this.settings.increment * 2;
+        const topObserverPosition: number = this.topObserverElement?.offsetTop ?? 0;
+        const bottomObserverPosition: number = this.bottomObserverElement?.offsetTop ?? 0;
 
-        this.triggerScrollHandler(
-          minIndex,
-          maxIndex,
-          window.innerWidth >= this.settings.desktopBreakpoint
+        const observerPositionDifference: number = Math.abs(
+          topObserverPosition - bottomObserverPosition
         );
+
+        if (observerPositionDifference < 5) {
+          return;
+        }
+
+        const previousMaxIndex: number = this.visibleSlice.maxIndex;
+
+        const boundlessMaxIndex: number = previousMaxIndex + this.settings.increment;
+        const maxIndex =
+          boundlessMaxIndex < this.totalEntries ? boundlessMaxIndex : this.totalEntries;
+
+        const boundlessMinIndex: number = maxIndex - this.settings.increment * 2;
+        const minIndex = boundlessMinIndex > 0 ? boundlessMinIndex : 0;
+
+        this.setVisibleSlice({ minIndex, maxIndex });
+
+        window.innerWidth < this.settings.desktopBreakpoint
+          ? this.triggerScrollHandlerAsMobile()
+          : this.triggerScrollHandlerAsDestop();
       }
     });
   };
 
   /**
-   * @method handleHeavyDesktopScroll
+   * @method handleDesktopScroll
    * @param {Event} event
    * @returns void
    */
-  private readonly handleHeavyDesktopScroll = (event: Event): void => {
+  private readonly handleDesktopScroll = (event: Event): void => {
     if (window.innerWidth <= this.settings.desktopBreakpoint) {
       return;
     }
@@ -312,71 +363,71 @@ export class InfiniteScroll {
     if (scrollTop > bottomObserverPosition + 100 || scrollTop < topObserverPosition - 100) {
       const currentIndex = Math.floor(scrollTop / this.settings.placeholderDesktopHeight);
 
-      const minIndex: number = currentIndex;
-      const maxIndex: number = minIndex + this.settings.increment * 2;
+      const boundlessMinIndex: number = currentIndex;
+      const minIndex = boundlessMinIndex > 0 ? boundlessMinIndex : 0;
 
-      this.triggerScrollHandler(minIndex, maxIndex, true);
+      const boundlessMaxIndex: number = minIndex + this.settings.increment * 2;
+      const maxIndex =
+        boundlessMaxIndex < this.totalEntries ? boundlessMaxIndex : this.totalEntries;
+
+      this.setVisibleSlice({ minIndex, maxIndex });
+
+      this.triggerScrollHandlerAsDestop();
     }
   };
 
   /**
-   * @method triggerScrollHandler
-   * @param {number} minIndex
-   * @param {number } maxIndex
+   * triggerScrollHandlerAsDestop
    * @param {() => void} callback
    * @returns void
    */
-  private triggerScrollHandler(
-    minIndex: number,
-    maxIndex: number,
-    desktopMode: boolean = false,
-    callback?: () => void
-  ): void {
-    this.slice.minIndex = minIndex > 0 ? minIndex : 0;
-    this.slice.maxIndex = maxIndex < this.totalEntries ? maxIndex : this.totalEntries;
-
-    let folderPlaceholder: IFolderPlaceholder | undefined;
-    let folderScrollSpinner: IFolderScrollSpinner | undefined;
-
-    if (desktopMode) {
-      folderPlaceholder = {
-        top: this.slice.minIndex * this.settings.placeholderDesktopHeight,
-        bottom: (this.totalEntries - this.slice.maxIndex) * this.settings.placeholderDesktopHeight
-      };
-
-      folderScrollSpinner = {
-        top: false,
-        bottom: false
-      };
-    } else {
-      const placeHolderSize = 4 * this.settings.placeholderMobileHeight;
-
-      const topPlaceholderSize = this.slice.minIndex - 10 > 0 ? placeHolderSize : 0;
-
-      const bottomPlaceholderSize =
-        this.totalEntries - 10 > this.slice.maxIndex ? placeHolderSize : 0;
-
-      folderPlaceholder = {
-        top: topPlaceholderSize,
-        bottom: bottomPlaceholderSize
-      };
-
-      folderScrollSpinner = {
-        top: topPlaceholderSize > 0,
-        bottom: bottomPlaceholderSize > 0
-      };
-    }
-
+  private triggerScrollHandlerAsDestop(callback?: () => void) {
     if (!this.scrollHandler) {
       return;
     }
 
-    this.scrollHandler({
-      minIndex: this.slice.minIndex,
-      maxIndex: this.slice.maxIndex,
-      folderScrollSpinner,
-      folderPlaceholder,
-      callback
-    });
+    const { minIndex, maxIndex } = this.getVisibleSlice();
+
+    const folderPlaceholder: IFolderPlaceholder = {
+      top: minIndex * this.settings.placeholderDesktopHeight,
+      bottom: (this.totalEntries - maxIndex) * this.settings.placeholderDesktopHeight
+    };
+
+    this.scrollHandler({ minIndex, maxIndex, folderPlaceholder, callback });
+  }
+
+  /**
+   * triggerScrollHandlerAsMobile
+   * @param {() => void} callback
+   * @returns void
+   */
+  private triggerScrollHandlerAsMobile(callback?: () => void) {
+    if (!this.scrollHandler) {
+      return;
+    }
+
+    const { minIndex, maxIndex } = this.getVisibleSlice();
+
+    const placeholderThreshold: number = 100;
+
+    const placeholderSize: number = window.innerHeight - this.settings.navbarHeight;
+    const placeholderMaxElements: number = Math.ceil(
+      placeholderSize / this.settings.placeholderMobileHeight
+    );
+
+    const definativePlaceholderSize: number = placeholderSize - placeholderThreshold;
+
+    const topPlaceholderSize: number =
+      minIndex - placeholderMaxElements > 0 ? definativePlaceholderSize : 0;
+
+    const bottomPlaceholderSize: number =
+      this.totalEntries - placeholderMaxElements > maxIndex ? definativePlaceholderSize : 0;
+
+    const folderScrollSpinner: IFolderScrollSpinner = {
+      top: topPlaceholderSize > 0,
+      bottom: bottomPlaceholderSize > 0
+    };
+
+    this.scrollHandler({ minIndex, maxIndex, folderScrollSpinner, callback });
   }
 }
