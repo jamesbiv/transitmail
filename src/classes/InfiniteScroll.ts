@@ -107,7 +107,7 @@ export class InfiniteScroll {
       pageSize: this.defaultPageSize,
       increment: this.defaultPageSize,
       desktopBreakpoint: 576,
-      loaderHeight: 50,
+      loaderHeight: 65,
       navbarHeight: 56,
       placeholderDesktopHeight: 65,
       placeholderMobileHeight: 141,
@@ -287,10 +287,13 @@ export class InfiniteScroll {
                     return;
                   }
 
+                  const { increment, placeholderMobileHeight, loaderHeight } = this.settings;
+
+                  const placeholderTotalHeight: number = increment * placeholderMobileHeight;
+                  const currentScrollTop: number = this.scrollElement.scrollTop;
+
                   const lastEntryPosition: number =
-                    this.settings.increment * this.settings.placeholderMobileHeight +
-                    this.settings.loaderHeight -
-                    this.scrollElement.scrollTop;
+                    currentScrollTop + placeholderTotalHeight + loaderHeight;
 
                   this.scrollElement.scrollTo({ top: lastEntryPosition });
                 }

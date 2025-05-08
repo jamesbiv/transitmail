@@ -471,7 +471,7 @@ describe("Testing the InfiniteScroll class", () => {
       const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
 
       expect(getVisibleSliceResponse).toEqual({ minIndex: 55, maxIndex: 115 });
-      expect(containerMain.scrollTo).toHaveBeenCalledWith({ top: 4280 });
+      expect(containerMain.scrollTo).toHaveBeenCalledWith({ top: 4295 });
 
       window.innerWidth = originalWindowInnerWidth;
     });
