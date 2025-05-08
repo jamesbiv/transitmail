@@ -22,15 +22,16 @@ export const ComposeSecondaryEmail: FunctionComponent<IComposeSecondaryEmailProp
   updateSenderDetails
 }) => {
   return (
-    <FormGroup controlId="exampleForm.ControlSelect1">
+    <FormGroup controlId="formComposeSecondaryEmails">
       <Row>
         <Col xs={4} sm={2}>
           <FormLabel>From:</FormLabel>
         </Col>
         <Col xs={8} sm={10}>
           <FormControl
-            size="sm"
+            data-testid="selectComposeSecondaryEmails"
             as="select"
+            size="sm"
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
               updateSenderDetails(Number(event.target.value))
             }
@@ -41,7 +42,7 @@ export const ComposeSecondaryEmail: FunctionComponent<IComposeSecondaryEmailProp
             </option>
             {secondaryEmails?.map(
               (secondaryEmail: ISettingsSecondaryEmail, secondaryEmailKey: number) => (
-                <option key={secondaryEmailKey} value={secondaryEmailKey}>
+                <option key={secondaryEmail.key} value={secondaryEmailKey}>
                   {secondaryEmail.name} &lt;{secondaryEmail.email}&gt;
                 </option>
               )
