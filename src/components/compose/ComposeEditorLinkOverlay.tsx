@@ -23,7 +23,7 @@ interface IComposeEditorLinkOverlayProps {
   linkUrl: string | undefined;
   showLinkOverlay: boolean;
   overlayTarget: RefObject<HTMLButtonElement | undefined>;
-  toggleLinkOverlay: Dispatch<boolean>;
+  setShowLinkOverlay: Dispatch<boolean>;
 }
 
 /**
@@ -35,7 +35,7 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
   linkUrl,
   showLinkOverlay,
   overlayTarget,
-  toggleLinkOverlay
+  setShowLinkOverlay
 }) => {
   const [editor] = useLexicalComposerContext();
 
@@ -59,26 +59,25 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
         return;
       }
 
-      const extractedNodesFromSelection = selection.extract();
+      const nodesWithSelection: LexicalNode[] = selection.extract();
 
-      extractedNodesFromSelection.forEach((extractedNode) => {
-        const parentLink = $findMatchingParent(extractedNode, (parentNode) =>
-          $isLinkNode(parentNode)
-        );
-
-        if (!parentLink) {
-          return;
-        }
-
-        const childrenNodes: LexicalNode[] = parentLink.getChildren();
-        childrenNodes.forEach((childNode) => parentLink.insertBefore(childNode));
-
-        parentLink.remove();
-      });
-
-      return;
+      flushNodeDataFromSelection(nodesWithSelection);
     });
   };
+
+  const flushNodeDataFromSelection = (nodesWithSelection: LexicalNode[]) =>
+    nodesWithSelection.forEach((selectedNode: LexicalNode) => {
+      const parentLink = $findMatchingParent(selectedNode, (parentNode) => $isLinkNode(parentNode));
+
+      if (!parentLink) {
+        return;
+      }
+
+      const childrenNodes: LexicalNode[] = parentLink.getChildren();
+      childrenNodes.forEach((childNode) => parentLink.insertBefore(childNode));
+
+      parentLink.remove();
+    });
 
   return (
     <Overlay
@@ -103,6 +102,7 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
             </Col>
             <Col xs={4} className="text-nowrap">
               <Button
+                data-testid="updateLink"
                 size="sm"
                 className="me-1"
                 variant="outline-dark"
@@ -116,12 +116,13 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
 
                   updateLink(linkUrlFromElement);
 
-                  toggleLinkOverlay(false);
+                  setShowLinkOverlay(false);
                 }}
               >
                 <FontAwesomeIcon icon={faPen} />
               </Button>
               <Button
+                data-testid="removeLink"
                 size="sm"
                 variant="danger"
                 type="button"
@@ -130,7 +131,7 @@ export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverl
 
                   removeLink();
 
-                  toggleLinkOverlay(false);
+                  setShowLinkOverlay(false);
                 }}
               >
                 <FontAwesomeIcon icon={faTrash} />

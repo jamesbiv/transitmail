@@ -1,4 +1,4 @@
-import React, { Component, Dispatch, PureComponent } from "react";
+import React, { Dispatch, PureComponent } from "react";
 import { InfiniteScroll } from "classes";
 import {
   IFolderEmail,

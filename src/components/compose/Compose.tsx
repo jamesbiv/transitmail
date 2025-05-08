@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from "react";
 import {
   Card,
-  Alert,
   Form,
   Button,
   Row,
@@ -12,17 +11,11 @@ import {
   CardFooter
 } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faExclamationTriangle,
-  faFeather,
-  faPaperPlane,
-  faTimes,
-  faTrash
-} from "@fortawesome/free-solid-svg-icons";
+import { faFeather, faPaperPlane, faTrash } from "@fortawesome/free-solid-svg-icons";
 import {
   ComposeAttachments,
   ComposeEditor,
+  ComposeMessage,
   ComposeRecipientDetails,
   ComposeSecondaryEmail
 } from ".";
@@ -35,7 +28,8 @@ import {
   IComposePresets,
   ISettingsSecondaryEmail,
   IEmail,
-  IComposeSender
+  IComposeSender,
+  IComposeMessage
 } from "interfaces";
 import { DependenciesContext } from "contexts";
 import { convertAttachments, downloadEmail, sendEmail } from "lib";
@@ -67,8 +61,7 @@ export const Compose: FunctionComponent = () => {
 
   const [attachments, setAttachments] = useState<IComposeAttachment[]>([]);
 
-  const [message, setMessage] = useState<string | undefined>(undefined);
-  const [messageType, setMessageType] = useState<string | undefined>(undefined);
+  const [composeMessage, setComposeMessage] = useState<IComposeMessage | undefined>(undefined);
 
   const [progressBarNow, setProgressBarNow] = useState<number>(0);
 
@@ -108,8 +101,8 @@ export const Compose: FunctionComponent = () => {
           // Add functionality
           break;
 
-        default:
         case EComposePresetType.Forward:
+        default:
           break;
       }
 
@@ -132,7 +125,7 @@ export const Compose: FunctionComponent = () => {
         setBodyPlaceholder(presetEmail.bodyText);
       }
 
-      stateManager.setComposePresets(undefined);
+      stateManager.setComposePresets();
     })();
   }, []);
 
@@ -174,8 +167,6 @@ export const Compose: FunctionComponent = () => {
     );
 
     lockSendEmail = false;
-
-    return;
   };
 
   const updateSenderDetails = (secondaryEmailKey?: number): void => {
@@ -245,23 +236,7 @@ export const Compose: FunctionComponent = () => {
       </CardHeader>
       <Form>
         <CardBody className="p-2 ps-3 pe-3">
-          <Alert
-            className={!message ? "d-none" : "d-block"}
-            variant={
-              messageType === "info" ? "success" : messageType === "warning" ? "warning" : "danger"
-            }
-          >
-            <FontAwesomeIcon
-              icon={
-                messageType === "info"
-                  ? faCheck
-                  : messageType === "warning"
-                    ? faExclamationTriangle
-                    : faTimes
-              }
-            />{" "}
-            {message}
-          </Alert>
+          <ComposeMessage composeMessage={composeMessage} />
           {secondaryEmails && (
             <ComposeSecondaryEmail
               defaultSender={defaultSender}
