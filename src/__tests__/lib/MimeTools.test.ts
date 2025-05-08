@@ -17,7 +17,7 @@ describe("Testing MimeTools", () => {
 
     expect(parseMimeWordsResponse).toEqual("? string with hex value");
 
-    test("with valid base64 string content", () => {
+    it("with valid base64 string content", () => {
       const content: string = "=?UTF-8?B?dGVzdCBiYXNlNjQ=?=";
 
       const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
@@ -25,7 +25,7 @@ describe("Testing MimeTools", () => {
       expect(parseMimeWordsResponse).toEqual("test base64");
     });
 
-    test("with joinable content", () => {
+    it("with joinable content", () => {
       const content: string = "=?UTF-8?B?dGVzdCA=?==?UTF-8?B?YmFzZTY0?=";
 
       const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
@@ -33,7 +33,7 @@ describe("Testing MimeTools", () => {
       expect(parseMimeWordsResponse).toEqual("test base64");
     });
 
-    test("with invalid content", () => {
+    it("with invalid content", () => {
       const content: string = "=?UTF-8?B??=";
 
       const parseMimeWordsResponse = MimeTools.parseMimeWords(content);
@@ -43,7 +43,7 @@ describe("Testing MimeTools", () => {
   });
 
   describe("Test base64toBlob", () => {
-    test("with valid string content", () => {
+    it("with valid string content", () => {
       const content: string = "dGVzdCBibG9i";
       const contentType: string = "";
 
@@ -54,7 +54,7 @@ describe("Testing MimeTools", () => {
   });
 
   describe("Test binaryStringToBlob", () => {
-    test("with valid string content", () => {
+    it("with valid string content", () => {
       const content: string = "test blob";
       const contentType: string = "";
 

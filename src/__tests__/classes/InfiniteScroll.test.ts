@@ -1,4 +1,4 @@
-import { fireEvent } from "@testing-library/dom";
+import { fireEvent } from "@testing-library/react";
 import { sleep } from "__tests__/fixtures";
 import { InfiniteScroll } from "classes";
 import { IInfinateScrollHandler } from "interfaces";
@@ -29,11 +29,6 @@ describe("Testing the InfiniteScroll class", () => {
 
       constructor(callback: IntersectionObserverCallback) {
         this.callback = callback;
-
-        callback(
-          [{ intersectionRatio: 1 }, { intersectionRatio: 0 }] as IntersectionObserverEntry[],
-          undefined!
-        );
       }
 
       readonly root = document.createElement("root");
@@ -43,6 +38,7 @@ describe("Testing the InfiniteScroll class", () => {
       disconnect() {
         return undefined;
       }
+
       observe(target: Element) {
         this.callback(
           [{ intersectionRatio: 1 }, { intersectionRatio: 0 }] as IntersectionObserverEntry[],
@@ -51,9 +47,11 @@ describe("Testing the InfiniteScroll class", () => {
 
         return undefined;
       }
+
       takeRecords() {
         return [];
       }
+
       unobserve(target: Element) {
         return undefined;
       }
@@ -69,389 +67,307 @@ describe("Testing the InfiniteScroll class", () => {
   });
 
   describe("Test initiateHandlers()", () => {
-    it("", () => {
+    it("ensuire that scrollHandler() was successfully assigned", () => {
       const infiniteScroll = new InfiniteScroll();
+
+      const scrollHandler = jest
+        .fn()
+        .mockImplementationOnce(({ minIndex, maxIndex }: IInfinateScrollHandler) => {});
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
-      );
-    });
-
-    it("", () => {
-      const originalWindowInnerWidth = window.innerWidth;
-
-      window.innerWidth = 200;
-
-      const infiniteScroll = new InfiniteScroll();
-
-      infiniteScroll.initiateHandlers(
-        "container-main",
-        "topObserver",
-        "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
-      window.innerWidth = originalWindowInnerWidth;
+      infiniteScroll.startTopObservation();
+
+      expect(scrollHandler).toHaveBeenCalled();
     });
   });
 
   describe("Test startTopObservation()", () => {
-    it("", () => {
+    it("a successful response with observe() being called", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "observe"
+      );
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
       infiniteScroll.startTopObservation();
+
+      expect(intersectionObserverSpy).toHaveBeenCalled();
     });
 
-    it("", () => {
+    it("observe() wont be called because topElementId was not set", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "observe"
+      );
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.startTopObservation();
+
+      expect(intersectionObserverSpy).not.toHaveBeenCalled();
     });
 
-    it("", () => {
+    it("observe() wont be called because topObserverElement was not found", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "observe"
+      );
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "invalidTopObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
       infiniteScroll.startTopObservation();
+
+      expect(intersectionObserverSpy).not.toHaveBeenCalled();
     });
   });
 
   describe("Test startBottomObservation()", () => {
-    it("", () => {
+    it("a successful response with observe() being called", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "observe"
+      );
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
       infiniteScroll.startBottomObservation();
+
+      expect(intersectionObserverSpy).toHaveBeenCalled();
     });
 
-    it("", () => {
+    it("observe() wont be called because bottomElementId was not set", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "observe"
+      );
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.startBottomObservation();
+
+      expect(intersectionObserverSpy).not.toHaveBeenCalled();
     });
 
-    it("", () => {
+    it("observe() wont be called because bottomObserverElement was not found", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "observe"
+      );
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "invalidBottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
       infiniteScroll.startBottomObservation();
-    });
-  });
 
-  describe("Test handleHeavyDesktopScroll()", () => {
-    it("", async () => {
-      const originalWindowInnerWidth = window.innerWidth;
-
-      window.innerWidth = 100;
-
-      const infiniteScroll = new InfiniteScroll();
-
-      infiniteScroll.initiateHandlers(
-        "container-main",
-        "topObserver",
-        "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
-      );
-
-      infiniteScroll.startHandleScroll();
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 0 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 100 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 1000 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 10000 }
-      });
-
-      window.innerWidth = originalWindowInnerWidth;
-    });
-
-    it("", async () => {
-      const originalWindowInnerWidth = window.innerWidth;
-
-      window.innerWidth = 100;
-
-      jest
-        .spyOn(document.getElementById("container-main")!, "scrollTop", "get")
-        .mockImplementationOnce(() => 200);
-
-      const infiniteScroll = new InfiniteScroll();
-
-      infiniteScroll.initiateHandlers(
-        "container-main",
-        "topObserver",
-        "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
-      );
-
-      infiniteScroll.startHandleScroll();
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollTop: 10000 }
-      });
-
-      await sleep(400);
-
-      infiniteScroll.startTopObservation();
-      infiniteScroll.startBottomObservation();
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 100 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 1000 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 10000 }
-      });
-
-      window.innerWidth = originalWindowInnerWidth;
-    });
-
-    it("", async () => {
-      const originalWindowInnerWidth = window.innerWidth;
-
-      window.innerWidth = 1000;
-
-      jest
-        .spyOn(document.getElementById("container-main")!, "scrollTop", "get")
-        .mockImplementationOnce(() => 200);
-
-      const infiniteScroll = new InfiniteScroll();
-
-      infiniteScroll.initiateHandlers(
-        "container-main",
-        "topObserver",
-        "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
-      );
-
-      infiniteScroll.startHandleScroll();
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollTop: 10000 }
-      });
-
-      await sleep(400);
-
-      infiniteScroll.startTopObservation();
-      infiniteScroll.startBottomObservation();
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 100 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 1000 }
-      });
-
-      await sleep(400);
-
-      fireEvent.scroll(document.getElementById("container-main")!, {
-        target: { scrollBottom: 10000 }
-      });
-
-      window.innerWidth = originalWindowInnerWidth;
+      expect(intersectionObserverSpy).not.toHaveBeenCalled();
     });
   });
 
   describe("Test startHandleScroll()", () => {
-    it("", () => {
-      const infiniteScroll = new InfiniteScroll();
+    it("a successful response with handleDesktopScroll() being called", () => {
+      const originalWindowInnerWidth = window.innerWidth;
 
-      infiniteScroll.startHandleScroll();
-    });
+      window.innerWidth = 1000;
 
-    it("", () => {
-      const infiniteScroll = new InfiniteScroll();
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
 
-      infiniteScroll.initiateHandlers(
-        "invalid-container-main",
-        "topObserver",
-        "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
-      );
+      const containerMain = document.getElementById("container-main")!;
+      const containerMainSpy = jest.spyOn(containerMain, "addEventListener");
 
-      infiniteScroll.startHandleScroll();
-    });
-  });
-
-  describe("Test stopHandleScroll()", () => {
-    it("", () => {
-      const infiniteScroll = new InfiniteScroll();
-
-      infiniteScroll.initiateHandlers(
-        "invalid-container-main",
-        "topObserver",
-        "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
-      );
-      infiniteScroll.startHandleScroll();
-
-      infiniteScroll.stopHandleScroll();
-    });
-
-    it("", () => {
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
+
+      infiniteScroll.startHandleScroll();
+
+      fireEvent.scroll(containerMain, { target: { scrollTop: 0 } });
+
+      expect(containerMainSpy).toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("handleDesktopScroll() wont be called because scrollElementId was not set", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const containerMain = document.getElementById("container-main")!;
+      const containerMainSpy = jest.spyOn(containerMain, "addEventListener");
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.startHandleScroll();
+      fireEvent.scroll(containerMain, { target: { scrollTop: 0 } });
+
+      expect(containerMainSpy).not.toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("handleDesktopScroll() wont be called because scrollElement was not found", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const containerMain = document.getElementById("container-main")!;
+      const containerMainSpy = jest.spyOn(containerMain, "addEventListener");
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.initiateHandlers(
+        "invalid-container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      fireEvent.scroll(containerMain, { target: { scrollTop: 0 } });
+
+      expect(containerMainSpy).not.toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+  });
+
+  describe("Test stopHandleScroll()", () => {
+    it("a successful response with handleDesktopScroll() being removed as eventHandler", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const containerMain = document.getElementById("container-main")!;
+      const containerMainSpy = jest.spyOn(containerMain, "removeEventListener");
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
       infiniteScroll.startHandleScroll();
 
       infiniteScroll.stopHandleScroll();
+
+      expect(containerMainSpy).toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("handleDesktopScroll() wont be called because scrollElement was not valid", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const containerMain = document.getElementById("container-main")!;
+      const containerMainSpy = jest.spyOn(containerMain, "removeEventListener");
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.initiateHandlers(
+        "invalid-container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      infiniteScroll.stopHandleScroll();
+
+      expect(containerMainSpy).not.toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
     });
   });
 
   describe("Test stopObservertions()", () => {
-    it("", () => {
+    it("a successful response", () => {
+      const intersectionObserverSpy: jest.SpyInstance = jest.spyOn(
+        IntersectionObserver.prototype,
+        "disconnect"
+      );
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
       const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
       infiniteScroll.stopObservertions();
+
+      expect(intersectionObserverSpy).toHaveBeenCalled();
     });
   });
 
   describe("Test setTotalEntries()", () => {
-    test("", () => {
+    it("a successful response", () => {
       const totalEntries: number = 100;
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
 
       const infiniteScroll = new InfiniteScroll();
 
@@ -459,42 +375,569 @@ describe("Testing the InfiniteScroll class", () => {
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
-      infiniteScroll.setTotalEntries(totalEntries);
+      const setTotalEntriesResponse = infiniteScroll.setTotalEntries(totalEntries);
+
+      expect(setTotalEntriesResponse).toBeUndefined();
     });
   });
 
-  describe("Test stopHandleScroll()", () => {
-    test("", () => {
-      const infiniteScroll = new InfiniteScroll();
+  describe("Test setVisibleSlice() and getVisibleSlice()", () => {
+    it("a successful getting and setting", () => {
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
 
-      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+      const visibleSlice = { minIndex: 10, maxIndex: 20 };
+
+      const infiniteScroll = new InfiniteScroll();
 
       infiniteScroll.initiateHandlers(
         "container-main",
         "topObserver",
         "bottomObserver",
-        ({
-          minIndex,
-          maxIndex,
-          folderPlaceholder,
-          folderScrollSpinner,
-          callback
-        }: IInfinateScrollHandler) => {}
+        scrollHandler
       );
 
-      expect(getVisibleSliceResponse).toEqual({
-        maxIndex: 0,
-        minIndex: 0
-      });
+      infiniteScroll.setVisibleSlice(visibleSlice);
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toBe(visibleSlice);
+    });
+  });
+
+  describe("Test topObservationCallback()", () => {
+    it("a successful response as desktop", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startTopObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 70, maxIndex: 100 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as mobile triggering callback", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const containerMain = document.getElementById("container-main")!;
+      containerMain.scrollTo = jest.fn();
+
+      const scrollHandler = ({ minIndex, maxIndex, callback }: IInfinateScrollHandler) => {
+        callback && callback();
+      };
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      infiniteScroll.startTopObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 55, maxIndex: 115 });
+      expect(containerMain.scrollTo).toHaveBeenCalledWith({ top: 4280 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as mobile without triggering callback because containerMain was invalid", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const containerMain = document.getElementById("container-main")!;
+      containerMain.scrollTo = jest.fn();
+
+      const scrollHandler = ({ minIndex, maxIndex, callback }: IInfinateScrollHandler) => {
+        callback && callback();
+      };
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "invalid-container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      infiniteScroll.startTopObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 55, maxIndex: 115 });
+      expect(containerMain.scrollTo).not.toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as mobile but callback is not set for minIndex being 0", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const containerMain = document.getElementById("container-main")!;
+      containerMain.scrollTo = jest.fn();
+
+      const scrollHandler = ({ minIndex, maxIndex, callback }: IInfinateScrollHandler) => {
+        callback && callback();
+      };
+
+      const visibleSlice = { minIndex: 0, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      infiniteScroll.startTopObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 0, maxIndex: 60 });
+      expect(containerMain.scrollTo).not.toHaveBeenCalled();
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+  });
+
+  describe("Test bottomObservationCallback()", () => {
+    it("a successful response as desktop", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 85, maxIndex: 115 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as desktop without scrollHandler", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        undefined!
+      );
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 85, maxIndex: 115 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as mobile", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 85, maxIndex: 145 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as mobile without scrollHandler", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        undefined!
+      );
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 85, maxIndex: 145 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response as mobile but bottomObserver offsetTop is invalid", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: undefined });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(10);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startTopObservation();
+      infiniteScroll.startBottomObservation();
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 0, maxIndex: 10 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+  });
+
+  describe("Test handleDesktopScroll()", () => {
+    it("a successful response", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      const containerMain = document.getElementById("container-main")!;
+      fireEvent.scroll(containerMain, { target: { scrollTop: 1000 } });
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 15, maxIndex: 45 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response with scrollTop of scrollElement being invalid", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      const containerMain = document.getElementById("container-main")!;
+      Object.defineProperty(containerMain, "scrollTop", { value: undefined });
+      fireEvent.scroll(containerMain, { target: { scrollBottom: 1000 } });
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 85, maxIndex: 100 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response with minIndex set to 0 when scrolling goes into negative values", async () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      const containerMain = document.getElementById("container-main")!;
+
+      fireEvent.scroll(containerMain, { target: { scrollTop: 0 } });
+
+      await sleep(10);
+
+      fireEvent.scroll(containerMain, { target: { scrollTop: -200 } });
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 0, maxIndex: 30 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("a successful response with minIndex set to 0 when scrolling goes into negative values", async () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 1000;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(100);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      const containerMain = document.getElementById("container-main")!;
+      fireEvent.scroll(containerMain, { target: { scrollTop: 0 } });
+
+      await sleep(10);
+
+      fireEvent.scroll(containerMain, { target: { scrollTop: 5000 } });
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 76, maxIndex: 100 });
+
+      window.innerWidth = originalWindowInnerWidth;
+    });
+
+    it("breaks early and makes no changes to visibleSlice if is mobile mode", () => {
+      const originalWindowInnerWidth = window.innerWidth;
+
+      window.innerWidth = 100;
+
+      const topObserver = document.getElementById("topObserver")!;
+      Object.defineProperty(topObserver, "offsetTop", { value: 10 });
+
+      const bottomObserver = document.getElementById("bottomObserver")!;
+      Object.defineProperty(bottomObserver, "offsetTop", { value: 100 });
+
+      const scrollHandler = ({ minIndex, maxIndex }: IInfinateScrollHandler) => {};
+
+      const visibleSlice = { minIndex: 85, maxIndex: 100 };
+
+      const infiniteScroll = new InfiniteScroll();
+
+      infiniteScroll.setVisibleSlice(visibleSlice);
+      infiniteScroll.setTotalEntries(200);
+
+      infiniteScroll.initiateHandlers(
+        "container-main",
+        "topObserver",
+        "bottomObserver",
+        scrollHandler
+      );
+
+      infiniteScroll.startHandleScroll();
+
+      const containerMain = document.getElementById("container-main")!;
+      fireEvent.scroll(containerMain, { target: { scrollTop: 1000 } });
+
+      const getVisibleSliceResponse = infiniteScroll.getVisibleSlice();
+
+      expect(getVisibleSliceResponse).toEqual({ minIndex: 85, maxIndex: 100 });
+
+      window.innerWidth = originalWindowInnerWidth;
     });
   });
 });
