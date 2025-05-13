@@ -1,4 +1,4 @@
-import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent, ReactElement } from "react";
+import React, { ChangeEvent, Dispatch, Fragment, FunctionComponent } from "react";
 import { Button } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -20,6 +20,19 @@ interface IComposeAttachmentProps {
   attachments: IComposeAttachment[];
   setAttachments: Dispatch<IComposeAttachment[]>;
 }
+
+export const AttachmentInput: FunctionComponent<{
+  loadAttachments: (event: ChangeEvent<HTMLInputElement>) => void;
+}> = ({ loadAttachments }) => (
+  <input
+    id="attachmentInput"
+    type="file"
+    name="files[]"
+    hidden
+    multiple
+    onChange={(event: ChangeEvent<HTMLInputElement> & Event) => loadAttachments(event)}
+  />
+);
 
 /**
  * ComposeAttachments
@@ -76,27 +89,16 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
     setAttachments(updatedAttachments);
   };
 
-  const AttachmentInput: () => ReactElement = () => (
-    <input
-      id="attachmentInput"
-      type="file"
-      name="files[]"
-      hidden
-      multiple
-      onChange={(event: ChangeEvent<HTMLInputElement> & Event) => loadAttachments(event)}
-    />
-  );
-
   return (
     <Fragment>
-      <AttachmentInput />
+      <AttachmentInput loadAttachments={loadAttachments} />
       {attachments.length > 0 && (
         <div className="mt-2 mb-2 ps-2 pt-2 overflow-hidden">
           <h6>Attachments</h6>
 
           {attachments.map((attachment: IComposeAttachment, attachmentKey: number) => (
             <div
-              key={attachmentKey}
+              key={attachment.id}
               className="attachment float-start border rounded d-inline small bg-light ps-2 pe-2 pt-1 pb-1 me-2 mt-2"
             >
               <div className="title text-truncate float-start">

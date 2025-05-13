@@ -38,21 +38,17 @@ export const ComposeRecipientDetails: FunctionComponent<IComposeRecipientDetails
   const updateRecipientType = (type: string, recipientKey: number): void => {
     const updatedRecipients: IComposeRecipient[] = [...recipients];
 
-    if (updatedRecipients[recipientKey]) {
-      updatedRecipients[recipientKey].type = type;
+    updatedRecipients[recipientKey].type = type;
 
-      setRecipients(updatedRecipients);
-    }
+    setRecipients(updatedRecipients);
   };
 
   const updateRecipientValue = (value: string, recipientKey: number): void => {
     const updatedRecipients: IComposeRecipient[] = [...recipients];
 
-    if (updatedRecipients[recipientKey]) {
-      updatedRecipients[recipientKey].value = value;
+    updatedRecipients[recipientKey].value = value;
 
-      setRecipients(updatedRecipients);
-    }
+    setRecipients(updatedRecipients);
   };
 
   const addRecipient = (): void => {
@@ -63,7 +59,7 @@ export const ComposeRecipientDetails: FunctionComponent<IComposeRecipientDetails
 
     updatedRecipients.push({
       id: lastRecipientId + 1,
-      type: updatedRecipientsLength >= 1 ? "Bcc" : "Cc",
+      type: updatedRecipientsLength >= 2 ? "Bcc" : "Cc",
       value: ""
     });
 
@@ -85,7 +81,7 @@ export const ComposeRecipientDetails: FunctionComponent<IComposeRecipientDetails
   return (
     <Fragment>
       {recipients.map((recipient: IComposeRecipient, recipientKey: number) => (
-        <FormGroup as={Row} key={recipientKey} controlId="formComposeTo" className="mt-1 mb-0">
+        <FormGroup as={Row} key={recipient.id} controlId="formComposeTo" className="mt-1 mb-0">
           <FormLabel column xs={4} sm={2} className="pt-0">
             <DropdownButton
               size="sm"

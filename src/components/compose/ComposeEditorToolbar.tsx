@@ -119,7 +119,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
     HTMLButtonElement | undefined
   >(undefined);
 
-  const [showLinkOverlay, toggleLinkOverlay] = useState<boolean>(false);
+  const [showLinkOverlay, setShowLinkOverlay] = useState<boolean>(false);
 
   const updateToolbar = useCallback(() => {
     const selection: BaseSelection | undefined = $getSelection() ?? undefined;
@@ -395,7 +395,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           onMouseDown={(event: SyntheticEvent) => {
             event.preventDefault();
 
-            toggleLinkOverlay(showLinkOverlay ? false : true);
+            setShowLinkOverlay(!showLinkOverlay);
           }}
           className={linkUrl ? "active" : ""}
         >
@@ -405,7 +405,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
           linkUrl={linkUrl}
           showLinkOverlay={showLinkOverlay}
           overlayTarget={linkButtonTarget}
-          toggleLinkOverlay={toggleLinkOverlay}
+          setShowLinkOverlay={setShowLinkOverlay}
         />
       </ButtonGroup>
       <ButtonGroup size="sm" className="me-2 mt-2" aria-label="">

@@ -107,7 +107,7 @@ export class InfiniteScroll {
       pageSize: this.defaultPageSize,
       increment: this.defaultPageSize,
       desktopBreakpoint: 576,
-      loaderHeight: 65,
+      loaderHeight: 68,
       navbarHeight: 56,
       placeholderDesktopHeight: 65,
       placeholderMobileHeight: 141,
@@ -259,6 +259,36 @@ export class InfiniteScroll {
   }
 
   /**
+   * @method triggerReleaseClassOnDocument()
+   * @returns void
+   */
+  private triggerReleaseClassOnDocument(classElement: string): void {
+    if (!this.scrollElement) {
+      return;
+    }
+
+    this.scrollElement.addEventListener("animationend", () =>
+      this.scrollElement!.classList.remove(classElement)
+    );
+
+    this.scrollElement.classList.add(classElement);
+  }
+
+  /**
+   * @method triggerTopBounce()
+   * @returns void
+   */
+  private readonly triggerTopBounce = (event?: Event): void =>
+    this.triggerReleaseClassOnDocument("top-bounce");
+
+  /**
+   * @method triggerBottomBounce()
+   * @returns void
+   */
+  private readonly triggerBottomBounce = (event?: Event): void =>
+    this.triggerReleaseClassOnDocument("bottom-bounce");
+
+  /**
    * @method topObservationCallback
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void
@@ -380,7 +410,7 @@ export class InfiniteScroll {
   };
 
   /**
-   * triggerScrollHandlerAsDestop
+   * @method triggerScrollHandlerAsDestop
    * @param {() => void} callback
    * @returns void
    */
@@ -400,7 +430,7 @@ export class InfiniteScroll {
   }
 
   /**
-   * triggerScrollHandlerAsMobile
+   * @method triggerScrollHandlerAsMobile
    * @param {() => void} callback
    * @returns void
    */
