@@ -29,12 +29,22 @@ export const convertAttachments = async (
         fileReader.readAsArrayBuffer(attachmentContent);
       });
 
+      const readerResultArrayBuffer: Uint8Array<ArrayBuffer> = new Uint8Array(
+        fileReaderResponse.result as ArrayBuffer
+      );
+
+      let readerResult: string = "";
+
+      for (let increment = 0; increment < readerResultArrayBuffer.byteLength; increment++) {
+        readerResult += String.fromCharCode(readerResultArrayBuffer[increment]);
+      }
+
       (await convertedAttachments).push({
         id: attachmentCount++,
         filename: attachment.filename,
         size: 0,
         mimeType: attachment.mimeType,
-        data: fileReaderResponse.result as ArrayBuffer
+        data: readerResult
       });
 
       return Promise.resolve(convertedAttachments);
