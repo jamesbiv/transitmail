@@ -133,7 +133,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
     setIsUnderline(selection.hasFormat("underline"));
 
     const topLevelNode: ElementNode | undefined =
-      getRangeSelectedNode(selection).getTopLevelElement() ?? undefined;
+      getRangeSelectedNode(selection)?.getTopLevelElement() ?? undefined;
 
     if (!$isBlockElementNode(topLevelNode)) {
       return;
@@ -154,7 +154,7 @@ export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps>
     setIsOrderedList(isOrderedList);
 
     const getParentNode: ElementNode | undefined =
-      getRangeSelectedNode(selection).getParent() ?? undefined;
+      getRangeSelectedNode(selection)?.getParent() ?? undefined;
 
     const linkUrl: string | undefined = $isLinkNode(getParentNode)
       ? getParentNode.getURL()

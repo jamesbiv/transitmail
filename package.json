@@ -63,6 +63,9 @@
     ],
     "watchPathIgnorePatterns": [
       "src/__tests__/fixtures/.*"
-    ]
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less)$": "<rootDir>/src/__tests__/fixtures/mockStyleSheets.js"
+    }
   }
 }

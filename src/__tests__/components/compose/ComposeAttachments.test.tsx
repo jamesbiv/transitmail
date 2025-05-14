@@ -6,6 +6,10 @@ import { ComposeAttachments } from "components/compose";
 import { IComposeAttachment } from "interfaces";
 
 describe("ComposeAttachments Component", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe("testing attachment icons", () => {
     it("a successful response testing each icon type", () => {
       const attachments: IComposeAttachment[] = [
@@ -37,55 +41,141 @@ describe("ComposeAttachments Component", () => {
   });
 
   describe("testing loadAttachments()", () => {
-    it("a successful response", () => {
-      const readAsBinaryStringSpy = jest.spyOn(FileReader.prototype, "readAsBinaryString");
+    it("a successful response", async () => {
+      const originalFileReader = global.FileReader;
 
-      readAsBinaryStringSpy.mockImplementationOnce(() => undefined);
+      const { TextEncoder } = require("util");
+
+      const resultArrayBuffer = new TextEncoder().encode("Test attachment").buffer;
+
+      global.FileReader = class {
+        onload = () => undefined;
+        result = resultArrayBuffer;
+
+        readAsArrayBuffer(blob: Blob) {
+          this.onload();
+        }
+      } as never;
 
       const attachments: IComposeAttachment[] = [
-        { data: "", filename: "filename.msc", id: 1, mimeType: "some/mime-type", size: 1 }
+        { data: "", filename: "filename.msc", id: 0, mimeType: "some/mime-type", size: 1 }
       ];
 
-      const setAttachments = () => [];
+      const setAttachments = jest.fn().mockImplementation(() => []);
 
       const { container } = render(
         <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
       );
 
-      const mockFile: File = {
-        name: "mockFilename",
-        lastModified: 1,
-        webkitRelativePath: "",
-        size: 0,
-        type: "",
+      const attachmentString = "Test attachment";
+      const fileBlob = new Blob([attachmentString], { type: "text/plain" });
+      const mockFile: File = new File([fileBlob], "mockFilename", { type: "" });
 
-        arrayBuffer: function (): Promise<ArrayBuffer> {
-          throw new Error("Function not implemented.");
-        },
-        bytes: function (): Promise<Uint8Array> {
-          throw new Error("Function not implemented.");
-        },
-        slice: function (start?: number, end?: number, contentType?: string): Blob {
-          throw new Error("Function not implemented.");
-        },
-        stream: function (): ReadableStream<Uint8Array> {
-          throw new Error("Function not implemented.");
-        },
-        text: function (): Promise<string> {
-          throw new Error("Function not implemented.");
-        }
-      };
-
-      const fileList = {
-        item(index: number): File {
-          return mockFile;
-        },
-
-        length: 1
-      } as FileList;
+      const fileList = [mockFile];
+      Object.setPrototypeOf(fileList, FileList.prototype);
 
       const attachmentInput = container.querySelector('[id="attachmentInput"]')!;
       fireEvent.change(attachmentInput, { target: { files: fileList } });
+
+      expect(setAttachments).toHaveBeenCalledWith([
+        {
+          data: "",
+          filename: "filename.msc",
+          id: 0,
+          mimeType: "some/mime-type",
+          size: 1
+        },
+        {
+          data: "Test attachment",
+          filename: "mockFilename",
+          id: 1,
+          mimeType: "",
+          size: 15
+        }
+      ]);
+
+      global.FileReader = originalFileReader;
+    });
+
+    it("a successful response but with 0 byte attachment", async () => {
+      const originalFileReader = global.FileReader;
+
+      const { TextEncoder } = require("util");
+
+      const resultArrayBuffer = new TextEncoder().encode("").buffer;
+
+      global.FileReader = class {
+        onload = () => undefined;
+        result = resultArrayBuffer;
+
+        readAsArrayBuffer(blob: Blob) {
+          this.onload();
+        }
+      } as never;
+
+      const attachments: IComposeAttachment[] = [
+        { data: "", filename: "filename.msc", id: 0, mimeType: "some/mime-type", size: 1 }
+      ];
+
+      const setAttachments = jest.fn().mockImplementation(() => []);
+
+      const { container } = render(
+        <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
+      );
+
+      const attachmentString = "Test attachment";
+      const fileBlob = new Blob([attachmentString], { type: "text/plain" });
+      const mockFile: File = new File([fileBlob], "mockFilename", { type: "" });
+
+      const fileList = [mockFile];
+      Object.setPrototypeOf(fileList, FileList.prototype);
+
+      const attachmentInput = container.querySelector('[id="attachmentInput"]')!;
+      fireEvent.change(attachmentInput, { target: { files: fileList } });
+
+      expect(setAttachments).toHaveBeenCalledWith([
+        {
+          data: "",
+          filename: "filename.msc",
+          id: 0,
+          mimeType: "some/mime-type",
+          size: 1
+        },
+        {
+          data: undefined,
+          filename: "mockFilename",
+          id: 1,
+          mimeType: "",
+          size: 15
+        }
+      ]);
+
+      global.FileReader = originalFileReader;
+    });
+
+    it("an unsuccessful response because the attachment was invalid", () => {
+      const readAsArrayBufferSpy = jest.spyOn(FileReader.prototype, "readAsArrayBuffer");
+
+      readAsArrayBufferSpy.mockImplementationOnce(() => undefined);
+
+      const attachments: IComposeAttachment[] = [
+        { data: "", filename: "filename.msc", id: 1, mimeType: "some/mime-type", size: 1 }
+      ];
+
+      const setAttachments = jest.fn().mockImplementation(() => []);
+
+      const { container } = render(
+        <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
+      );
+      const attachmentInput = container.querySelector('[id="attachmentInput"]')!;
+
+      Object.defineProperty(attachmentInput, "files", {
+        value: undefined
+      });
+
+      fireEvent.change(attachmentInput, { target: { files: undefined } });
+
+      expect(setAttachments).not.toHaveBeenCalled();
     });
   });
 
@@ -95,9 +185,13 @@ describe("ComposeAttachments Component", () => {
 
       global.URL.createObjectURL = jest.fn();
 
-      const readAsBinaryStringSpy = jest.spyOn(FileReader.prototype, "readAsBinaryString");
+      const originalWiindowOpen = window.open;
 
-      readAsBinaryStringSpy.mockImplementationOnce(() => undefined);
+      window.open = jest.fn();
+
+      const readAsArrayBufferSpy = jest.spyOn(FileReader.prototype, "readAsArrayBuffer");
+
+      readAsArrayBufferSpy.mockImplementationOnce(() => undefined);
 
       const attachments: IComposeAttachment[] = [
         { data: "", filename: "filename.msc", id: 1, mimeType: "some/mime-type", size: 1 }
@@ -112,21 +206,26 @@ describe("ComposeAttachments Component", () => {
       const eyeIcon = container.querySelector('[data-icon="eye"]')!;
       fireEvent.click(eyeIcon);
 
+      expect(window.open).toHaveBeenCalled();
+
+      window.open = originalWiindowOpen;
+
       global.URL.createObjectURL = originalURLcreateObjectURL;
     });
   });
 
   describe("testing removeAttachment()", () => {
     it("a successful response", () => {
-      const readAsBinaryStringSpy = jest.spyOn(FileReader.prototype, "readAsBinaryString");
+      const readAsArrayBufferSpy = jest.spyOn(FileReader.prototype, "readAsArrayBuffer");
 
-      readAsBinaryStringSpy.mockImplementationOnce(() => undefined);
+      readAsArrayBufferSpy.mockImplementationOnce(() => undefined);
 
       const attachments: IComposeAttachment[] = [
+        { data: "", filename: "filename.jpg", id: 0, mimeType: "image/jpeg", size: 1 },
         { data: "", filename: "filename.msc", id: 1, mimeType: "some/mime-type", size: 1 }
       ];
 
-      const setAttachments = () => [];
+      const setAttachments = jest.fn().mockImplementation(() => []);
 
       const { container } = render(
         <ComposeAttachments attachments={attachments} setAttachments={setAttachments} />
@@ -134,6 +233,10 @@ describe("ComposeAttachments Component", () => {
 
       const timeIcon = container.querySelector('[data-icon="xmark"]')!;
       fireEvent.click(timeIcon);
+
+      expect(setAttachments).toHaveBeenCalledWith([
+        { data: "", filename: "filename.msc", id: 1, mimeType: "some/mime-type", size: 1 }
+      ]);
     });
   });
 });

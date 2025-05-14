@@ -15,54 +15,38 @@ import {
 } from "lexical";
 import { sleep } from "__tests__/fixtures";
 
-jest.mock("@lexical/utils", () => {
-  const originalModule = jest.requireActual("@lexical/utils");
+describe("ComposeEditorToolbar Component", () => {
+  const mockDispatchCommand = jest
+    .fn()
+    .mockImplementation((type: unknown, payload: CommandPayloadType<{}>) => true);
 
-  return {
-    __esModule: true,
-    ...originalModule,
-    mergeRegister: (...functions: [() => undefined]) => undefined
-  };
-});
+  beforeEach(() => {
+    const mergeRegister: jest.SpyInstance = jest.spyOn(require("@lexical/utils"), "mergeRegister");
+    mergeRegister.mockImplementation((...functions: [() => undefined]) => undefined);
 
-jest.mock("@lexical/link", () => {
-  const originalModule = jest.requireActual("@lexical/link");
+    const isLinkNodeSpy: jest.SpyInstance = jest.spyOn(require("@lexical/link"), "$isLinkNode");
+    isLinkNodeSpy.mockImplementation(() => true);
 
-  return {
-    __esModule: true,
-    ...originalModule,
-    $isLinkNode: () => true
-  };
-});
+    const isListNodeSpy: jest.SpyInstance = jest.spyOn(require("@lexical/list"), "$isListNode");
+    isListNodeSpy.mockImplementation(() => true);
 
-jest.mock("@lexical/list", () => {
-  const originalModule = jest.requireActual("@lexical/list");
+    const insertListSpy: jest.SpyInstance = jest.spyOn(require("@lexical/list"), "$insertList");
+    insertListSpy.mockImplementation(() => undefined);
 
-  return {
-    __esModule: true,
-    ...originalModule,
-    $insertList: () => undefined
-  };
-});
+    const useLexicalComposerContextSpy: jest.SpyInstance = jest.spyOn(
+      require("@lexical/react/LexicalComposerContext"),
+      "useLexicalComposerContext"
+    );
 
-const mockDispatchCommand = jest
-  .fn()
-  .mockImplementation((type: unknown, payload: CommandPayloadType<{}>) => true);
+    const mockDditorState = {
+      editorState: {
+        read: (callbackFn: () => void) => callbackFn()
+      }
+    } as never;
 
-jest.mock("@lexical/react/LexicalComposerContext", () => {
-  const originalModule = jest.requireActual("@lexical/react/LexicalComposerContext");
-
-  return {
-    __esModule: true,
-    ...originalModule,
-    useLexicalComposerContext: () => [
+    useLexicalComposerContextSpy.mockImplementation(() => [
       {
-        registerUpdateListener: (listener: UpdateListener) =>
-          listener({
-            editorState: {
-              read: (callbackFn: () => void) => callbackFn()
-            }
-          } as never),
+        registerUpdateListener: (listener: UpdateListener) => listener(mockDditorState),
         registerCommand: (
           command: LexicalCommand<{}>,
           listener: CommandListener<{}>,
@@ -72,66 +56,75 @@ jest.mock("@lexical/react/LexicalComposerContext", () => {
         },
         dispatchCommand: mockDispatchCommand
       }
-    ]
-  };
-});
+    ]);
 
-jest.mock("@lexical/selection", () => {
-  const originalModule = jest.requireActual("@lexical/selection");
+    const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+      require("@lexical/selection"),
+      "$isAtNodeEnd"
+    );
 
-  return {
-    __esModule: true,
-    ...originalModule,
-    $isAtNodeEnd: () => true
-  };
-});
+    isAtNodeEndSpy.mockImplementation(() => true);
 
-const mockFocusGetNode = () => {
-  return {
-    getParent: () => {
-      return {
-        getURL: () => "https://testUrl.com"
-      };
-    },
-    getTopLevelElement: () => {
-      return {
-        getFormatType: () => "",
-        getIndent: () => 1
-      };
-    },
-    getTopLevelElementOrThrow: () => {}
-  };
-};
+    const isRangeSelectionSpy: jest.SpyInstance = jest.spyOn(
+      require("lexical"),
+      "$isRangeSelection"
+    );
 
-jest.mock("lexical", () => {
-  const originalModule = jest.requireActual("lexical");
+    isRangeSelectionSpy.mockImplementation(() => true);
 
-  return {
-    __esModule: true,
-    ...originalModule,
-    $isRangeSelection: () => true,
-    $isBlockElementNode: () => true,
-    $getSelection: () => {
+    const isBlockElementNode: jest.SpyInstance = jest.spyOn(
+      require("lexical"),
+      "$isBlockElementNode"
+    );
+
+    isBlockElementNode.mockImplementation(() => true);
+
+    const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+    const getParent = {
+      getURL: () => "https://testUrl.com"
+    };
+
+    const getTopLevelElement = {
+      getListType: () => "",
+      getFormatType: () => "",
+      getIndent: () => 0
+    };
+
+    const getTopLevelElementOrThrow = () => {};
+
+    const mockFocusGetNode = {
+      getParent: () => getParent,
+      getTopLevelElement: () => getTopLevelElement,
+      getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+    };
+
+    getSelectionSpy.mockImplementation(() => {
       return {
         anchor: { getNode: () => true },
-        focus: { getNode: mockFocusGetNode },
+        focus: { getNode: () => mockFocusGetNode },
         hasFormat: (type: TextFormatType) => true,
         extract: () => [],
         isBackward: () => false,
         getStartEndPoints: () => undefined,
         getNodes: () => []
       };
-    }
-  };
-});
+    });
+  });
 
-describe("ComposeEditorToolbar Component", () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   describe("variations of getRangeSelectedNode() being called", () => {
-    it("a successful response with $isBackward() true and $isAtNodeEndSpy() true", () => {
+    it("an unsuccesful response because topLevelNode was not found", () => {
+      const isBlockElementNodeSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isBlockElementNode"
+      );
+
+      isBlockElementNodeSpy.mockImplementation(() => false);
+
       const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
         require("@lexical/selection"),
         "$isAtNodeEnd"
@@ -142,7 +135,175 @@ describe("ComposeEditorToolbar Component", () => {
       const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
 
       const getSelectionResponse = {
-        anchor: { getNode: mockFocusGetNode },
+        anchor: { getNode: () => undefined },
+        focus: { getNode: () => undefined },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => true,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      expect(isBlockElementNodeSpy).toHaveBeenCalled();
+    });
+
+    it("an unsuccesful response because getParentNode was not found", () => {
+      const isBlockElementNodeSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isBlockElementNode"
+      );
+
+      isBlockElementNodeSpy.mockImplementation(() => true);
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => true);
+
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = undefined;
+
+      const getTopLevelElement = {
+        getListType: () => "",
+        getFormatType: () => "",
+        getIndent: () => 0
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithoutGetParent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithoutGetParent },
+        focus: { getNode: () => undefined },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => true,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => getSelectionResponse);
+
+      const isLinkNodeSpy: jest.SpyInstance = jest.spyOn(require("@lexical/link"), "$isLinkNode");
+      isLinkNodeSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      expect(isBlockElementNodeSpy).toHaveBeenCalled();
+    });
+
+    it("an unsuccessful response because $getSelection() failed", () => {
+      const isRangeSelectionSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isRangeSelection"
+      );
+
+      isRangeSelectionSpy.mockImplementation(() => false);
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => true);
+
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      getSelectionSpy.mockImplementation(() => undefined);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      expect(isRangeSelectionSpy).toHaveBeenCalled();
+    });
+
+    it("a successful response with $isBackward() true and $isAtNodeEndSpy() true", () => {
+      const isBlockElementNodeSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isBlockElementNode"
+      );
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => true);
+
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 0
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNode = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNode },
         focus: { getNode: () => true },
         hasFormat: (type: TextFormatType) => true,
         extract: () => [],
@@ -170,10 +331,15 @@ describe("ComposeEditorToolbar Component", () => {
         </LexicalComposer>
       );
 
-      expect(true).toBeTruthy();
+      expect(isBlockElementNodeSpy).toHaveBeenCalled();
     });
 
     it("a successful response with $isBackward() true and $isAtNodeEndSpy() false", async () => {
+      const isBlockElementNodeSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isBlockElementNode"
+      );
+
       const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
         require("@lexical/selection"),
         "$isAtNodeEnd"
@@ -183,9 +349,27 @@ describe("ComposeEditorToolbar Component", () => {
 
       const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
 
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 0
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNode = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
       const getSelectionResponse = {
         anchor: { getNode: () => true },
-        focus: { getNode: mockFocusGetNode },
+        focus: { getNode: () => mockFocusGetNode },
         hasFormat: (type: TextFormatType) => true,
         extract: () => [],
         isBackward: () => true,
@@ -212,10 +396,15 @@ describe("ComposeEditorToolbar Component", () => {
         </LexicalComposer>
       );
 
-      expect(true).toBeTruthy();
+      expect(isBlockElementNodeSpy).toHaveBeenCalled();
     });
 
     it("a successful response with $isBackward() false and $isAtNodeEndSpy() true", async () => {
+      const isBlockElementNodeSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isBlockElementNode"
+      );
+
       const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
         require("@lexical/selection"),
         "$isAtNodeEnd"
@@ -225,9 +414,27 @@ describe("ComposeEditorToolbar Component", () => {
 
       const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
 
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 0
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNode = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
       const getSelectionResponse = {
         anchor: { getNode: () => true },
-        focus: { getNode: mockFocusGetNode },
+        focus: { getNode: () => mockFocusGetNode },
         hasFormat: (type: TextFormatType) => true,
         extract: () => [],
         isBackward: () => false,
@@ -254,10 +461,15 @@ describe("ComposeEditorToolbar Component", () => {
         </LexicalComposer>
       );
 
-      expect(true).toBeTruthy();
+      expect(isBlockElementNodeSpy).toHaveBeenCalled();
     });
 
     it("a successful response with $isBackward() false and $isAtNodeEndSpy() false", async () => {
+      const isBlockElementNodeSpy: jest.SpyInstance = jest.spyOn(
+        require("lexical"),
+        "$isBlockElementNode"
+      );
+
       const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
         require("@lexical/selection"),
         "$isAtNodeEnd"
@@ -267,8 +479,26 @@ describe("ComposeEditorToolbar Component", () => {
 
       const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
 
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 0
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNode = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
       const getSelectionResponse = {
-        anchor: { getNode: mockFocusGetNode },
+        anchor: { getNode: () => mockFocusGetNode },
         focus: { getNode: () => true },
         hasFormat: (type: TextFormatType) => true,
         extract: () => [],
@@ -296,7 +526,7 @@ describe("ComposeEditorToolbar Component", () => {
         </LexicalComposer>
       );
 
-      expect(true).toBeTruthy();
+      expect(isBlockElementNodeSpy).toHaveBeenCalled();
     });
   });
 
@@ -407,15 +637,75 @@ describe("ComposeEditorToolbar Component", () => {
       const alignLeftIcon = container.querySelector('[data-icon="align-left"]')!;
       fireEvent.mouseDown(alignLeftIcon);
 
-      expect(mockDispatchCommand).toHaveBeenCalledWith(
-        { type: "OUTDENT_CONTENT_COMMAND" },
-        undefined
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "FORMAT_ELEMENT_COMMAND" }, "left");
+    });
+
+    it("a successful response disabling action", async () => {
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 1
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithGetIndent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithGetIndent },
+        focus: { getNode: () => true },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => false,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
       );
+
+      isAtNodeEndSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      const { container } = render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      const alignCenterIcon = container.querySelector('[data-icon="align-left"]')!;
+      fireEvent.mouseDown(alignCenterIcon);
+
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "FORMAT_ELEMENT_COMMAND" }, "");
     });
   });
 
   describe("on alignCenter action", () => {
-    it("a successful response", async () => {
+    it("a successful response disabling action", async () => {
       const initialConfig: InitialConfigType = {
         theme: {},
         namespace: "ComposeEditor",
@@ -435,14 +725,77 @@ describe("ComposeEditorToolbar Component", () => {
       fireEvent.mouseDown(alignCenterIcon);
 
       expect(mockDispatchCommand).toHaveBeenCalledWith(
-        { type: "OUTDENT_CONTENT_COMMAND" },
-        undefined
+        { type: "FORMAT_ELEMENT_COMMAND" },
+        "center"
       );
+    });
+
+    it("a successful response disabling action", async () => {
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "center",
+        getIndent: () => 1
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithGetIndent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithGetIndent },
+        focus: { getNode: () => true },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => false,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      const { container } = render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      const alignCenterIcon = container.querySelector('[data-icon="align-center"]')!;
+      fireEvent.mouseDown(alignCenterIcon);
+
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "FORMAT_ELEMENT_COMMAND" }, "");
     });
   });
 
   describe("on alignRight action", () => {
-    it("a successful response", async () => {
+    it("a successful response enabling action", async () => {
       const initialConfig: InitialConfigType = {
         theme: {},
         namespace: "ComposeEditor",
@@ -461,10 +814,70 @@ describe("ComposeEditorToolbar Component", () => {
       const alignRightIcon = container.querySelector('[data-icon="align-right"]')!;
       fireEvent.mouseDown(alignRightIcon);
 
-      expect(mockDispatchCommand).toHaveBeenCalledWith(
-        { type: "OUTDENT_CONTENT_COMMAND" },
-        undefined
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "FORMAT_ELEMENT_COMMAND" }, "right");
+    });
+
+    it("a successful response disabling action", async () => {
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "right",
+        getIndent: () => 1
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithGetIndent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithGetIndent },
+        focus: { getNode: () => true },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => false,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
       );
+
+      isAtNodeEndSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      const { container } = render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      const alignRightIcon = container.querySelector('[data-icon="align-right"]')!;
+      fireEvent.mouseDown(alignRightIcon);
+
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "FORMAT_ELEMENT_COMMAND" }, "");
     });
   });
 
@@ -485,22 +898,85 @@ describe("ComposeEditorToolbar Component", () => {
         </LexicalComposer>
       );
 
-      const boldIcon = container.querySelector('[data-icon="indent"]')!;
-      fireEvent.mouseDown(boldIcon);
+      const indentIcon = container.querySelector('[data-icon="indent"]')!;
+      fireEvent.mouseDown(indentIcon);
 
       await sleep(100);
 
-      fireEvent.mouseDown(boldIcon);
+      fireEvent.mouseDown(indentIcon);
 
       expect(mockDispatchCommand).toHaveBeenCalledWith(
-        { type: "OUTDENT_CONTENT_COMMAND" },
+        { type: "INDENT_CONTENT_COMMAND" },
         undefined
       );
+    });
+
+    it("a successful response disabling action", async () => {
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 1
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithGetIndent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithGetIndent },
+        focus: { getNode: () => true },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => false,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      const { container } = render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      const indentIcon = container.querySelector('[data-icon="indent"]')!;
+      fireEvent.mouseDown(indentIcon);
+
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "REMOVE_LIST_COMMAND" }, undefined);
     });
   });
 
   describe("on unordered list action", () => {
-    it("a successful response", async () => {
+    it("a successful response enabling action", async () => {
       const initialConfig: InitialConfigType = {
         theme: {},
         namespace: "ComposeEditor",
@@ -520,14 +996,77 @@ describe("ComposeEditorToolbar Component", () => {
       fireEvent.mouseDown(unorderedListIcon);
 
       expect(mockDispatchCommand).toHaveBeenCalledWith(
-        { type: "OUTDENT_CONTENT_COMMAND" },
+        { type: "INSERT_UNORDERED_LIST_COMMAND" },
         undefined
       );
+    });
+
+    it("a successful response disabling action", async () => {
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "bullet",
+        getFormatType: () => "left",
+        getIndent: () => 1
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithGetIndent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithGetIndent },
+        focus: { getNode: () => true },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => false,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      const { container } = render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      const unorderedListIcon = container.querySelector('[data-icon="list"]')!;
+      fireEvent.mouseDown(unorderedListIcon);
+
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "REMOVE_LIST_COMMAND" }, undefined);
     });
   });
 
   describe("on ordered list action", () => {
-    it("a successful response", async () => {
+    it("a successful response enabling action", async () => {
       const initialConfig: InitialConfigType = {
         theme: {},
         namespace: "ComposeEditor",
@@ -547,9 +1086,72 @@ describe("ComposeEditorToolbar Component", () => {
       fireEvent.mouseDown(orderedListIcon);
 
       expect(mockDispatchCommand).toHaveBeenCalledWith(
-        { type: "OUTDENT_CONTENT_COMMAND" },
+        { type: "INSERT_ORDERED_LIST_COMMAND" },
         undefined
       );
+    });
+
+    it("a successful response disabling action", async () => {
+      const getSelectionSpy: jest.SpyInstance = jest.spyOn(require("lexical"), "$getSelection");
+
+      const getParent = {
+        getURL: () => "https://testUrl.com"
+      };
+
+      const getTopLevelElement = {
+        getListType: () => "number",
+        getFormatType: () => "left",
+        getIndent: () => 1
+      };
+
+      const getTopLevelElementOrThrow = () => {};
+
+      const mockFocusGetNodeWithGetIndent = {
+        getParent: () => getParent,
+        getTopLevelElement: () => getTopLevelElement,
+        getTopLevelElementOrThrow: () => getTopLevelElementOrThrow
+      };
+
+      const getSelectionResponse = {
+        anchor: { getNode: () => mockFocusGetNodeWithGetIndent },
+        focus: { getNode: () => true },
+        hasFormat: (type: TextFormatType) => true,
+        extract: () => [],
+        isBackward: () => false,
+        getStartEndPoints: () => undefined,
+        getNodes: () => []
+      };
+
+      getSelectionSpy.mockImplementation(() => {
+        return getSelectionResponse;
+      });
+
+      const isAtNodeEndSpy: jest.SpyInstance = jest.spyOn(
+        require("@lexical/selection"),
+        "$isAtNodeEnd"
+      );
+
+      isAtNodeEndSpy.mockImplementation(() => false);
+
+      const initialConfig: InitialConfigType = {
+        theme: {},
+        namespace: "ComposeEditor",
+        onError: (error: Error) => undefined
+      };
+
+      const saveEmail = () => undefined;
+      const clearComposer = () => undefined;
+
+      const { container } = render(
+        <LexicalComposer initialConfig={initialConfig}>
+          <ComposeEditorToolbar saveEmail={saveEmail} clearComposer={clearComposer} />
+        </LexicalComposer>
+      );
+
+      const orderedListIcon = container.querySelector('[data-icon="list-ol"]')!;
+      fireEvent.mouseDown(orderedListIcon);
+
+      expect(mockDispatchCommand).toHaveBeenCalledWith({ type: "REMOVE_LIST_COMMAND" }, undefined);
     });
   });
 

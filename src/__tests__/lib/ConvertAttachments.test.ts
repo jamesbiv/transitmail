@@ -1,6 +1,5 @@
 import { IEmailAttachment } from "interfaces";
 import { convertAttachments } from "lib";
-import { TextDecoder } from "util";
 
 describe("Testing convertAttachments", () => {
   it("with a valid attachment", async () => {
@@ -28,15 +27,9 @@ describe("Testing convertAttachments", () => {
 
     const convertAttachmentsResponse = await convertAttachments(attachments);
 
-    const textDecoder = new TextDecoder();
+    const extractedDataResponse = convertAttachmentsResponse?.[0]?.data;
 
-    const extractDataResponse = convertAttachmentsResponse?.[0]?.data as ArrayBuffer | undefined;
-
-    const decodedDataResponse = extractDataResponse
-      ? textDecoder.decode(extractDataResponse)
-      : undefined;
-
-    expect(decodedDataResponse).toEqual("Test Attachment\n");
+    expect(extractedDataResponse).toEqual("Test Attachment\n");
     expect(convertAttachmentsResponse).toMatchObject([
       {
         id: 0,

@@ -51,34 +51,44 @@ export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
       const reader: FileReader = new FileReader();
 
       reader.onload = () => {
+        const readerResultArrayBuffer: Uint8Array<ArrayBuffer> = new Uint8Array(
+          reader.result as ArrayBuffer
+        );
+
+        let readerResult: string = "";
+
+        for (let increment = 0; increment < readerResultArrayBuffer.byteLength; increment++) {
+          readerResult += String.fromCharCode(readerResultArrayBuffer[increment]);
+        }
+
         const newAttachment: IComposeAttachment = {
           id: attachments.length,
           filename: file.name,
           size: file.size,
           mimeType: file.type,
-          data: reader.result ?? undefined
+          data: readerResult || undefined
         };
 
         setAttachments([...attachments, newAttachment]);
       };
 
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
     });
   };
 
-  const viewAttachment: (id: number) => void = (id) => {
-    const attachment = attachments.find((attachment: IComposeAttachment) => attachment.id === id);
+  const viewAttachment: (attachmentId: number) => void = (attachmentId) => {
+    const attachment: IComposeAttachment = attachments.find(
+      (attachment: IComposeAttachment) => attachment.id === attachmentId
+    )!;
 
-    if (attachment) {
-      const blob: Blob = MimeTools.binaryStringToBlob(
-        attachment.data! as string,
-        attachment.mimeType
-      );
+    const blob: Blob = MimeTools.binaryStringToBlob(
+      attachment.data! as string,
+      attachment.mimeType
+    );
 
-      const blobUrl: string = URL.createObjectURL(blob);
+    const blobUrl: string = URL.createObjectURL(blob);
 
-      window.open(blobUrl, "_blank");
-    }
+    window.open(blobUrl, "_blank");
   };
 
   const removeAttachment: (attachmentId: number) => void = (attachmentId) => {

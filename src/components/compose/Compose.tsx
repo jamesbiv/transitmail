@@ -97,9 +97,9 @@ export const Compose: FunctionComponent = () => {
           setRecipients([{ id: 1, type: "To", value: presetEmail.from }]);
           break;
 
-        case EComposePresetType.ReplyAll:
-          // Add functionality
-          break;
+        // case EComposePresetType.ReplyAll:
+        // Add functionality
+        // break;
 
         case EComposePresetType.Forward:
         default:
@@ -169,8 +169,8 @@ export const Compose: FunctionComponent = () => {
     lockSendEmail = false;
   };
 
-  const updateSenderDetails = (secondaryEmailKey?: number): void => {
-    const secondaryEmail = secondaryEmails[secondaryEmailKey ?? NaN];
+  const updateSenderDetails = (secondaryEmailKey: number): void => {
+    const secondaryEmail: ISettingsSecondaryEmail | undefined = secondaryEmails[secondaryEmailKey];
 
     const updatedDetails: IComposeSender = secondaryEmail
       ? { displayName: secondaryEmail.name, email: secondaryEmail.email }
@@ -237,7 +237,7 @@ export const Compose: FunctionComponent = () => {
       <Form>
         <CardBody className="p-2 ps-3 pe-3">
           <ComposeMessage composeMessage={composeMessage} />
-          {secondaryEmails && (
+          {!!secondaryEmails?.length && (
             <ComposeSecondaryEmail
               defaultSender={defaultSender}
               secondaryEmails={secondaryEmails}
