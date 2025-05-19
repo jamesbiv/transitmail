@@ -32,9 +32,5 @@
   ],
   "exclude": [
     "node_modules",
-    "**/**/*.test.ts",
-    "**/**/*.test.tsx",
-    "**/**/*.test.js",
-    "**/**/*.test.jsx"
   ],
 }

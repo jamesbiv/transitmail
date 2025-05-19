@@ -11,8 +11,7 @@ import {
   ISettings,
   ISettingsErrors,
   ISettingsFolders,
-  ISettingsValidationMessage,
-  ISmtpResponse
+  ISettingsValidationMessage
 } from "interfaces";
 import { DependenciesContext } from "contexts";
 import {
@@ -91,28 +90,27 @@ export const Settings: FunctionComponent = () => {
     };
 
     imapSocket.imapClose();
-    imapSocket.imapConnect(false);
-
     smtpSocket.smtpClose();
-    smtpSocket.smtpConnect(false);
+
+    await Promise.all([imapSocket.imapConnect(false), smtpSocket.smtpConnect(false)]);
 
     let imapVerfied: boolean = false;
     let smtpVerfied: boolean = false;
 
-    const imapAuthoriseResponse: IImapResponse = await imapSocket.imapAuthorise();
+    const [imapAuthoriseResponse, smtpAuthoriseResponse] = await Promise.all([
+      imapSocket.imapAuthorise(),
+      smtpSocket.smtpAuthorise()
+    ]);
 
     if (imapAuthoriseResponse.status === EImapResponseStatus.OK) {
       imapVerfied = true;
     }
 
-    imapSocket.imapClose();
-
-    const smtpAuthoriseResponse: ISmtpResponse = await smtpSocket.smtpAuthorise();
-
     if (smtpAuthoriseResponse.status === ESmtpResponseStatus.Success) {
       smtpVerfied = true;
     }
 
+    imapSocket.imapClose();
     smtpSocket.smtpClose();
 
     if (!imapVerfied || !smtpVerfied) {
@@ -136,9 +134,7 @@ export const Settings: FunctionComponent = () => {
   };
 
   const createFolders = async (folderSettings: ISettingsFolders): Promise<void> => {
-    if (imapSocket.getReadyState() !== 1) {
-      imapSocket.imapConnect();
-    }
+    await imapSocket.imapCheckOrConnect();
 
     const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);
 

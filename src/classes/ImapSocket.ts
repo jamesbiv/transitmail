@@ -6,8 +6,14 @@ import {
   IImapSettings
 } from "interfaces";
 
+/**
+ * @type TImapCallback
+ */
 type TImapCallback = (event: IImapResponseData | Event) => void;
 
+/**
+ * @class ImapSocket
+ */
 export class ImapSocket {
   /**
    * @public {IImapSession} session
@@ -51,100 +57,85 @@ export class ImapSocket {
   /**
    * @method imapCheckOrConnect
    * @param {boolean} authorise
-   * @param {TImapCallback} success
-   * @param {TImapCallback} error
    * @returns boolean
    */
-  public imapCheckOrConnect(
-    authorise: boolean = true,
-    success?: TImapCallback,
-    error?: TImapCallback
-  ): boolean {
+  public async imapCheckOrConnect(authorise: boolean = true): Promise<boolean> {
     if (this.getReadyState() === WebSocket.OPEN) {
       return true;
     }
 
-    return this.imapConnect(authorise, success, error);
+    return this.imapConnect(authorise);
   }
 
   /**
    * @method imapConnect
    * @param {boolean} authorise
-   * @param {TImapCallback} success
-   * @param {TImapCallback} error
+
    * @returns boolean
    */
-  public imapConnect(
-    authorise: boolean = true,
-    success?: TImapCallback,
-    error?: TImapCallback
-  ): boolean {
+  public async imapConnect(authorise: boolean = true): Promise<boolean> {
     this.session.socket = new WebSocket(
       `wss://${this.settings.host}:${this.settings.port}`,
       "binary"
     );
 
     this.session.socket.binaryType = this.session.binaryType;
-
-    if (!(this.session.socket instanceof WebSocket)) {
-      return false;
-    }
-
     this.session.lock = true;
 
-    this.session.socket.onopen = (event: Event) => {
-      if (this.session.debug) {
-        // eslint-disable-next-line no-console
-        console.log("[IMAP] Client Connected");
-      }
+    const isConnected: boolean = await new Promise((resolve, reject) => {
+      this.session.socket!.onopen = (event: Event) => {
+        if (this.session.debug) {
+          // eslint-disable-next-line no-console
+          console.log("[IMAP] Client Connected");
+        }
 
-      this.session.request.push({
-        id: "",
-        request: "",
-        ok: () => {},
-        no: () => {},
-        bad: () => {}
-      });
+        this.session.request.push({ id: "", request: "" });
+
+        resolve(true);
+      };
+
+      this.session.socket!.onerror = (event: Event) => {
+        if (this.session.debug) {
+          // eslint-disable-next-line no-console
+          console.error("[IMAP] Connection error", JSON.stringify(event));
+        }
+
+        resolve(false);
+      };
+    });
+
+    if (!isConnected) {
+      if (this.session.retry > 0) {
+        setTimeout(() => this.imapConnect(authorise), this.session.retry);
+      }
 
       this.session.lock = false;
 
-      if (authorise) {
-        this.imapAuthorise();
-      } else {
-        success && success(event);
-      }
-    };
+      return false;
+    }
+
+    this.session.socket.onopen = undefined as never;
+    this.session.socket.onerror = undefined as never;
 
     this.session.socket.onmessage = <T>(message: MessageEvent<T>) => {
-      if (message.data instanceof Blob) {
-        const reader: FileReader = new FileReader();
+      if (!(message.data instanceof Blob)) {
+        this.imapResponseHandler(message.data as string);
 
-        reader.onload = () => {
-          const result: string = reader.result as string;
-
-          this.session.stream += result.length;
-          this.session.streamCumlative += this.session.stream;
-
-          this.imapResponseHandler(result);
-        };
-
-        reader.readAsText(message.data);
-      }
-    };
-
-    this.session.socket.onerror = (event: Event) => {
-      if (this.session.debug) {
-        // eslint-disable-next-line no-console
-        console.error("[IMAP] Connection error", JSON.stringify(event));
+        return;
       }
 
-      if (this.session.retry > 0) {
-        setTimeout(() => {
-          this.imapConnect(authorise, success, error);
-        }, this.session.retry);
-      }
+      const reader: FileReader = new FileReader();
 
-      error && error(event);
+      reader.onload = () => {
+        const result: string = reader.result as string;
+
+        this.session.stream += result.length;
+        this.session.streamCumlative += this.session.stream;
+
+        this.imapResponseHandler(result);
+      };
+
+      reader.readAsText(message.data);
     };
 
     this.session.socket.onclose = (event: CloseEvent) => {
@@ -153,6 +144,12 @@ export class ImapSocket {
         console.log("[IMAP] Connection closed", JSON.stringify(event));
       }
     };
+
+    this.session.lock = false;
+
+    if (authorise) {
+      await this.imapAuthorise();
+    }
 
     return true;
   }
@@ -175,27 +172,25 @@ export class ImapSocket {
   public async imapRequest(request: string): Promise<IImapResponse> {
     let status: EImapResponseStatus | undefined;
 
-    const responsePayload: Promise<IImapResponseData> = new Promise((fulfilled, rejected) => {
+    const responsePayload: IImapResponseData = await new Promise((resolve, reject) => {
       this.imapProcessRequest(
         request,
         (event: IImapResponseData | Event) => {
-          fulfilled(event as IImapResponseData);
+          resolve(event as IImapResponseData);
           status = EImapResponseStatus.OK;
         },
         (event: IImapResponseData | Event) => {
-          fulfilled(event as IImapResponseData);
+          resolve(event as IImapResponseData);
           status = EImapResponseStatus.NO;
         },
         (event: IImapResponseData | Event) => {
-          fulfilled(event as IImapResponseData);
+          resolve(event as IImapResponseData);
           status = EImapResponseStatus.BAD;
         }
       );
     });
 
-    const resolvedResponsePayload = await responsePayload;
-
-    return { data: resolvedResponsePayload.response ?? [], status: status };
+    return { data: responsePayload.response ?? [], status: status };
   }
 
   /**
@@ -213,14 +208,12 @@ export class ImapSocket {
     bad: TImapCallback
   ): void {
     if (this.session.lock) {
-      setTimeout(() => {
-        this.imapProcessRequest(request, ok, no, bad);
-      }, 100);
-
+      setTimeout(() => this.imapProcessRequest(request, ok, no, bad), 100);
       return;
     }
 
     this.session.lock = true;
+    this.session.stream = 0;
 
     const requestId: string = Math.random().toString(36).substring(5);
     const blob: Blob = new Blob([requestId + " " + request + "\r\n"], {});
@@ -237,8 +230,6 @@ export class ImapSocket {
       no: no,
       bad: bad
     });
-
-    this.session.stream = 0;
 
     this.session.socket!.send(blob);
   }
@@ -262,21 +253,23 @@ export class ImapSocket {
 
       let result: string[] = [];
 
-      if (responseCols[0] === "*" || responseCols[0] === this.session.request[index].id) {
-        if (this.session.responseContent.length) {
-          if (this.session.responseContent !== "\r\n") {
-            this.session.responseQueue.push([this.session.responseContent]);
+      switch (true) {
+        case !!(responseCols[0] === "*" || responseCols[0] === this.session.request[index].id):
+          if (this.session.responseContent.length) {
+            if (this.session.responseContent !== "\r\n") {
+              this.session.responseQueue.push([this.session.responseContent]);
+            }
+
+            this.session.responseContent = "";
           }
 
-          this.session.responseContent = "";
-        }
+          result = responseCols.splice(0, 2);
+          result.push(responseCols.join(" "));
 
-        result = responseCols.splice(0, 2);
-        result.push(responseCols.join(" "));
+          this.session.responseQueue.push(result);
+          break;
 
-        this.session.responseQueue.push(result);
-      } else {
-        if (responseRow.length) {
+        case !!responseRow.length:
           if (responseKey === responseRows.length - 3) {
             if (responseRow !== ")") {
               this.session.responseContent += responseRow + "\r\n";
@@ -284,9 +277,11 @@ export class ImapSocket {
           } else {
             this.session.responseContent += responseRow + "\r\n";
           }
-        } else {
+          break;
+
+        default:
           this.session.responseContent += "\r\n";
-        }
+          break;
       }
 
       if (Array.isArray(result) && result[0] === this.session.request[index].id) {
@@ -310,10 +305,6 @@ export class ImapSocket {
             case "OK":
               request.ok && request.ok(request);
               break;
-
-            default:
-              // unknown condition
-              break;
           }
         }
       }
@@ -325,19 +316,15 @@ export class ImapSocket {
    * @returns Promise<IImapResponse>
    */
   public async imapAuthorise(): Promise<IImapResponse> {
-    return await this.imapRequest("LOGIN " + this.settings.username + " " + this.settings.password);
+    return await this.imapRequest(`LOGIN ${this.settings.username} ${this.settings.password}`);
   }
 
   /**
    * @method getReadyState
-   * @returns number | false
+   * @returns number | undefined
    */
-  public getReadyState(): number | false {
-    if (!this.session.socket) {
-      return false;
-    }
-
-    return this.session.socket.readyState;
+  public getReadyState(): number | undefined {
+    return this.session.socket?.readyState;
   }
 
   /**
@@ -358,13 +345,9 @@ export class ImapSocket {
 
   /**
    * @method getBufferedAmount
-   * @returns number | false
+   * @returns number
    */
-  public getBufferedAmount(): number | false {
-    if (!this.session.socket) {
-      return false;
-    }
-
-    return this.session.socket.bufferedAmount;
-  }
+  public getBufferedAmount = (): number => {
+    return this.session.socket?.bufferedAmount ?? 0;
+  };
 }
