@@ -190,7 +190,7 @@ export class ImapSocket {
       );
     });
 
-    return { data: responsePayload.response ?? [], status: status };
+    return { data: responsePayload.response!, status: status };
   }
 
   /**
@@ -240,7 +240,7 @@ export class ImapSocket {
    * @returns void
    */
   private imapResponseHandler(response: string): void {
-    const index: number = this.session.request.length - 1;
+    const requestIndex: number = this.session.request.length - 1;
     const responseRows: string[] = response.split("\r\n");
 
     if (this.session.debug) {
@@ -248,18 +248,21 @@ export class ImapSocket {
       console.log("[IMAP] Response: " + response);
     }
 
+    const request: IImapResponseData = this.session.request[requestIndex];
+    const requestId: string = this.session.request[requestIndex].id;
+
     responseRows.forEach((responseRow: string, responseKey: number) => {
       const responseCols: string[] = responseRow.split(" ");
 
       let result: string[] = [];
 
       switch (true) {
-        case !!(responseCols[0] === "*" || responseCols[0] === this.session.request[index].id):
-          if (this.session.responseContent.length) {
-            if (this.session.responseContent !== "\r\n") {
-              this.session.responseQueue.push([this.session.responseContent]);
-            }
+        case !!(responseCols[0] === "*" || responseCols[0] === requestId):
+          if (this.session.responseContent && this.session.responseContent !== "\r\n") {
+            this.session.responseQueue.push([this.session.responseContent]);
+          }
 
+          if (this.session.responseContent.length) {
             this.session.responseContent = "";
           }
 
@@ -269,14 +272,11 @@ export class ImapSocket {
           this.session.responseQueue.push(result);
           break;
 
+        case !!(responseKey === responseRows.length - 3 && responseRow === ")"):
+          break;
+
         case !!responseRow.length:
-          if (responseKey === responseRows.length - 3) {
-            if (responseRow !== ")") {
-              this.session.responseContent += responseRow + "\r\n";
-            }
-          } else {
-            this.session.responseContent += responseRow + "\r\n";
-          }
+          this.session.responseContent += responseRow + "\r\n";
           break;
 
         default:
@@ -284,28 +284,24 @@ export class ImapSocket {
           break;
       }
 
-      if (Array.isArray(result) && result[0] === this.session.request[index].id) {
-        const request: IImapResponseData = this.session.request[index];
+      if (result?.[0] === requestId) {
+        this.session.request[requestIndex].response = this.session.responseQueue;
+        this.session.responseQueue = [];
 
-        if (request) {
-          this.session.request[index].response = this.session.responseQueue;
-          this.session.responseQueue = [];
+        this.session.lock = false;
 
-          this.session.lock = false;
+        switch (result[1]) {
+          case "NO":
+            request.no && request.no(request);
+            break;
 
-          switch (result[1]) {
-            case "NO":
-              request.no && request.no(request);
-              break;
+          case "BAD":
+            request.bad && request.bad(request);
+            break;
 
-            case "BAD":
-              request.bad && request.bad(request);
-              break;
-
-            case "OK":
-              request.ok && request.ok(request);
-              break;
-          }
+          case "OK":
+            request.ok && request.ok(request);
+            break;
         }
       }
     });

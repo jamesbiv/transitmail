@@ -6,31 +6,6 @@ import { overloadWebSocketConstructor, restoreWebSocketClass, sleep } from "__te
 
 jest.mock("contexts/DependenciesContext");
 
-const testEmail: string =
-  "Return-Path: <test@emailAddress.com>\r\n" +
-  "X-Original-To: test@emailAddress.com\r\n" +
-  "Delivered-To: test@emailAddress.com\r\n" +
-  "Received: from 127.0.0.1 (unknown [127.0.0.1])\r\n" +
-  "\tby 21a165c9994b (Postfix) with ESMTPA id B88804940034\r\n" +
-  "\tfor <test@emailAddress.com>; Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n" +
-  "Subject: (no subject)\r\n" +
-  "To: test@emailAddress.com\r\n" +
-  "Cc: \r\n" +
-  "From: Test Display Name <test@emailAddress.com>\r\n" +
-  "MIME-Version: 1.0\r\n" +
-  "X-Mailer: Transit alpha0.0.1\r\n" +
-  'Content-Type: multipart/alternative; boundary="transit--client--igvwe2o8w"\r\n' +
-  "Message-Id: <20250519154944.B88804940034@21a165c9994b>\r\n" +
-  "Date: Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n\r\n" +
-  "--transit--client--igvwe2o8w\r\n" +
-  'Content-Type: text/plain; charset="utf-8"\r\n\r\n' +
-  "Test email\r\n\r\n" +
-  "--transit--client--igvwe2o8w\r\n" +
-  'Content-Type: text/html; charset="utf-8"\r\n\r\n' +
-  "<p>Test email</p>\r\n\r\n" +
-  "--transit--client--igvwe2o8w--\r\n\r\n" +
-  "\r\n)\r\n";
-
 const settings: IImapSettings = {
   host: "localhost",
   port: 8234,
@@ -65,16 +40,6 @@ describe("Testing the ImapSocket class", () => {
           webSocket.send(`${responseId} OK Test ok response`, {
             binary: isBinary
           });
-
-          break;
-
-        case /Test incoming email/i.test(requestDataString):
-          webSocket.send(
-            `* 30 FETCH (UID 242 RFC822 {781}\r\n` +
-              testEmail +
-              `${responseId} OK Fetch completed (0.001 + 0.000 secs).`,
-            { binary: isBinary }
-          );
 
           break;
 
@@ -255,49 +220,6 @@ describe("Testing the ImapSocket class", () => {
           ["*", "01", "OK"],
           ["Test positive request\r\n"],
           [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", ""]
-        ],
-        status: EImapResponseStatus.OK
-      });
-    });
-
-    it("an incoming email", async () => {
-      const imapSocket = new ImapSocket(settings);
-
-      await imapSocket.imapConnect();
-
-      const imapRequestResponse = await imapSocket.imapRequest("Test incoming email");
-
-      imapSocket.imapClose();
-
-      expect(imapRequestResponse).toEqual({
-        data: [
-          ["*", "30", "FETCH (UID 242 RFC822 {781}"],
-          [
-            "Return-Path: <test@emailAddress.com>\r\n" +
-              "X-Original-To: test@emailAddress.com\r\n" +
-              "Delivered-To: test@emailAddress.com\r\n" +
-              "Received: from 127.0.0.1 (unknown [127.0.0.1])\r\n" +
-              "\tby 21a165c9994b (Postfix) with ESMTPA id B88804940034\r\n" +
-              "\tfor <test@emailAddress.com>; Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n" +
-              "Subject: (no subject)\r\n" +
-              "To: test@emailAddress.com\r\n" +
-              "Cc: \r\n" +
-              "From: Test Display Name <test@emailAddress.com>\r\n" +
-              "MIME-Version: 1.0\r\n" +
-              "X-Mailer: Transit alpha0.0.1\r\n" +
-              'Content-Type: multipart/alternative; boundary="transit--client--igvwe2o8w"\r\n' +
-              "Message-Id: <20250519154944.B88804940034@21a165c9994b>\r\n" +
-              "Date: Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n\r\n" +
-              "--transit--client--igvwe2o8w\r\n" +
-              'Content-Type: text/plain; charset="utf-8"\r\n\r\n' +
-              "Test email\r\n\r\n" +
-              "--transit--client--igvwe2o8w\r\n" +
-              'Content-Type: text/html; charset="utf-8"\r\n\r\n' +
-              "<p>Test email</p>\r\n\r\n" +
-              "--transit--client--igvwe2o8w--\r\n\r\n" +
-              "\r\n)\r\n"
-          ],
-          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Fetch completed (0.001 + 0.000 secs)."]
         ],
         status: EImapResponseStatus.OK
       });
@@ -522,6 +444,483 @@ describe("Testing the ImapSocket class", () => {
         expect(global.console.log).toHaveBeenCalledWith(
           expect.stringMatching(/\[IMAP\] Response:/i)
         );
+      });
+    });
+  });
+
+  describe("Test specific IMAP commands", () => {
+    beforeEach(() => {
+      webSocketOnMessageHandler = (
+        webSocket: WebSocket,
+        requestData: Buffer,
+        isBinary: boolean
+      ): void => {
+        const requestDataString: string = Buffer.from(requestData).toString();
+
+        const [responseId, _] = requestDataString.split(/ (.*)/);
+
+        switch (true) {
+          case /LOGIN/i.test(requestDataString):
+            webSocket.send(
+              "* OK [CAPABILITY IMAP4rev1 SASL-IR LOGIN-REFERRALS ID " +
+                "ENABLE IDLE LITERAL+ STARTTLS AUTH=PLAIN AUTH=LOGIN] " +
+                "Dovecot (Debian) ready.\r\n",
+              { binary: isBinary }
+            );
+
+            webSocket.send(
+              `${responseId} OK [CAPABILITY IMAP4rev1 SASL-IR LOGIN-REFERRALS ` +
+                `ID ENABLE IDLE SORT SORT=DISPLAY THREAD=REFERENCES ` +
+                `THREAD=REFS THREAD=ORDEREDSUBJECT MULTIAPPEND URL-PARTIAL ` +
+                `CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS LIST-EXTENDED ` +
+                `I18NLEVEL=1 CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN ` +
+                `CONTEXT=SEARCH LIST-STATUS BINARY MOVE SNIPPET=FUZZY ` +
+                `PREVIEW=FUZZY PREVIEW STATUS=SIZE SAVEDATE LITERAL+ ` +
+                `NOTIFY SPECIAL-USE] Logged in\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /SELECT/i.test(requestDataString):
+            webSocket.send(
+              "* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n" +
+                "* OK [PERMANENTFLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft \\*)] Flags permitted.\r\n" +
+                "* 30 EXISTS\r\n" +
+                "* 0 RECENT\r\n" +
+                "* OK [UIDVALIDITY 1740160111] UIDs valid\r\n" +
+                "* OK [UIDNEXT 243] Predicted next UID\r\n" +
+                `${responseId} OK [READ-WRITE] Select completed (0.000 + 0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /LIST/i.test(requestDataString):
+            webSocket.send(
+              '* LIST (\\NoInferiors) "/" "Recycle Bin"\r\n' +
+                '* LIST (\\NoInferiors) "/" Spam\r\n' +
+                '* LIST (\\NoInferiors) "/" "Sent Items"\r\n' +
+                '* LIST (\\NoInferiors \\Drafts) "/" Drafts\r\n' +
+                '* LIST (\\NoInferiors \\UnMarked) "/" Archives\r\n' +
+                '* LIST (\\HasChildren) "/" INBOX\r\n' +
+                `${responseId} OK List completed (0.000 + 0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /CREATE/i.test(requestDataString):
+            webSocket.send(`${responseId} OK Create completed (0.000 + 0.000 secs).\r\n`, {
+              binary: isBinary
+            });
+            break;
+
+          case /DELETE/i.test(requestDataString):
+            webSocket.send(`${responseId} OK Delete completed (0.000 + 0.000 secs).\r\n`, {
+              binary: isBinary
+            });
+            break;
+
+          case /RENAME/i.test(requestDataString):
+            webSocket.send(`${responseId} OK Rename completed (0.000 + 0.000 secs).\r\n`, {
+              binary: isBinary
+            });
+            break;
+
+          case /UID COPY/i.test(requestDataString):
+            webSocket.send(
+              `${responseId} OK [COPYUID 1740160118 241 1] Copy completed (0.000 + 0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /UID MOVE/i.test(requestDataString):
+            webSocket.send(
+              "* OK [COPYUID 1740160116 242 2] Moved UIDs.\r\n* 30 EXPUNGE\r\n" +
+                `${responseId} OK Move completed (0.000 + 0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /UID STORE/i.test(requestDataString):
+            webSocket.send(
+              "* 28 FETCH (UID 240 FLAGS (\\Deleted \\Seen))\r\n" +
+                `${responseId} OK Store completed (0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /UID EXPUNGE/i.test(requestDataString):
+            webSocket.send(`${responseId} OK Expunge completed (0.000 + 0.000 + 0.000 secs).\r\n`, {
+              binary: isBinary
+            });
+            break;
+
+          case /UID FETCH RFC822/i.test(requestDataString):
+            webSocket.send(
+              `* 30 FETCH (UID 242 RFC822 {781}\r\n` +
+                "Return-Path: <test@emailAddress.com>\r\n" +
+                "X-Original-To: test@emailAddress.com\r\n" +
+                "Delivered-To: test@emailAddress.com\r\n" +
+                "Received: from 127.0.0.1 (unknown [127.0.0.1])\r\n" +
+                "\tby 21a165c9994b (Postfix) with ESMTPA id B88804940034\r\n" +
+                "\tfor <test@emailAddress.com>; Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n" +
+                "Subject: (no subject)\r\n" +
+                "To: test@emailAddress.com\r\n" +
+                "Cc: \r\n" +
+                "From: Test Display Name <test@emailAddress.com>\r\n" +
+                "MIME-Version: 1.0\r\n" +
+                "X-Mailer: Transit alpha0.0.1\r\n" +
+                'Content-Type: multipart/alternative; boundary="transit--client--igvwe2o8w"\r\n' +
+                "Message-Id: <20250519154944.B88804940034@21a165c9994b>\r\n" +
+                "Date: Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n\r\n" +
+                "--transit--client--igvwe2o8w\r\n" +
+                'Content-Type: text/plain; charset="utf-8"\r\n\r\n' +
+                "Test email\r\n\r\n" +
+                "--transit--client--igvwe2o8w\r\n" +
+                'Content-Type: text/html; charset="utf-8"\r\n\r\n' +
+                "<p>Test email</p>\r\n\r\n" +
+                "--transit--client--igvwe2o8w--\r\n\r\n)\r\n" +
+                `${responseId} OK Fetch completed (0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+            break;
+
+          case /UID FETCH FLAGS/i.test(requestDataString):
+            webSocket.send(
+              `* 1 FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {101}\r\n` +
+                "Subject: Test Subject 01\r\n" +
+                "From: Test Display Name <test@emailAddress.com>\r\n" +
+                "Date: Mon, 01 Jan 2025 00:00:00 +0000 (UTC)\r\n\r\n " +
+                'BODYSTRUCTURE (("text" "plain" ("charset" "utf-8") NIL NIL "7bit" 4 2 NIL NIL NIL NIL)' +
+                '("text" "html" ("charset" "utf-8") NIL NIL "7bit" 13 1 NIL NIL NIL NIL) "alternative" ' +
+                '("boundary" "transit--client--g1xgwltj") NIL NIL NIL))\r\n' +
+                `* 2 FETCH (UID 2 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {102}\r\n` +
+                "Subject: Test Subject 02\r\n" +
+                "From: Test Display Name <test@emailAddress.com>\r\n" +
+                "Date: Mon, 02 Jan 2025 00:00:00 +0000 (UTC)\r\n\r\n " +
+                'BODYSTRUCTURE (("text" "plain" ("charset" "utf-8") NIL NIL "7bit" 4 2 NIL NIL NIL NIL)' +
+                '("text" "html" ("charset" "utf-8") NIL NIL "7bit" 13 1 NIL NIL NIL NIL) "alternative" ' +
+                '("boundary" "transit--client--6ohw29r5") NIL NIL NIL))\r\n' +
+                `* 3 FETCH (UID 3 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {103}\r\n` +
+                "Subject: Test Subject 03\r\n" +
+                "From: Test Display Name <test@emailAddress.com>\r\n" +
+                "Date: Mon, 03 Jan 2025 00:00:00 +0000 (UTC)\r\n\r\n " +
+                'BODYSTRUCTURE (("text" "plain" ("charset" "utf-8") NIL NIL "7bit" 4 2 NIL NIL NIL NIL)' +
+                '("text" "html" ("charset" "utf-8") NIL NIL "7bit" 13 1 NIL NIL NIL NIL) "alternative" ' +
+                '("boundary" "transit--client--pklctuok") NIL NIL NIL))\r\n' +
+                `${responseId} OK Fetch completed (0.000 + 0.000 secs).\r\n`,
+              { binary: isBinary }
+            );
+
+            break;
+        }
+      };
+    });
+
+    it("LOGIN command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("LOGIN");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          [
+            "*",
+            "OK",
+            "[CAPABILITY IMAP4rev1 SASL-IR LOGIN-REFERRALS ID ENABLE IDLE LITERAL+ STARTTLS " +
+              "AUTH=PLAIN AUTH=LOGIN] Dovecot (Debian) ready."
+          ],
+          [
+            expect.stringMatching(/^[A-Za-z0-9]+$/),
+            "OK",
+            "[CAPABILITY IMAP4rev1 SASL-IR LOGIN-REFERRALS ID ENABLE IDLE SORT SORT=DISPLAY " +
+              "THREAD=REFERENCES THREAD=REFS THREAD=ORDEREDSUBJECT MULTIAPPEND URL-PARTIAL " +
+              "CATENATE UNSELECT CHILDREN NAMESPACE UIDPLUS LIST-EXTENDED I18NLEVEL=1 " +
+              "CONDSTORE QRESYNC ESEARCH ESORT SEARCHRES WITHIN CONTEXT=SEARCH LIST-STATUS " +
+              "BINARY MOVE SNIPPET=FUZZY PREVIEW=FUZZY PREVIEW STATUS=SIZE SAVEDATE LITERAL+ " +
+              "NOTIFY SPECIAL-USE] Logged in"
+          ]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("SELECT command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("SELECT");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          ["*", "FLAGS", "(\\Answered \\Flagged \\Deleted \\Seen \\Draft)"],
+          [
+            "*",
+            "OK",
+            "[PERMANENTFLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft \\*)] Flags permitted."
+          ],
+          ["*", "30", "EXISTS"],
+          ["*", "0", "RECENT"],
+          ["*", "OK", "[UIDVALIDITY 1740160111] UIDs valid"],
+          ["*", "OK", "[UIDNEXT 243] Predicted next UID"],
+          [
+            expect.stringMatching(/^[A-Za-z0-9]+$/),
+            "OK",
+            "[READ-WRITE] Select completed (0.000 + 0.000 + 0.000 secs)."
+          ]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("LIST command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("LIST");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          ["*", "LIST", '(\\NoInferiors) "/" "Recycle Bin"'],
+          ["*", "LIST", '(\\NoInferiors) "/" Spam'],
+          ["*", "LIST", '(\\NoInferiors) "/" "Sent Items"'],
+          ["*", "LIST", '(\\NoInferiors \\Drafts) "/" Drafts'],
+          ["*", "LIST", '(\\NoInferiors \\UnMarked) "/" Archives'],
+          ["*", "LIST", '(\\HasChildren) "/" INBOX'],
+          [
+            expect.stringMatching(/^[A-Za-z0-9]+$/),
+            "OK",
+            "List completed (0.000 + 0.000 + 0.000 secs)."
+          ]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("CREATE command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("CREATE");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Create completed (0.000 + 0.000 secs)."]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("DELETE command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("DELETE");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Delete completed (0.000 + 0.000 secs)."]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("RENAME command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("RENAME");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Rename completed (0.000 + 0.000 secs)."]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("UID COPY command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("UID COPY");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          [
+            expect.stringMatching(/^[A-Za-z0-9]+$/),
+            "OK",
+            "[COPYUID 1740160118 241 1] Copy completed (0.000 + 0.000 + 0.000 secs)."
+          ]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("UID MOVE command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("UID MOVE");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          ["*", "OK", "[COPYUID 1740160116 242 2] Moved UIDs."],
+          ["*", "30", "EXPUNGE"],
+          [
+            expect.stringMatching(/^[A-Za-z0-9]+$/),
+            "OK",
+            "Move completed (0.000 + 0.000 + 0.000 secs)."
+          ]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("UID STORE command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("UID STORE");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          ["*", "28", "FETCH (UID 240 FLAGS (\\Deleted \\Seen))"],
+          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Store completed (0.000 + 0.000 secs)."]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("UID EXPUNGE command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("UID EXPUNGE");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          [
+            expect.stringMatching(/^[A-Za-z0-9]+$/),
+            "OK",
+            "Expunge completed (0.000 + 0.000 + 0.000 secs)."
+          ]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("UID FETCH RFC822 command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("UID FETCH RFC822");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          ["*", "30", "FETCH (UID 242 RFC822 {781}"],
+          [
+            "Return-Path: <test@emailAddress.com>\r\n" +
+              "X-Original-To: test@emailAddress.com\r\n" +
+              "Delivered-To: test@emailAddress.com\r\n" +
+              "Received: from 127.0.0.1 (unknown [127.0.0.1])\r\n" +
+              "\tby 21a165c9994b (Postfix) with ESMTPA id B88804940034\r\n" +
+              "\tfor <test@emailAddress.com>; Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n" +
+              "Subject: (no subject)\r\n" +
+              "To: test@emailAddress.com\r\n" +
+              "Cc: \r\n" +
+              "From: Test Display Name <test@emailAddress.com>\r\n" +
+              "MIME-Version: 1.0\r\n" +
+              "X-Mailer: Transit alpha0.0.1\r\n" +
+              'Content-Type: multipart/alternative; boundary="transit--client--igvwe2o8w"\r\n' +
+              "Message-Id: <20250519154944.B88804940034@21a165c9994b>\r\n" +
+              "Date: Mon, 19 May 2025 15:49:44 +0000 (UTC)\r\n\r\n" +
+              "--transit--client--igvwe2o8w\r\n" +
+              'Content-Type: text/plain; charset="utf-8"\r\n\r\n' +
+              "Test email\r\n\r\n" +
+              "--transit--client--igvwe2o8w\r\n" +
+              'Content-Type: text/html; charset="utf-8"\r\n\r\n' +
+              "<p>Test email</p>\r\n\r\n" +
+              "--transit--client--igvwe2o8w--\r\n\r\n"
+          ],
+          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Fetch completed (0.000 + 0.000 secs)."]
+        ],
+        status: EImapResponseStatus.OK
+      });
+    });
+
+    it("UID FETCH FLAGS command", async () => {
+      const imapSocket = new ImapSocket(settings);
+
+      await imapSocket.imapConnect();
+
+      const imapRequestResponse = await imapSocket.imapRequest("UID FETCH FLAGS");
+
+      imapSocket.imapClose();
+
+      expect(imapRequestResponse).toEqual({
+        data: [
+          ["*", "1", "FETCH (UID 1 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {101}"],
+          [
+            "Subject: Test Subject 01\r\nFrom: Test Display Name <test@emailAddress.com>\r\n" +
+              "Date: Mon, 01 Jan 2025 00:00:00 +0000 (UTC)\r\n\r\n " +
+              'BODYSTRUCTURE (("text" "plain" ("charset" "utf-8") NIL NIL "7bit" 4 2 NIL NIL NIL NIL)' +
+              '("text" "html" ("charset" "utf-8") NIL NIL "7bit" 13 1 NIL NIL NIL NIL) "alternative" ' +
+              '("boundary" "transit--client--g1xgwltj") NIL NIL NIL))\r\n'
+          ],
+
+          ["*", "2", "FETCH (UID 2 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {102}"],
+          [
+            "Subject: Test Subject 02\r\nFrom: Test Display Name <test@emailAddress.com>\r\n" +
+              "Date: Mon, 02 Jan 2025 00:00:00 +0000 (UTC)\r\n\r\n " +
+              'BODYSTRUCTURE (("text" "plain" ("charset" "utf-8") NIL NIL "7bit" 4 2 NIL NIL NIL NIL)' +
+              '("text" "html" ("charset" "utf-8") NIL NIL "7bit" 13 1 NIL NIL NIL NIL) "alternative" ' +
+              '("boundary" "transit--client--6ohw29r5") NIL NIL NIL))\r\n'
+          ],
+          ["*", "3", "FETCH (UID 3 FLAGS (\\Seen) BODY[HEADER.FIELDS (DATE FROM SUBJECT)] {103}"],
+          [
+            "Subject: Test Subject 03\r\nFrom: Test Display Name <test@emailAddress.com>\r\n" +
+              "Date: Mon, 03 Jan 2025 00:00:00 +0000 (UTC)\r\n\r\n " +
+              'BODYSTRUCTURE (("text" "plain" ("charset" "utf-8") NIL NIL "7bit" 4 2 NIL NIL NIL NIL)' +
+              '("text" "html" ("charset" "utf-8") NIL NIL "7bit" 13 1 NIL NIL NIL NIL) "alternative" ' +
+              '("boundary" "transit--client--pklctuok") NIL NIL NIL))\r\n'
+          ],
+          [expect.stringMatching(/^[A-Za-z0-9]+$/), "OK", "Fetch completed (0.000 + 0.000 secs)."]
+        ],
+        status: EImapResponseStatus.OK
       });
     });
   });
