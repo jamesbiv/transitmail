@@ -259,36 +259,6 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method triggerReleaseClassOnDocument()
-   * @returns void
-   */
-  private triggerReleaseClassOnDocument(classElement: string): void {
-    if (!this.scrollElement) {
-      return;
-    }
-
-    this.scrollElement.addEventListener("animationend", () =>
-      this.scrollElement!.classList.remove(classElement)
-    );
-
-    this.scrollElement.classList.add(classElement);
-  }
-
-  /**
-   * @method triggerTopBounce()
-   * @returns void
-   */
-  private readonly triggerTopBounce = (event?: Event): void =>
-    this.triggerReleaseClassOnDocument("top-bounce");
-
-  /**
-   * @method triggerBottomBounce()
-   * @returns void
-   */
-  private readonly triggerBottomBounce = (event?: Event): void =>
-    this.triggerReleaseClassOnDocument("bottom-bounce");
-
-  /**
    * @method topObservationCallback
    * @params {IntersectionObserverEntry[]} intersectionEntries
    * @returns void

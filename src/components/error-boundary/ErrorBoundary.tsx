@@ -77,7 +77,7 @@ export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoun
     this.previousHash = window.location.hash;
 
     if (error.message.includes("Websockets")) {
-      const MessageModalState = {
+      const messageModalState = {
         title: "Invalid connection settings",
         content: (
           <Fragment>
@@ -90,7 +90,7 @@ export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoun
         action: () => this.stateManager.updateActiveKey("settings")
       };
 
-      this.stateManager.showMessageModal(MessageModalState);
+      this.stateManager.showMessageModal(messageModalState);
     }
   }
 

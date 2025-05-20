@@ -71,6 +71,7 @@ describe("Testing the SmtpSocket class", () => {
 
   afterAll(() => {
     webSocketServer.close();
+    webSocketServer.clients.forEach((webSocketClients) => webSocketClients.terminate());
 
     restoreWebSocketClass();
   });

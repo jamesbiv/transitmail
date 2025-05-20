@@ -35,6 +35,7 @@ import { DependenciesContext, IDependencies } from "contexts";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
 import { IComponent, IMessageModalState, ISliderState, ITouchState } from "interfaces";
+import { errorHandler } from "lib";
 
 /**
  * Replace with custom service worker
@@ -60,7 +61,6 @@ export const Index: FunctionComponent = () => {
   const [messageModalState, setMessageModalState] = useState<IMessageModalState>({
     title: "",
     content: "",
-    action: () => {},
     show: false
   });
 
@@ -84,6 +84,10 @@ export const Index: FunctionComponent = () => {
   smtpSocket.settings = secureStorage.getSmtpSettings();
 
   useEffect(() => {
+    window.addEventListener("rejectionhandled", errorHandler);
+    window.addEventListener("unhandledrejection", errorHandler);
+    window.addEventListener("error", errorHandler);
+
     document.getElementById("container-main")!.focus();
 
     setActiveKey(window.location.hash.substring(1) || "inbox");
