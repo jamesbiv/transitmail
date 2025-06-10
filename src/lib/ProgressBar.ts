@@ -16,12 +16,12 @@ interface IProgressBar {
 const progressBar: IProgressBar = { currentBytes: 0, maxBytes: 0, now: 0 };
 
 /**
- * @name initiateProgressBar
+ * initiateProgressBar
  * @param {number} maxBytes
  * @param {React.Dispatch<number>} setProgressBarNow
  * @param {() => number} currentBytesFn
  * @param {() => void} finalCallbackFn
- * @returns void
+ * @returns {void}
  */
 export const initiateProgressBar = (
   maxBytes: number,
@@ -35,11 +35,11 @@ export const initiateProgressBar = (
 };
 
 /**
- * @name checkProgressBar
+ * checkProgressBar
  * @param {Dispatch<number>} setProgressBarNow
  * @param {() => number} currentBytesFn
  * @param {() => void} finalCallbackFn
- * @returns void
+ * @returns {void}
  */
 const checkProgressBar = (
   setProgressBarNow: Dispatch<number>,

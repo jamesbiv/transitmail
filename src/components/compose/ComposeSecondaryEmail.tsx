@@ -14,7 +14,7 @@ interface IComposeSecondaryEmailProps {
 /**
  * ComposeSecondaryEmail
  * @param {IComposeSecondaryEmailProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeSecondaryEmail: FunctionComponent<IComposeSecondaryEmailProps> = ({
   defaultSender,

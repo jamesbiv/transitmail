@@ -56,7 +56,7 @@ interface IComposeEditorProps {
 /**
  * ComposeEditor
  * @param {IComposeEditorProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeEditor: FunctionComponent<IComposeEditorProps> = ({
   bodyMimeType,
@@ -111,7 +111,7 @@ interface IComposeEditorUpdatePluginProps {
 /**
  * ComposeEditorUpdatePlugin
  * @param {IComposeEditorUpdatePluginProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 const ComposeEditorUpdatePlugin: FunctionComponent<IComposeEditorUpdatePluginProps> = ({
   bodyMimeType,

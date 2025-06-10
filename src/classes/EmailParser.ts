@@ -9,6 +9,14 @@ import {
 import { v4 as uuidv4 } from "uuid";
 
 /**
+ * @interface IEmailParserHeaderSplit
+ */
+interface IEmailParserHeaderSplit {
+  content?: string;
+  headers?: IEmailHeaders;
+}
+
+/**
  * @class EmailParser
  */
 export class EmailParser {
@@ -25,17 +33,19 @@ export class EmailParser {
   }
 
   /**
-   * @method getEmail
-   * @returns IEmail
+   * getEmail
+   * @method
+   * @returns {IEmail}
    */
   public getEmail(): IEmail {
     return this.email;
   }
 
   /**
-   * @method processEmail
+   * processEmail
+   * @method
    * @param {string} emailRaw
-   * @reuturns IEmail
+   * @returns {IEmail}
    * @description The key method for processing raw email data which should
    *              return a complete object of processed data ready to be used by
    *              the controller.
@@ -70,15 +80,13 @@ export class EmailParser {
   }
 
   /**
-   * @method splitHeaders
+   * splitHeaders
+   * @method
    * @param {string} contentRaw
    * @param {boolean} returnContent
-   * @returns {{ content?: string, headers?: IEmailHeaders }}
+   * @returns {IEmailParserHeaderSplit}
    */
-  private splitHeaders(
-    headerRaw: string,
-    returnContent: boolean = true
-  ): { content?: string; headers?: IEmailHeaders } {
+  private splitHeaders(headerRaw: string, returnContent: boolean = true): IEmailParserHeaderSplit {
     if (!headerRaw.length) {
       return { headers: undefined, content: undefined };
     }
@@ -147,9 +155,10 @@ export class EmailParser {
   }
 
   /**
-   * @method extractDetailsFromHeaders
+   * extractDetailsFromHeaders
+   * @method
    * @param {IEmail} email
-   * @returns void
+   * @returns {void}
    */
   private extractDetailsFromHeaders(email: IEmail): void {
     Object.keys(email.headers ?? {}).forEach((headerKey: string) => {
@@ -212,10 +221,11 @@ export class EmailParser {
   }
 
   /**
-   * @method parseBoundaries
+   * parseBoundaries
+   * @method
    * @param {string} boundaryIds
    * @param {string} contentRaw
-   * @returns IEmailBoundary[]
+   * @returns {IEmailBoundary[]}
    */
   private parseBoundaries(
     contentRaw: string,
@@ -255,9 +265,10 @@ export class EmailParser {
   }
 
   /**
-   * @method extractContentFromBoundaries
+   * extractContentFromBoundaries
+   * @method
    * @param {IEmail} email
-   * @returns void
+   * @returns {void}
    */
   private extractContentFromBoundaries(email: IEmail): void {
     email.boundaries?.forEach((boundary: IEmailBoundary) => {
@@ -321,9 +332,10 @@ export class EmailParser {
   }
 
   /**
-   * @method extractContentFromBody
+   * extractContentFromBody
+   * @method
    * @param {IEmail} email
-   * @returns void
+   * @returns {void}
    */
   private extractContentFromBody(email: IEmail): void {
     if (email.mimeType === "text/html") {
@@ -358,10 +370,11 @@ export class EmailParser {
   }
 
   /**
-   * @method filterContentByBoundaries
+   * filterContentByBoundaries
+   * @method
    * @param {string} boundaryId
    * @param {string} contentRaw
-   * @returns IEmailBoundary
+   * @returns {IEmailBoundary}
    */
   private filterContentByBoundaries(boundaryId: string, contentRaw: string): IEmailBoundary {
     const contentRows: string[] = contentRaw.split("\r\n");
@@ -398,9 +411,10 @@ export class EmailParser {
   }
 
   /**
-   * @method sanitiseRawBoundry
+   * sanitiseRawBoundry
+   * @method
    * @param {IEmailBoundary} boundary
-   * @returns true
+   * @returns {true}
    */
   private sanitiseRawBoundry(boundary: IEmailBoundary): true {
     boundary.contents.forEach((contentRow: IEmailBoundaryContent, contentIndex: number) => {
@@ -483,9 +497,10 @@ export class EmailParser {
   }
 
   /**
-   * @method stripScripts
+   * stripScripts
+   * @method
    * @param {string} content
-   * @returns string
+   * @returns {string}
    */
   private stripScripts(content: string): string {
     const div: HTMLDivElement = document.createElement("div");
@@ -503,10 +518,11 @@ export class EmailParser {
   }
 
   /**
-   * @method getHeaderAttribute
+   * getHeaderAttribute
+   * @method
    * @param {string} attribute
    * @param {string} data
-   * @returns string | undefined
+   * @returns {string | undefined}
    */
   private getHeaderAttribute(attribute: string, data: string): string | undefined {
     if (data.indexOf(attribute) === -1) {

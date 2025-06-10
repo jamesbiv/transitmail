@@ -8,7 +8,8 @@ import { MimeTools } from "lib";
  */
 export class ImapHelper extends EmailParser {
   /**
-   * @method formatFetchEmailFlagsResponse
+   * formatFetchEmailFlagsResponse
+   * @method
    * @param {string[][]} fetchData
    * @returns {flagData}
    */
@@ -45,9 +46,10 @@ export class ImapHelper extends EmailParser {
   }
 
   /**
-   * @method formatFetchAllResponse
+   * formatFetchAllResponse
+   * @method
    * @param {string[][]} folderData
-   * @returns IFolderEmail[]
+   * @returns {IFolderEmail[]}
    */
   public formatFetchFolderEmailsResponse(folderData: string[][]): IFolderEmail[] {
     const emails: IFolderEmail[] = [];
@@ -98,9 +100,10 @@ export class ImapHelper extends EmailParser {
   }
 
   /**
-   * @method formatListFoldersResponse
+   * formatListFoldersResponse
+   * @method
    * @param {string[][]} folderData
-   * @returns IFoldersEntry[]
+   * @returns {IFoldersEntry[]}
    */
   public formatListFoldersResponse(folderData: string[][]): IFoldersEntry[] {
     const rawFolders: string[] = [];

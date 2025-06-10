@@ -27,7 +27,7 @@ interface IComposeRecipientDetailsProps {
 /**
  * ComposeRecipientDetails
  * @param {IComposeRecipientDetailsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeRecipientDetails: FunctionComponent<IComposeRecipientDetailsProps> = ({
   recipients,

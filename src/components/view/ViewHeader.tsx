@@ -28,7 +28,7 @@ interface IViewHeaderProps {
 /**
  * ViewHeader
  * @param {IViewHeaderProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewHeader: FunctionComponent<IViewHeaderProps> = ({
   email,

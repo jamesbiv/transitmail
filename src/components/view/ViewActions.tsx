@@ -91,7 +91,7 @@ interface IViewActionComponent {
 /**
  * ViewActions
  * @param {IViewActionsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewActions: FunctionComponent<IViewActionsProps> = ({
   actionUid,
@@ -208,7 +208,7 @@ interface IViewActionMoveProps {
 /**
  * ViewActionMove
  * @param {IViewActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewActionMove: FunctionComponent<IViewActionMoveProps> = ({
   actionUid,
@@ -279,7 +279,7 @@ interface IViewActionCopyProps {
 /**
  * ViewActionCopy
  * @param {IViewActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewActionCopy: FunctionComponent<IViewActionCopyProps> = ({
   actionUid,
@@ -350,7 +350,7 @@ interface IViewActionFlagProps {
 /**
  * ViewActionFlag
  * @param {IViewActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewActionFlag: FunctionComponent<IViewActionFlagProps> = ({
   actionUid,
@@ -406,7 +406,7 @@ interface IViewActionViewProps {
 /**
  * ViewActionView
  * @param {IViewActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewActionView: FunctionComponent<IViewActionViewProps> = ({ email }) => {
   return (
@@ -429,7 +429,7 @@ interface IViewActionDeleteProps {
 /**
  * ViewActionDelete
  * @param {IViewActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewActionDelete: FunctionComponent<IViewActionDeleteProps> = ({
   actionUid,

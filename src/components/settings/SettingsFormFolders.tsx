@@ -26,7 +26,7 @@ interface ISettingsFormFoldersProps {
 /**
  * SettingsFormFolders
  * @param {SettingsFormFolders} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const SettingsFormFolders: FunctionComponent<ISettingsFormFoldersProps> = ({
   folderSettings

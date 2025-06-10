@@ -138,12 +138,13 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method initiateHandlers
+   * initiateHandlers
+   * @method
    * @param {string} scrollElementId
    * @param {string} topElementId
    * @param {string} bottomElementId
    * @param {(args: IInfinateScrollHandler) => void} scrollHandler
-   * @returns void
+   * @returns {void}
    */
   public initiateHandlers(
     scrollElementId: string,
@@ -159,8 +160,9 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method startTopObservation
-   * @returns void
+   * startTopObservation
+   * @method
+   * @returns {void}
    */
   public startTopObservation(): void {
     if (!this.topElementId) {
@@ -177,8 +179,9 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method startBottomObservation
-   * @returns void
+   * startBottomObservation
+   * @method
+   * @returns {void}
    */
   public startBottomObservation(): void {
     if (!this.bottomElementId) {
@@ -195,8 +198,9 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method startHandleScroll
-   * @returns void
+   * startHandleScroll
+   * @method
+   * @returns {void}
    */
   public startHandleScroll = (): void => {
     if (!this.scrollElementId) {
@@ -213,8 +217,9 @@ export class InfiniteScroll {
   };
 
   /**
-   * @method stopHandleScroll
-   * @returns void
+   * stopHandleScroll
+   * @method
+   * @returns {void}
    */
   public stopHandleScroll = (): void => {
     if (!this.scrollElement?.removeEventListener) {
@@ -225,8 +230,9 @@ export class InfiniteScroll {
   };
 
   /**
-   * @method stopObservertions
-   * @returns void
+   * stopObservertions
+   * @method
+   * @returns {void}
    */
   public stopObservertions(): void {
     this.topObserver.disconnect();
@@ -234,34 +240,38 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method setTotalEntries
-   * @params {number} totalEntries
-   * @returns void
+   * setTotalEntries
+   * @method
+   * @param {number} totalEntries
+   * @returns {void}
    */
   public setTotalEntries(totalEntries: number): void {
     this.totalEntries = totalEntries;
   }
 
   /**
-   * @method setVisibleSlice
-   * @returns IInfiniteScrollvisibleSlice
+   * setVisibleSlice
+   * @method
+   * @returns {IInfiniteScrollvisibleSlice}
    */
   public setVisibleSlice(visibleSlice: IInfiniteScrollvisibleSlice): void {
     this.visibleSlice = visibleSlice;
   }
 
   /**
-   * @method getVisibleSlice
-   * @returns IInfiniteScrollvisibleSlice
+   * getVisibleSlice
+   * @method
+   * @returns {IInfiniteScrollvisibleSlice}
    */
   public getVisibleSlice(): IInfiniteScrollvisibleSlice {
     return this.visibleSlice;
   }
 
   /**
-   * @method topObservationCallback
-   * @params {IntersectionObserverEntry[]} intersectionEntries
-   * @returns void
+   * topObservationCallback
+   * @method 
+   * @param {IntersectionObserverEntry[]} intersectionEntries
+   * @returns {void}
    */
   private readonly topObservationCallback = (
     intersectionEntries: IntersectionObserverEntry[]
@@ -310,9 +320,10 @@ export class InfiniteScroll {
   };
 
   /**
-   * @method bottomObservationCallback
-   * @params {IntersectionObserverEntry[]} intersectionEntries
-   * @returns void
+   * bottomObservationCallback
+   * @method 
+   * @param {IntersectionObserverEntry[]} intersectionEntries
+   * @returns {void}
    */
   private readonly bottomObservationCallback = (
     intersectionEntries: IntersectionObserverEntry[]
@@ -349,9 +360,10 @@ export class InfiniteScroll {
   };
 
   /**
-   * @method handleDesktopScroll
+   * handleDesktopScroll
+   * @method 
    * @param {Event} event
-   * @returns void
+   * @returns {void}
    */
   private readonly handleDesktopScroll = (event: Event): void => {
     if (window.innerWidth <= this.settings.desktopBreakpoint) {
@@ -380,9 +392,10 @@ export class InfiniteScroll {
   };
 
   /**
-   * @method triggerScrollHandlerAsDestop
+   * triggerScrollHandlerAsDestop
+   * @method 
    * @param {() => void} callback
-   * @returns void
+   * @returns {void}
    */
   private triggerScrollHandlerAsDestop(callback?: () => void) {
     if (!this.scrollHandler) {
@@ -400,9 +413,10 @@ export class InfiniteScroll {
   }
 
   /**
-   * @method triggerScrollHandlerAsMobile
+   * triggerScrollHandlerAsMobile
+   * @method 
    * @param {() => void} callback
-   * @returns void
+   * @returns {void}
    */
   private triggerScrollHandlerAsMobile(callback?: () => void) {
     if (!this.scrollHandler) {

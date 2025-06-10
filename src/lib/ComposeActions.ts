@@ -19,7 +19,7 @@ import { initiateProgressBar } from "lib";
  * @param {IComposePresets} composePresets
  * @param {Dispatch<boolean>} setShowComposer
  * @param {() => void} progressBarCallbackFn
- * @returns Promise<IEmail | undefined>
+ * @returns {Promise<IEmail | undefined>}
  */
 export const downloadEmail = async (
   composePresets: IComposePresets,
@@ -71,7 +71,7 @@ export const downloadEmail = async (
 /**
  * sendEmail
  * @param emailData
- * @returns Promise<ISmtpResponse>
+ * @returns {Promise<ISmtpResponse>}
  */
 export const sendEmail = async (emailData: IEmailData): Promise<ISmtpResponse> => {
   const { smtpSocket } = directAccessToDependencies();
@@ -89,7 +89,7 @@ export const sendEmail = async (emailData: IEmailData): Promise<ISmtpResponse> =
  * sendEmailAction
  * @param {SmtpSocket} smtpSocket
  * @param {IEmailData} emailData
- * @returns Promise<ISmtpResponse>
+ * @returns {Promise<ISmtpResponse>}
  */
 const sendEmailAction = async (
   smtpSocket: SmtpSocket,

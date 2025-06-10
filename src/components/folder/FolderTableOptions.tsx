@@ -16,7 +16,7 @@ interface FolderTableOptionsProps {
 /**
  * FolderTableOptions
  * @param {FolderTableOptionsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderTableOptions: FunctionComponent<FolderTableOptionsProps> = ({
   displayTableOptions,

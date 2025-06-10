@@ -21,7 +21,7 @@ import {
 
 /**
  * Settings
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const Settings: FunctionComponent = () => {
   const { imapHelper, imapSocket, smtpSocket, secureStorage, stateManager } =
@@ -134,6 +134,13 @@ export const Settings: FunctionComponent = () => {
   };
 
   const createFolders = async (folderSettings: ISettingsFolders): Promise<void> => {
+    imapSocket.settings = {
+      host: settings.imapHost,
+      port: settings.imapPort,
+      username: settings.imapUsername,
+      password: settings.imapPassword
+    };
+
     await imapSocket.imapCheckOrConnect();
 
     const listResponse: IImapResponse = await imapSocket.imapRequest(`LIST "" "*"`);

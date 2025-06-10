@@ -10,7 +10,7 @@ interface IFolderPlaceholderProps {
 /**
  * FolderPlaceholder
  * @param {IFolderPlaceholderProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderPlaceholder: FunctionComponent<IFolderPlaceholderProps> = ({ height = 0 }) => {
   return <div style={{ height }}></div>;

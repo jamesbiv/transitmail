@@ -36,7 +36,7 @@ import { convertAttachments, downloadEmail, sendEmail } from "lib";
 
 /**
  * Compose
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const Compose: FunctionComponent = () => {
   const { secureStorage, stateManager } = useContext(DependenciesContext);

@@ -17,7 +17,7 @@ interface IFolderTableHeaderProps {
 /**
  * FolderTableHeader
  * @param {IFolderTableHeaderProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderTableHeader: FunctionComponent<IFolderTableHeaderProps> = ({
   folderEmails,

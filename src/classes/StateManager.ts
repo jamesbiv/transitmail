@@ -47,9 +47,10 @@ export class StateManager {
   protected folderEmails: { [key: string]: IFolderEmails | undefined } = {};
 
   /**
-   * @method updateActiveKey
+   * updateActiveKey
+   * @method
    * @param {string} activeKey
-   * @returns void
+   * @returns {void}
    */
   public updateActiveKey(activeKey: string): void {
     window.location.hash = "#" + activeKey;
@@ -71,42 +72,47 @@ export class StateManager {
   }
 
   /**
-   * @method setActiveUid
+   * setActiveUid
+   * @method
    * @param {string} activeUid
-   * @returns void
+   * @returns {void}
    */
   public setActiveUid(activeUid: number): void {
     this.activeUid = activeUid;
   }
 
   /**
-   * @method getActiveUid
-   * @returns void
+   * getActiveUid
+   * @method
+   * @returns {void}
    */
   public getActiveUid(): number | undefined {
     return this.activeUid;
   }
 
   /**
-   * @method setFolderId
+   * setFolderId
+   * @method
    * @param {string} folderId
-   * @returns void
+   * @returns {void}
    */
   public setFolderId(folderId: string): void {
     this.folderId = folderId;
   }
 
   /**
-   * @method getFolderId
-   * @returns void
+   * getFolderId
+   * @method
+   * @returns {void}
    */
   public getFolderId(): string | undefined {
     return this.folderId;
   }
 
   /**
-   * @method getCurrentFolder
-   * @returns IFolderEmails | undefined
+   * getCurrentFolder
+   * @method
+   * @returns {IFolderEmails | undefined}
    */
   public getCurrentFolder(): IFolderEmails | undefined {
     if (!this.folderId) {
@@ -124,9 +130,10 @@ export class StateManager {
   }
 
   /**
-   * @method updateCurrentFolder
+   * updateCurrentFolder
+   * @method
    * @param {IFolderEmail[]} folderEmails
-   * @returns void
+   * @returns {void}
    */
   public updateCurrentFolder(emails?: IFolderEmail[], latestUid?: string): void {
     if (this.folderId) {
@@ -135,26 +142,29 @@ export class StateManager {
   }
 
   /**
-   * @method showMessageModal
+   * showMessageModal
+   * @method
    * @param {IMessageModalState} messageModalState
-   * @returns void
+   * @returns {void}
    */
   public showMessageModal(messageModalState: IMessageModalState): void {
     this.indexState.setMessageModalState({ ...messageModalState, show: true });
   }
 
   /**
-   * @method setComposePresets
+   * setComposePresets
+   * @method
    * @param {IComposePresets} setComposePresets
-   * @returns void
+   * @returns {void}
    */
   public setComposePresets(composePresets?: IComposePresets): void {
     this.composePresets = composePresets;
   }
 
   /**
-   * @method getComposePresets
-   * @returns IComposePresets
+   * getComposePresets
+   * @method
+   * @returns {IComposePresets}
    */
   public getComposePresets(): IComposePresets | undefined {
     return this.composePresets;

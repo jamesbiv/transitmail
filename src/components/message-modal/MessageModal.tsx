@@ -15,7 +15,7 @@ interface IMessageModalProps {
 /**
  * MessageModal
  * @param {IMessageModalProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const MessageModal: FunctionComponent<IMessageModalProps> = ({
   messageModalState,

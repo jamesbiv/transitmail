@@ -44,7 +44,7 @@ export const processValidationConditions = (
 /**
  * processValidationErrorMessages
  * @param {ISettingsErrors} validationErrors
- * @returns string
+ * @returns {string}
  */
 export const processValidationErrorMessages = (validationErrors: ISettingsErrors): string => {
   return `<ul>${Object.keys(validationErrors).reduce(
