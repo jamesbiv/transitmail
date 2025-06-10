@@ -106,7 +106,7 @@ export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoun
 
   /**
    * render
-   * @returns ReactNode
+   * @returns {ReactNode}
    */
   render(): ReactNode {
     if (this.state.hasError) {

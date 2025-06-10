@@ -333,7 +333,7 @@ export class SmtpSocket {
    * getResponseCodesByType
    * @method
    * @param responseCodeTypes
-   * @returns {number}[]
+   * @returns {number[]}
    */
   private getResponseCodesByType(responseCodeTypes: ESmtpResponseCodeType[]) {
     return smtpResponseCodes.reduce(

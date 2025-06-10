@@ -61,7 +61,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 /**
  * getRangeSelectedNode
  * @param {RangeSelection} selection
- * @returns {T}extNode | ElementNode
+ * @returns {TextNode | ElementNode}
  */
 const getRangeSelectedNode = (selection: RangeSelection): TextNode | ElementNode => {
   const anchor: PointType = selection.anchor;

@@ -12,7 +12,7 @@ import { ImapHelper, ImapSocket, SecureStorage, SmtpSocket, StateManager } from 
 /**
  * ContainerMain
  * @param { children: ReactNode } properties
- * @returns JSX.Element
+ * @returns {JSX.Element}
  */
 const ContainerMain = ({ children }: { children: ReactNode }): JSX.Element => {
   return <div id="container-main">{children}</div>;
