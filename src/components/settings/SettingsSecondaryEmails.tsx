@@ -40,7 +40,7 @@ interface ISettingsSecondaryEmailsProps {
 /**
  * SettingsSecondaryEmails
  * @param {ISettingsSecondaryEmailsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const SettingsSecondaryEmails: FunctionComponent<ISettingsSecondaryEmailsProps> = ({
   secondaryEmails,
@@ -183,7 +183,7 @@ interface ISettingsSecondaryEmailsModalProps {
 /**
  * SettingsSecondaryEmailsModal
  * @param {ISettingsSecondaryEmailsModalProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const SettingsSecondaryEmailsModal: FunctionComponent<
   ISettingsSecondaryEmailsModalProps

@@ -61,7 +61,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 /**
  * getRangeSelectedNode
  * @param {RangeSelection} selection
- * @returns TextNode | ElementNode
+ * @returns {T}extNode | ElementNode
  */
 const getRangeSelectedNode = (selection: RangeSelection): TextNode | ElementNode => {
   const anchor: PointType = selection.anchor;
@@ -93,7 +93,7 @@ interface IComposeEditorToolbarProps {
 
 /**
  * ComposeEditorToolbar
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeEditorToolbar: FunctionComponent<IComposeEditorToolbarProps> = ({
   saveEmail,

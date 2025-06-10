@@ -37,18 +37,12 @@ import { faAt, faBars } from "@fortawesome/free-solid-svg-icons";
 import { IComponent, IMessageModalState, ISliderState, ITouchState } from "interfaces";
 import { errorHandler } from "lib";
 
-/**
- * Replace with custom service worker
- *
- * import * as serviceWorker from "serviceWorker";
- */
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "index.css";
 
 /**
  * Index
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const Index: FunctionComponent = () => {
   const [activeKey, setActiveKey] = useState<string>(window.location.hash.substring(1) || "inbox");
@@ -200,8 +194,3 @@ const container: Element = document.getElementById("root")!;
 const root: Root = createRoot(container);
 
 root.render(<Index />);
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-// serviceWorker.unregister();

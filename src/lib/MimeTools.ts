@@ -1,7 +1,7 @@
 /**
- * @name parseMimeWords
+ * parseMimeWords
  * @param {string} content
- * @returns string
+ * @returns {string}
  */
 export const parseMimeWords = (content: string): string => {
   const joinRegex: RegExp = /(=\?[^?]+\?[Bb]\?)([^?]+)\?=\s*\1([^?]+)\?=/g;
@@ -22,7 +22,7 @@ export const parseMimeWords = (content: string): string => {
  * @param {string} header
  * @param {string} firstSegment
  * @param {string} secondSegment
- * @returns string
+ * @returns {string}
  */
 const joinMimeWords = (
   match: string,
@@ -39,9 +39,9 @@ const joinMimeWords = (
 };
 
 /**
- * @name decodeMimeWord
+ * decodeMimeWord
  * @param {string} content
- * @resturns string
+ * @returns string
  */
 const decodeMimeWord = (content: string): string => {
   const contentNoWhitespace: string = content.replace(/\s+/g, "");
@@ -67,29 +67,29 @@ const decodeMimeWord = (content: string): string => {
 };
 
 /**
- * @name decodeQuotedPrintable
+ * decodeQuotedPrintable
  * @param {string} content
- * @returns string
+ * @returns {string}
  */
 export const decodeQuotedPrintable = (content: string): string => {
   return quotedPrintableDecoder(content.replace(/=(?:\r?\n|$)/g, ""));
 };
 
 /**
- * @name decodeBase64
+ * decodeBase64
  * @param {string} content
- * @returns string
+ * @returns {string}
  */
 export const decodeBase64 = (content: string): string => {
   return Buffer.from(content, "base64").toString();
 };
 
 /**
- * @name base64toBlob
+ * base64toBlob
  * @param {string} content
  * @param {string} contentType
  * @param {number} sliceSize
- * @returns Blob
+ * @returns {Blob}
  */
 export const base64toBlob = (
   content: string,
@@ -100,11 +100,11 @@ export const base64toBlob = (
 };
 
 /**
- * @name base64toBlob
+ * base64toBlob
  * @param {string} content
  * @param {string} contentType
  * @param {number} sliceSize
- * @returns Blob
+ * @returns {Blob}
  */
 export const binaryStringToBlob = (
   content: string,
@@ -128,9 +128,9 @@ export const binaryStringToBlob = (
 };
 
 /**
- * @name quotedPrintableDecoder
+ * quotedPrintableDecoder
  * @param {string} content
- * @returns string
+ * @returns {string}
  */
 const quotedPrintableDecoder = (content: string): string => {
   const encodedBytesCount: number = (content.match(/=[\da-fA-F]{2}/g) || []).length;

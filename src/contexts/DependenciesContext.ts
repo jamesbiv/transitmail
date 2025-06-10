@@ -24,7 +24,8 @@ const dependencies: IDependencies = {
 };
 
 /**
- * @constant {() => IDependencies} directAccessToDependencies
+ * directAccessToDependencies
+ * @returns {IDependencies}
  */
 export const directAccessToDependencies: () => IDependencies = () => dependencies;
 

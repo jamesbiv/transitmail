@@ -15,7 +15,7 @@ interface IFoldersEntryOptionsProps {
 /**
  * FoldersEntryOptions
  * @param {IFoldersEntryOptionsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryOptions: FunctionComponent<IFoldersEntryOptionsProps> = ({
   folderId,

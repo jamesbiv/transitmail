@@ -29,7 +29,7 @@ interface ISettingsFormProps {
 /**
  * SettingsForm
  * @param {ISettingsFormProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const SettingsForm: FunctionComponent<ISettingsFormProps> = ({
   settingsValidationConditions,

@@ -29,7 +29,7 @@ interface IAccordionListGroupItemProps {
 /**
  * AccordionListGroupItem
  * @param {IAccordionListGroupItemProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 const AccordionListGroupItem: FunctionComponent<IAccordionListGroupItemProps> = ({
   children,
@@ -57,7 +57,7 @@ interface IFoldersEntryProps {
 /**
  * FoldersEntry
  * @param {IFoldersEntryProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntry: FunctionComponent<IFoldersEntryProps> = ({
   folderEntry,

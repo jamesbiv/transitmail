@@ -18,7 +18,7 @@ interface IFolderEmailActionState {
 
 /**
  * Folder
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const Folder: FunctionComponent = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);

@@ -69,7 +69,7 @@ export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoun
    * componentDidCatch
    * @param {Error} error
    * @param {errorInfo} errorInfo
-   * @returns void
+   * @returns {void}
    */
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.stateManager = this.context.stateManager;
@@ -96,7 +96,7 @@ export class ErrorBoundary extends PureComponent<IErrorBoundaryProps, IErrorBoun
 
   /**
    * componentDidUpdate
-   * @returns void
+   * @returns {void}
    */
   componentDidUpdate(): void {
     if (this.previousHash !== window.location.hash) {

@@ -55,9 +55,10 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapCheckOrConnect
+   * imapCheckOrConnect
+   * @method
    * @param {boolean} authorise
-   * @returns boolean
+   * @returns {boolean}
    */
   public async imapCheckOrConnect(authorise: boolean = true): Promise<boolean> {
     if (this.getReadyState() === WebSocket.OPEN) {
@@ -68,10 +69,10 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapConnect
+   * imapConnect
+   * @method 
    * @param {boolean} authorise
-
-   * @returns boolean
+   * @returns {boolean}
    */
   public async imapConnect(authorise: boolean = true): Promise<boolean> {
     this.session.socket = new WebSocket(
@@ -155,8 +156,9 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapClose
-   * @returns boolean
+   * imapClose
+   * @method
+   * @returns {boolean}
    */
   public imapClose(): boolean {
     this.session.socket?.close();
@@ -165,9 +167,10 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapRequest
+   * imapRequest
+   * @method 
    * @param {string} request
-   * @returns Promise<IImapResponse>
+   * @returns {Promise<IImapResponse>}
    */
   public async imapRequest(request: string): Promise<IImapResponse> {
     let status: EImapResponseStatus | undefined;
@@ -194,12 +197,13 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapProcessRequest
+   * imapProcessRequest
+   * @method
    * @param {string} request
    * @param {TImapCallback} ok
    * @param {TImapCallback} no
    * @param {TImapCallback} bad
-   * @returns void
+   * @returns {void}
    */
   private imapProcessRequest(
     request: string,
@@ -235,9 +239,10 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapResponseHandler
+   * imapResponseHandler
+   * @method
    * @param {string} response
-   * @returns void
+   * @returns {void}
    */
   private imapResponseHandler(response: string): void {
     const requestIndex: number = this.session.request.length - 1;
@@ -308,40 +313,45 @@ export class ImapSocket {
   }
 
   /**
-   * @method imapAuthorise
-   * @returns Promise<IImapResponse>
+   * imapAuthorise
+   * @method
+   * @returns {Promise<IImapResponse>}
    */
   public async imapAuthorise(): Promise<IImapResponse> {
     return await this.imapRequest(`LOGIN ${this.settings.username} ${this.settings.password}`);
   }
 
   /**
-   * @method getReadyState
-   * @returns number | undefined
+   * getReadyState
+   * @method
+   * @returns {number | undefined}
    */
   public getReadyState(): number | undefined {
     return this.session.socket?.readyState;
   }
 
   /**
-   * @method getStreamAmount
-   * @returns number
+   * getStreamAmount
+   * @method
+   * @returns {number}
    */
   public getStreamAmount(): number {
     return this.session.stream;
   }
 
   /**
-   * @method getStreamCumlativeAmount
-   * @returns number
+   * getStreamCumlativeAmount
+   * @method
+   * @returns {number}
    */
   public getStreamCumlativeAmount(): number {
     return this.session.streamCumlative;
   }
 
   /**
-   * @method getBufferedAmount
-   * @returns number
+   * getBufferedAmount
+   * @method
+   * @returns {number}
    */
   public getBufferedAmount = (): number => {
     return this.session.socket?.bufferedAmount ?? 0;

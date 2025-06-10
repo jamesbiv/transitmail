@@ -29,7 +29,7 @@ interface IComposeEditorLinkOverlayProps {
 /**
  * ComposeEditorLinkOverlay
  * @param {IComposeEditorLinkOverlayProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeEditorLinkOverlay: FunctionComponent<IComposeEditorLinkOverlayProps> = ({
   linkUrl,

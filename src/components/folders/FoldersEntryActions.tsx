@@ -76,7 +76,7 @@ interface IFolderEntryActionComponent {
 /**
  * FoldersEntryActions
  * @param {IFoldersEntryActionsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryActions: FunctionComponent<IFoldersEntryActionsProps> = ({
   folderId,
@@ -171,7 +171,7 @@ interface IFoldersEntryActionAddProps {
 /**
  * FoldersEntryActionAdd
  * @param {IFoldersEntryActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryActionAdd: FunctionComponent<IFoldersEntryActionAddProps> = ({
   folders,
@@ -254,7 +254,7 @@ interface IFoldersEntryActionCopyProps {
 /**
  * FoldersEntryActionCopy
  * @param {IFoldersEntryActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryActionCopy: FunctionComponent<IFoldersEntryActionCopyProps> = ({
   folderId,
@@ -356,7 +356,7 @@ interface IFoldersEntryActionMoveProps {
 /**
  * FoldersEntryActionMove
  * @param {IFoldersEntryActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryActionMove: FunctionComponent<IFoldersEntryActionMoveProps> = ({
   folderId,
@@ -429,7 +429,7 @@ interface IFoldersEntryActionRenameProps {
 /**
  * FoldersEntryActionRename
  * @param {IFoldersEntryActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryActionRename: FunctionComponent<IFoldersEntryActionRenameProps> = ({
   folderId,
@@ -490,7 +490,7 @@ interface IFoldersEntryActionDeleteProps {
 /**
  * FoldersEntryActionDelete
  * @param {IFoldersEntryActionProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FoldersEntryActionDelete: FunctionComponent<IFoldersEntryActionDeleteProps> = ({
   folderId,

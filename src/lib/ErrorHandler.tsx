@@ -25,7 +25,7 @@ let showErrorLimit = 10;
 /**
  * errorHandler
  * @param {PromiseRejectionEvent | ErrorEvent} event
- * @returns void
+ * @returns {void}
  */
 export const errorHandler = async (event: PromiseRejectionEvent | ErrorEvent) => {
   --showErrorLimit;

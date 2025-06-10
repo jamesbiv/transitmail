@@ -37,7 +37,7 @@ export const AttachmentInput: FunctionComponent<{
 /**
  * ComposeAttachments
  * @param {IComposeAttachmentProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeAttachments: FunctionComponent<IComposeAttachmentProps> = ({
   attachments,

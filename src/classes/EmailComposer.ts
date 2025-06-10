@@ -19,9 +19,10 @@ export interface IEmailData {
  */
 export class EmailComposer {
   /**
-   * @method composeEmail
+   * composeEmail
+   * @method
    * @param {IEmailData} emailData
-   * @returns IComposedEmail
+   * @returns {IComposedEmail}
    */
   public composeEmail(emailData: IEmailData): IComposedEmail {
     const composedEmail: Partial<IComposedEmail> = {

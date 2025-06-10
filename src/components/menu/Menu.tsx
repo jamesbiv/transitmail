@@ -23,7 +23,7 @@ interface IMenuItem {
 
 /**
  * Menu
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 const Menu: FunctionComponent = () => {
   const { stateManager } = useContext(DependenciesContext);

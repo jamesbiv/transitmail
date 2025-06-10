@@ -16,7 +16,7 @@ import { initiateProgressBar } from "lib";
 
 /**
  * View
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const View: FunctionComponent = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);

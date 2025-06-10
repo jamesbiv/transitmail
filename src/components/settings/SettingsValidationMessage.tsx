@@ -19,7 +19,7 @@ interface ISettingsValidationProps {
 /**
  * SettingsValidationMessage
  * @param {ISettingsValidationProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const SettingsValidationMessage: FunctionComponent<ISettingsValidationProps> = ({
   validationMessage

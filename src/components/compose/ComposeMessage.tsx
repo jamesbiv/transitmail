@@ -19,7 +19,7 @@ interface IComposeMessageProps {
 /**
  * ComposeMessage
  * @param {IComposeMessageProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ComposeMessage: FunctionComponent<IComposeMessageProps> = ({ composeMessage }) => {
   let alertVariant: string;

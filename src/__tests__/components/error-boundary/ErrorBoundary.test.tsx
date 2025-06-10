@@ -12,7 +12,7 @@ import { StateManager } from "classes";
 
 /**
  * MockError
- * @returns void
+ * @returns {void}
  */
 const MockError: FunctionComponent = () => {
   throw new Error("This is an Error");
@@ -20,7 +20,7 @@ const MockError: FunctionComponent = () => {
 
 /**
  * MockWebsocketError
- * @returns void
+ * @returns {void}
  */
 const MockWebsocketError: FunctionComponent = () => {
   throw new Error("This is an Websockets based error");
@@ -35,7 +35,7 @@ interface IMockContainer {
 
 /**
  * MockContainer
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 const MockContainer: FunctionComponent<PropsWithChildren<IMockContainer>> = ({
   setActiveKey,

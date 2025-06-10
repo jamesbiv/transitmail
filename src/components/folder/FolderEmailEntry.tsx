@@ -23,7 +23,7 @@ interface IFolderEmailEntryProps {
 /**
  * FolderEmailEntry
  * @param {IFolderEmailEntryProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderEmailEntry: FunctionComponent<IFolderEmailEntryProps> = ({
   email,

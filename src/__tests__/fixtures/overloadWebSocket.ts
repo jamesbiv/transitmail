@@ -5,7 +5,7 @@ const originalWebSocketClass = global.WebSocket;
 
 /**
  * overloadWebSocketConstructor
- * @returns void
+ * @returns {void}
  */
 export const overloadWebSocketConstructor = () => {
   global.WebSocket = class WebSocketOverload extends WebSocket {
@@ -19,7 +19,7 @@ export const overloadWebSocketConstructor = () => {
 
 /**
  * restoreWebSocketClass
- * @returns void
+ * @returns {void}
  */
 export const restoreWebSocketClass = () => {
   global.WebSocket = originalWebSocketClass;

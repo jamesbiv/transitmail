@@ -68,10 +68,11 @@ export class SecureStorage {
   }
 
   /**
-   * @method setData
+   * setData
+   * @method
    * @param {TDataKeys} name
    * @param {T} value
-   * @returns void
+   * @returns {void}
    */
   public setData<T>(name: TDataKeys, value: T): void {
     this.data[name] = value;
@@ -80,18 +81,20 @@ export class SecureStorage {
   }
 
   /**
-   * @method getData
+   * getData
+   * @method
    * @param {TDataKeys} name
-   * @returns T
+   * @returns {T}
    */
   public getData<T>(name: TDataKeys): T {
     return this.data[name] as T;
   }
 
   /**
-   * @method setSetting
+   * setSetting
+   * @method
    * @param {TDataKeys} name
-   * @returns void
+   * @returns {void}
    */
   public setSetting<T>(name: TSettingsKeys, value: T): void {
     this.settings[name] = value;
@@ -100,18 +103,20 @@ export class SecureStorage {
   }
 
   /**
-   * @method getSetting
+   * getSetting
+   * @method
    * @param {TDataKeys} name
-   * @returns T
+   * @returns {T}
    */
   public getSetting<T>(name: TSettingsKeys): T {
     return this.settings[name] as T;
   }
 
   /**
-   * @method setSettings
+   * setSettings
+   * @method
    * @param {Pick<ISettings, TSettingsKeys>} name
-   * @returns void
+   * @returns {void}
    */
   public setSettings(settings: Pick<ISettings, TSettingsKeys>): void {
     this.settings = settings;
@@ -120,7 +125,8 @@ export class SecureStorage {
   }
 
   /**
-   * @method getSettings
+   * getSettings
+   * @method
    * @returns Pick<ISettings, TSettingsKeys>
    */
   public getSettings(): Pick<ISettings, TSettingsKeys> {
@@ -128,8 +134,9 @@ export class SecureStorage {
   }
 
   /**
-   * @method getImapSettings
-   * @returns IImapSettings
+   * getImapSettings
+   * @method
+   * @returns {IImapSettings}
    */
   public getImapSettings(): IImapSettings {
     return {
@@ -141,8 +148,9 @@ export class SecureStorage {
   }
 
   /**
-   * @method getSmtpSettings
-   * @returns ISmtpSettings
+   * getSmtpSettings
+   * @method
+   * @returns {ISmtpSettings}
    */
   public getSmtpSettings(): ISmtpSettings {
     return {
@@ -154,10 +162,11 @@ export class SecureStorage {
   }
 
   /**
-   * @method setSecureStorage
+   * setSecureStorage
+   * @method
    * @param {string} name
    * @param {T} data
-   * @returns void
+   * @returns {void}
    */
   private setSecureStorage<T>(name: string, data: T): void {
     const encryptedData: string = CryptoES.AES.encrypt(
@@ -169,9 +178,10 @@ export class SecureStorage {
   }
 
   /**
-   * @method getSecureStorage
+   * getSecureStorage
+   * @method
    * @param {string} name
-   * @returns T | undefined
+   * @returns {T | undefined}
    */
   private getSecureStorage<T>(name: string): T | undefined {
     const data: string | undefined = localStorage.getItem(name) ?? undefined;

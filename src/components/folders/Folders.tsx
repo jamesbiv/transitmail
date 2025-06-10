@@ -9,7 +9,7 @@ import { AccordionEventKey } from "react-bootstrap/esm/AccordionContext";
 
 /**
  * Folders
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const Folders: FunctionComponent = () => {
   const { imapHelper, imapSocket, stateManager } = useContext(DependenciesContext);

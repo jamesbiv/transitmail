@@ -25,7 +25,7 @@ interface IViewAttachmentsProps {
 /**
  * ViewAttachments
  * @param {IViewAttachmentsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewAttachments: FunctionComponent<IViewAttachmentsProps> = ({ attachments }) => {
   const viewAttachment = (attachment: IEmailAttachment) => {

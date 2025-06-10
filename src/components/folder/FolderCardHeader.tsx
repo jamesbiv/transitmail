@@ -15,7 +15,7 @@ interface FolderCardHeaderProps {
 
 /**
  * FolderCardHeader
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderCardHeader: FunctionComponent<FolderCardHeaderProps> = ({
   folderName,

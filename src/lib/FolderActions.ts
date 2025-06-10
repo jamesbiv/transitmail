@@ -2,10 +2,10 @@ import { directAccessToDependencies } from "contexts";
 import { EImapResponseStatus, IFolderEmail, IImapResponse } from "interfaces";
 
 /**
- * @name copyEmailToFolder
+ * copyEmailToFolder
  * @param {number[]} actionUid
  * @param {destinationFolderId} destinationFolderId
- * @returns boolean
+ * @returns {boolean}
  */
 export const copyEmailToFolder = (actionUids: number[], destinationFolderId: string): boolean => {
   if (!actionUids.length) {
@@ -49,10 +49,10 @@ export const copyEmailToFolder = (actionUids: number[], destinationFolderId: str
 };
 
 /**
- * @name moveEmailToFolder
+ * moveEmailToFolder
  * @param {number[]} actionUid
  * @param {destinationFolderId} destinationFolderId
- * @returns boolean
+ * @returns {boolean}
  */
 export const moveEmailToFolder = (actionUids: number[], destinationFolderId: string): boolean => {
   if (!actionUids.length) {
@@ -109,9 +109,9 @@ export const moveEmailToFolder = (actionUids: number[], destinationFolderId: str
 };
 
 /**
- * @name deleteEmailFromFolder
+ * deleteEmailFromFolder
  * @param {number[]} actionUid
- * @returns boolean
+ * @returns {boolean}
  */
 export const deleteEmailFromFolder = (actionUids: number[]): boolean => {
   if (!actionUids.length) {

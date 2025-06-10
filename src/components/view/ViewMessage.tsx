@@ -19,7 +19,7 @@ interface IViewMessageProps {
 /**
  * ViewMessage
  * @param {IViewMessageProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const ViewMessage: FunctionComponent<IViewMessageProps> = ({ viewMessage }) => {
   let alertVariant: string;

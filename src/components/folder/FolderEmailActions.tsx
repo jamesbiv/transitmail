@@ -82,7 +82,7 @@ interface IFolderEmailActionComponent {
 /**
  * FolderEmailActions
  * @param {IFolderEmailActionsProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderEmailActions: FunctionComponent<IFolderEmailActionsProps> = ({
   folderEmailActionState,
@@ -180,7 +180,7 @@ interface IFolderEmailActionMoveProps {
 /**
  * FolderEmailActionMove
  * @param {IFolderEmailActionMoveProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderEmailActionMove: FunctionComponent<IFolderEmailActionMoveProps> = ({
   actionUids,
@@ -252,7 +252,7 @@ interface IFolderEmailActionCopyProps {
 /**
  * FolderEmailActionCopy
  * @param {IFolderEmailActionCopyProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderEmailActionCopy: FunctionComponent<IFolderEmailActionCopyProps> = ({
   actionUids,
@@ -327,7 +327,7 @@ interface IFolderEmailActionFlagProps {
 /**
  * FolderEmailActionFlag
  * @param {IFolderEmailActionFlagProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderEmailActionFlag: FunctionComponent<IFolderEmailActionFlagProps> = ({
   actionUids,
@@ -386,7 +386,7 @@ interface IFolderEmailActionDeleteProps {
 /**
  * FolderEmailActionDelete
  * @param {IFolderEmailActionDeleteProps} properties
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const FolderEmailActionDelete: FunctionComponent<IFolderEmailActionDeleteProps> = ({
   actionUids,

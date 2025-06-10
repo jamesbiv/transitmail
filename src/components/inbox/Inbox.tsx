@@ -4,7 +4,7 @@ import { Folder } from "../folder";
 
 /**
  * Inbox
- * @returns FunctionComponent
+ * @returns {ReactNode}
  */
 export const Inbox: FunctionComponent = () => {
   const { stateManager } = useContext(DependenciesContext);

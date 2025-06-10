@@ -76,9 +76,10 @@ export class SmtpSocket {
   }
 
   /**
-   * @method smtpConnect
+   * smtpConnect
+   * @method
    * @param {boolean} authorise
-   * @returns boolean
+   * @returns {boolean}
    */
   public async smtpConnect(authorise: boolean = true): Promise<boolean> {
     this.session.socket = new WebSocket(
@@ -158,8 +159,9 @@ export class SmtpSocket {
   }
 
   /**
-   * @method smtpClose
-   * @returns boolean
+   * smtpClose
+   * @method
+   * @returns {boolean}
    */
   public smtpClose(): boolean {
     this.session.socket?.close();
@@ -168,10 +170,11 @@ export class SmtpSocket {
   }
 
   /**
-   * @method smtpRequest
+   * smtpRequest
+   * @method
    * @param {string} request
    * @param {number} code
-   * @returns Promise<ISmtpResponse>
+   * @returns {Promise<ISmtpResponse>}
    */
   public async smtpRequest(
     request: string,
@@ -198,12 +201,13 @@ export class SmtpSocket {
   }
 
   /**
-   * @method smtpProcessRequest
+   * smtpProcessRequest
+   * @method
    * @param {string} request
    * @param {number} code
    * @param {TSmtpCallback} success
    * @param {TSmtpCallback} failure
-   * @returns void
+   * @returns {void}
    */
   private smtpProcessRequest(
     request: string,
@@ -237,9 +241,10 @@ export class SmtpSocket {
   }
 
   /**
-   * @method smtpResponseHandler
+   * smtpResponseHandler
+   * @method
    * @param {string} response
-   * @returns void
+   * @returns {void}
    */
   private smtpResponseHandler(response: string): void {
     const index: number = this.session.request.length - 1;
@@ -278,8 +283,9 @@ export class SmtpSocket {
   }
 
   /**
-   * @method smtpAuthorise
-   * @returns Promise<ISmtpResponse>
+   * smtpAuthorise
+   * @method
+   * @returns {Promise<ISmtpResponse>}
    */
   public async smtpAuthorise(): Promise<ISmtpResponse> {
     const ehloResponse: ISmtpResponse = await this.smtpRequest(`EHLO ${this.settings.host}`);
@@ -306,16 +312,18 @@ export class SmtpSocket {
   }
 
   /**
-   * @method getReadyState
-   * @returns number | undefined
+   * getReadyState
+   * @method
+   * @returns {number | undefined}
    */
   public getReadyState(): number | undefined {
     return this.session.socket?.readyState;
   }
 
   /**
-   * @method getBufferedAmount
-   * @returns number
+   * getBufferedAmount
+   * @method
+   * @returns {number}
    */
   public getBufferedAmount = (): number => {
     return this.session.socket?.bufferedAmount ?? 0;
@@ -323,8 +331,9 @@ export class SmtpSocket {
 
   /**
    * getResponseCodesByType
+   * @method
    * @param responseCodeTypes
-   * @returns number[]
+   * @returns {number}[]
    */
   private getResponseCodesByType(responseCodeTypes: ESmtpResponseCodeType[]) {
     return smtpResponseCodes.reduce(
